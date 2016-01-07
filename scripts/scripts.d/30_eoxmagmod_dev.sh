@@ -8,16 +8,16 @@
 
 . `dirname $0`/../lib_logging.sh
 
-info "Installing EOxServer in the development mode."
+info "Installing EOxMagMod in the development mode."
 
-# Path to the EOxServer development directory tree:
+# Path to the EOxMagMod development directory tree:
 EOXMM_DEV_PATH="${EOXMM_DEV_PATH:-/usr/local/eoxmagmod}"
 
 # STEP 1: INSTALL DEPENDENCIES
 yum --assumeyes install gcc-gfortran
 
 # STEP 2: INSTALL EOXMM
-# Install EOxServer in the development mode.
+# Install EOxMagMod in the development mode.
 pushd .
 cd $EOXMM_DEV_PATH
 # build dependencies
