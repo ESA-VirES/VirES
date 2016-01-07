@@ -1,0 +1,1 @@
+../scripts.d/20_postgresql.sh
