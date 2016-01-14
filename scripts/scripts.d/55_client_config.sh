@@ -1,7 +1,7 @@
 #!/bin/sh
 #-------------------------------------------------------------------------------
 #
-# Purpose: ViRES client installation
+# Purpose: VirES client installation
 # Author(s): Martin Paces <martin.paces@eox.at>
 #-------------------------------------------------------------------------------
 # Copyright (C) 2015 EOX IT Services GmbH
@@ -9,7 +9,7 @@
 . `dirname $0`/../lib_logging.sh
 . `dirname $0`/../lib_apache.sh
 
-info "Configuring ViRES client ..."
+info "Configuring VirES client ..."
 
 [ -z "$VIRES_SERVER_HOME" ] && error "Missing the required VIRES_SERVER_HOME variable!"
 [ -z "$VIRES_CLIENT_HOME" ] && error "Missing the required VIRES_CLIENT_HOME variable!"
@@ -43,9 +43,9 @@ do
     { ex "$CONF" || /bin/true ; } <<END
 /EOXC00_BEGIN/,/EOXC00_END/de
 /^[ 	]*<\/VirtualHost>/i
-    # EOXC00_BEGIN - ViRES Client - Do not edit or remove this line!
+    # EOXC00_BEGIN - VirES Client - Do not edit or remove this line!
 
-    # ViRES Client
+    # VirES Client
     Alias $VIRES_CLIENT_URL "$VIRES_CLIENT_HOME"
     <Directory "$VIRES_CLIENT_HOME">
         Options -MultiViews +FollowSymLinks
@@ -54,7 +54,7 @@ do
         Allow from all
     </Directory>
 
-    # EOXC00_END - ViRES Client - Do not edit or remove this line!
+    # EOXC00_END - VirES Client - Do not edit or remove this line!
 .
 wq
 END

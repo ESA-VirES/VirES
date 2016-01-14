@@ -1,8 +1,8 @@
 #!/bin/sh
 #-------------------------------------------------------------------------------
 #
-# Project: ViRES
-# Purpose: ViRES installation script
+# Project: VirES
+# Purpose: VirES installation script
 # Authors: Martin Paces <martin.paces@eox.at>
 #
 #-------------------------------------------------------------------------------
@@ -35,7 +35,7 @@ INSTALL_LOG="./install.log"
 
 {
     info "#"
-    info "#  --= ViRES installer =-- "
+    info "#  --= VirES installer =-- "
     info "#"
     info "#   version: $VIRES_INSTALLER_VERSION"
     info "# "
@@ -67,7 +67,7 @@ INSTALL_LOG="./install.log"
     id -u "$VIRES_USER" >/dev/null 2>&1 || \
     {
         info "Creatting system user: $VIRES_USER"
-        useradd -r -M -g "$VIRES_GROUP" -d "$VIRES_ROOT" -s /sbin/nologin -c "ViRES system user" "$VIRES_USER"
+        useradd -r -M -g "$VIRES_GROUP" -d "$VIRES_ROOT" -s /sbin/nologin -c "VirES system user" "$VIRES_USER"
         usermod -L "$VIRES_USER"
     }
 

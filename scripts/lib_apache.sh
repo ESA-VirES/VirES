@@ -1,8 +1,8 @@
 #!/bin/sh
 #-------------------------------------------------------------------------------
 #
-# Project: ViRES
-# Purpose: ViRES installation script - common Apache server configuration
+# Project: VirES
+# Purpose: VirES installation script - common Apache server configuration
 # Authors: Martin Paces <martin.paces@eox.at>
 #
 #-------------------------------------------------------------------------------

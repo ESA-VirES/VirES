@@ -1,8 +1,8 @@
 #!/bin/sh
 #-------------------------------------------------------------------------------
 #
-# Project: ViRES
-# Purpose: ViRES installation script - logging utilities
+# Project: VirES
+# Purpose: VirES installation script - logging utilities
 # Authors: Martin Paces <martin.paces@eox.at>
 #
 #-------------------------------------------------------------------------------

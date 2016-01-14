@@ -1,8 +1,8 @@
 #!/bin/sh
 #-------------------------------------------------------------------------------
 #
-# Project: ViRES
-# Purpose: ViRES installation script - common shared defaults
+# Project: VirES
+# Purpose: VirES installation script - common shared defaults
 # Authors: Martin Paces <martin.paces@eox.at>
 #
 #-------------------------------------------------------------------------------
@@ -38,7 +38,7 @@ export ENABLE_FIREWALL=${ENABLE_FIREWALL:-YES}
 # NOTE: Critical parameter! Be sure you set it to the proper value.
 export VIRES_HOSTNAME=${VIRES_HOSTNAME:-$HOSTNAME}
 
-# root directory of the ViRES - by default set to '/srv/vires'
+# root directory of the VirES - by default set to '/srv/vires'
 export VIRES_ROOT=${VIRES_ROOT:-/srv/vires}
 
 # directory where the log files shall be placed - by default set to '/var/log/vires'
@@ -57,12 +57,12 @@ export VIRES_DATADIR=${VIRES_DATADIR:-/srv/eodata}
 export VIRES_GROUP=${VIRES_GROUP:-vires}
 export VIRES_USER=${VIRES_USER:-vires}
 
-# location of the ViRES Server home directory
+# location of the VirES Server home directory
 export VIRES_SERVER_HOME=${VIRES_SERVER_HOME:-$VIRES_ROOT/eoxs}
-# WSGI daemon - number of processes to be used by the ViRES EOxServer instances
+# WSGI daemon - number of processes to be used by the VirES EOxServer instances
 export EOXS_WSGI_NPROC=${EOXS_WSGI_NPROC:-4}
-# WSGI daemon - process group to be used by the ViRES EOxServer instances
+# WSGI daemon - process group to be used by the VirES EOxServer instances
 export EOXS_WSGI_PROCESS_GROUP=vires_eoxs_ows
 
-# location of the ViRES Client home directory
+# location of the VirES Client home directory
 export VIRES_CLIENT_HOME=${VIRES_CLIENT_HOME:-$VIRES_ROOT/eoxc}

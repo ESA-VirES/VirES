@@ -1,14 +1,14 @@
 #!/bin/sh
 #-------------------------------------------------------------------------------
 #
-# Purpose: ViRES client installation
+# Purpose: VirES client installation
 # Author(s): Martin Paces <martin.paces@eox.at>
 #-------------------------------------------------------------------------------
 # Copyright (C) 2015 EOX IT Services GmbH
 
 . `dirname $0`/../lib_logging.sh
 
-info "Installing ViRES client ..."
+info "Installing VirES client ..."
 
 [ -z "$CONTRIB_DIR" ] && error "Missing the required CONTRIB_DIR variable!"
 [ -z "$VIRES_CLIENT_HOME" ] && error "Missing the required VIRES_CLIENT_HOME variable!"
@@ -18,7 +18,7 @@ info "Installing ViRES client ..."
 TMPDIR='/tmp/eoxc'
 
 # locate lates TGZ package
-FNAME="`ls "$CONTRIB_DIR"/{WebClient-Framework,ViRES-Client}*.tar.gz 2>/dev/null | sort | tail -n 1`"
+FNAME="`ls "$CONTRIB_DIR"/{WebClient-Framework,VirES-Client}*.tar.gz 2>/dev/null | sort | tail -n 1`"
 
 [ -n "$FNAME" -a -f "$FNAME" ] || { error "Failed to locate the installation package." ; exit 1 ; }
 
@@ -36,10 +36,10 @@ info "Installation package located in: $FNAME"
 tar -xzf "$FNAME" --directory="$TMPDIR"
 
 # move to destination
-ROOT="`find "$TMPDIR" -mindepth 1 -maxdepth 1 -type d \( -name 'ViRES-Client*' -o -name 'WebClient-Framework*' \) | head -n 1`"
+ROOT="`find "$TMPDIR" -mindepth 1 -maxdepth 1 -type d \( -name 'VirES-Client*' -o -name 'WebClient-Framework*' \) | head -n 1`"
 mv -f "$ROOT" "$VIRES_CLIENT_HOME"
 
 # fix permisions
 chown -R "$VIRES_USER:$VIRES_GROUP" "$VIRES_CLIENT_HOME"
 
-info "ViRES Client installed to: $VIRES_CLIENT_HOME"
+info "VirES Client installed to: $VIRES_CLIENT_HOME"
