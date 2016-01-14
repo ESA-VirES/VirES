@@ -15,7 +15,7 @@ EOXS_DEV_PATH="${EOXS_DEV_PATH:-/usr/local/eoxserver}"
 
 
 # STEP 1: INSTALL DEPENDENCIES
-yum --assumeyes install python-dateutil python-lxml mapserver mapserver-python proj-epsg
+yum --assumeyes install python-dateutil python-lxml proj-epsg
 
 # STEP 2: INSTALL EOXSERVER
 # Install EOxServer in the development mode.
