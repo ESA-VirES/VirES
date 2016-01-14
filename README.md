@@ -1,3 +1,3 @@
-# ViRES
-ViRES - installer and utilities
+# VirES
+VirES - installer and utilities
 
