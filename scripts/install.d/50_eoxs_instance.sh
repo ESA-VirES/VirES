@@ -1,0 +1,1 @@
+../scripts.d/50_eoxs_instance.sh
