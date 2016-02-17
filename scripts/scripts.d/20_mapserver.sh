@@ -25,7 +25,8 @@ then
     info "Following local RPM packages located:"
     info "$MAPSERVER_RPM"
     info "$MAPSERVER_PY_RPM"
-    echo yum --assumeyes install "$MAPSERVER_RPM" "$MAPSERVER_PY_RPM"
+    yum --assumeyes install "$MAPSERVER_RPM" "$MAPSERVER_PY_RPM"
 else 
-    echo yum --assumeyes install mapserver mapserver-python
+    # defaulting to yum repository
+    yum --assumeyes install mapserver mapserver-python
 fi
