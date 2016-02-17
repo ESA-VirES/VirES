@@ -60,13 +60,13 @@ INSTALL_LOG="./install.log"
 
     id -g "$VIRES_GROUP" >/dev/null 2>&1 || \
     {
-        info "Creatting system group: $VIRES_GROUP"
+        info "Creating system group: $VIRES_GROUP"
         groupadd -r "$VIRES_GROUP"
     }
 
     id -u "$VIRES_USER" >/dev/null 2>&1 || \
     {
-        info "Creatting system user: $VIRES_USER"
+        info "Creating system user: $VIRES_USER"
         useradd -r -M -g "$VIRES_GROUP" -d "$VIRES_ROOT" -s /sbin/nologin -c "VirES system user" "$VIRES_USER"
         usermod -L "$VIRES_USER"
     }
@@ -77,7 +77,7 @@ INSTALL_LOG="./install.log"
     _mkdir "$VIRES_USER:$VIRES_GROUP" 0755 "$VIRES_ROOT" "subsytem's root directory"
     _mkdir "$VIRES_USER:$VIRES_GROUP" 0775 "$VIRES_LOGDIR" "subsytem's logging directory"
     _mkdir "$VIRES_USER:$VIRES_GROUP" 0775 "$VIRES_DATADIR" "subsytem's long-term data storage directory"
-    _mkdir "$VIRES_USER:$VIRES_GROUP" 0775 "$VIRES_TMPDIR" "subsytem's short-term data stoarage directory"
+    _mkdir "$VIRES_USER:$VIRES_GROUP" 0775 "$VIRES_TMPDIR" "subsytem's short-term data storage directory"
 
     #-------------------------------------------------------------------------------
     # execute specific installation scripts
@@ -92,6 +92,10 @@ INSTALL_LOG="./install.log"
             -d | --devel )
                 info "Development installation profile selected."
                 PROFILE="devel.d"
+                ;;
+            -p | --production )
+                info "Production installation profile selected."
+                PROFILE="production.d"
                 ;;
             *)
                 SCRIPTS="$SCRIPTS $1"
