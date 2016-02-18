@@ -63,3 +63,9 @@ export EOXS_WSGI_PROCESS_GROUP=vires_eoxs_ows
 
 # location of the VirES Client home directory
 export VIRES_CLIENT_HOME=${VIRES_CLIENT_HOME:-$VIRES_ROOT/eoxc}
+
+# some apache configurations
+export SSLCertificateFile=${:-/etc/pki/tls/certs/localhost.crt}
+export SSLCertificateKeyFile=${:-/etc/pki/tls/private/localhost.key}
+export SSLCACertificateFile=${:-/dev/null}
+export SSLCertificateChainFile=${:-/dev/null}
