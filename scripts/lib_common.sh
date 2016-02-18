@@ -65,7 +65,7 @@ export EOXS_WSGI_PROCESS_GROUP=vires_eoxs_ows
 export VIRES_CLIENT_HOME=${VIRES_CLIENT_HOME:-$VIRES_ROOT/eoxc}
 
 # some apache configurations
-export SSLCertificateFile=${:-/etc/pki/tls/certs/localhost.crt}
-export SSLCertificateKeyFile=${:-/etc/pki/tls/private/localhost.key}
-export SSLCACertificateFile=${:-/dev/null}
-export SSLCertificateChainFile=${:-/dev/null}
+export SSL_CERTIFICATE_FILE=${SSL_CERTIFICATE_FILE:-/etc/pki/tls/certs/localhost.crt}
+export SSL_CERTIFICATE_KEYFILE=${SSL_CERTIFICATE_KEYFILE:-/etc/pki/tls/private/localhost.key}
+export SSL_CACERTIFICATE_FILE=${SSL_CACERTIFICATE_FILE:-/dev/null}
+export SSL_CERTIFICATE_CHAINFILE=${SSL_CERTIFICATE_CHAINFILE:-/dev/null}
