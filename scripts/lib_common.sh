@@ -31,9 +31,6 @@
 VERSION_FILE="`dirname $0`/../version.txt"
 export VIRES_INSTALLER_VERSION="`cat "$VERSION_FILE"`"
 
-# flag indicating whether the installation script shall enable the firewall
-export ENABLE_FIREWALL=${ENABLE_FIREWALL:-YES}
-
 # public hostname (or IP number) under which the ODA-OS shall be accessable
 # NOTE: Critical parameter! Be sure you set it to the proper value.
 export VIRES_HOSTNAME=${VIRES_HOSTNAME:-$HOSTNAME}
