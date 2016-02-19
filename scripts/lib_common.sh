@@ -69,3 +69,11 @@ export SSL_CERTIFICATE_FILE=${SSL_CERTIFICATE_FILE:-/etc/pki/tls/certs/localhost
 export SSL_CERTIFICATE_KEYFILE=${SSL_CERTIFICATE_KEYFILE:-/etc/pki/tls/private/localhost.key}
 export SSL_CACERTIFICATE_FILE=${SSL_CACERTIFICATE_FILE:-/dev/null}
 export SSL_CERTIFICATE_CHAINFILE=${SSL_CERTIFICATE_CHAINFILE:-/dev/null}
+
+# some database configuration
+INSTANCE="`basename "$VIRES_SERVER_HOME"`"
+export DBNAME=${DBNAME:-eoxs_${INSTANCE}}
+export DBUSER=${DBUSER:-eoxs_admin_${INSTANCE}}
+export DBPASSWD=${DBPASSWD:-${INSTANCE}_admin_eoxs_`head -c 24 < /dev/urandom | base64 | tr '/' '_'`}
+export DBHOST=${DBHOST:-}
+export DBPORT=${DBPORT:-}
