@@ -71,7 +71,7 @@ python -c 'import eoxserver' || {
     exit 1
 }
 
-if [ -d "$INSTROOT/$INSTANCE" ]
+if [ ! -d "$INSTROOT/$INSTANCE" ]
 then
     mkdir -p "$INSTROOT/$INSTANCE"
     eoxserver-admin.py create_instance "$INSTANCE" "$INSTROOT/$INSTANCE"
