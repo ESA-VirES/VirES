@@ -14,7 +14,7 @@ info "Installing VirES-Server in the development mode."
 VIRES_DEV_PATH="${VIRES_DEV_PATH:-/usr/local/vires}"
 
 # STEP 1: INSTALL DEPENDENCIES
-yum --assumeyes install python-matplotlib
+yum --assumeyes install python-matplotlib python-setuptools
 
 # STEP 2: INSTALL VIRES
 # Install VirES-SERVER in the development mode.

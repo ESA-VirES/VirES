@@ -9,7 +9,7 @@
 
 . `dirname $0`/../lib_logging.sh
 
-info "Loading provided EOxServer fixtures ... "
+info "Loading available EOxServer fixtures ... "
 
 [ -z "$CONTRIB_DIR" ] && error "Missing the required CONTRIB_DIR variable!"
 [ -z "$VIRES_SERVER_HOME" ] && error "Missing the required VIRES_SERVER_HOME variable!"
@@ -22,7 +22,7 @@ FIXTURES_DIR_SRC="$CONTRIB_DIR/fixtures"
 FIXTURES_DIR_DST="${INSTROOT}/${INSTANCE}/${INSTANCE}/data/fixtures"
 MNGCMD="${INSTROOT}/${INSTANCE}/manage.py"
 
-{ ls "$FIXTURES_DIR_SRC/"*.json || true ; } | while read SRC 
+{ ls "$FIXTURES_DIR_SRC/"*.json 2>/dev/null || true ; } | while read SRC
 do
     FNAME="`basename "$SRC" .json`"
     info "Loading fixture '$FNAME' ..."
@@ -31,4 +31,3 @@ do
     chown -v "$VIRES_USER:$VIRES_GROUP" "$DST"
     sudo -u "$VIRES_USER" python "$MNGCMD" loaddata "$FNAME"
 done
-
