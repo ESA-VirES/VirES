@@ -11,5 +11,5 @@
 info "Installing SpacePy package and its dependencies ..."
 
 # install the package and its dependencies
-yum --assumeyes install pytho-spacepy
+yum --assumeyes install python-spacepy
 
