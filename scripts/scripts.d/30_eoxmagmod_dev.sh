@@ -14,7 +14,7 @@ info "Installing EOxMagMod in the development mode."
 EOXMM_DEV_PATH="${EOXMM_DEV_PATH:-/usr/local/eoxmagmod}"
 
 # STEP 1: INSTALL DEPENDENCIES
-yum --assumeyes install gcc-gfortran
+yum --assumeyes install gcc-gfortran python-setuptools
 
 # STEP 2: INSTALL EOXMM
 # Install EOxMagMod in the development mode.
