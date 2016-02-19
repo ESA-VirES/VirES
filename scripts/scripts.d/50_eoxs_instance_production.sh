@@ -11,6 +11,8 @@
 
 info "Configuring EOxServer instance ... "
 
+# NOTE: Don't use commands starting with 'sudo -u "$VIRES_USER"' as they
+#       don't play nice with fabric and virtualenv.
 # NOTE: Multiple EOxServer instances are not foreseen in VIRES.
 
 [ -z "$VIRES_HOSTNAME" ] && error "Missing the required VIRES_HOSTNAME variable!"
@@ -64,15 +66,15 @@ info "Creating EOxServer instance '${INSTANCE}' in '$INSTROOT/$INSTANCE' ..."
 #      package is not available? First check that the 'eoxserver' tree is
 #      readable by anyone. (E.g. in case of read protected home directory when
 #      the development setup is used.)
-sudo -u "$VIRES_USER" python -c 'import eoxserver' || {
+python -c 'import eoxserver' || {
     error "EOxServer does not seem to be installed!"
     exit 1
 }
 
 if [ -d "$INSTROOT/$INSTANCE" ]
 then
-    sudo -u "$VIRES_USER" mkdir -p "$INSTROOT/$INSTANCE"
-    sudo -u "$VIRES_USER" eoxserver-admin.py create_instance "$INSTANCE" "$INSTROOT/$INSTANCE"
+    mkdir -p "$INSTROOT/$INSTANCE"
+    eoxserver-admin.py create_instance "$INSTANCE" "$INSTROOT/$INSTANCE"
 fi
 
 #-------------------------------------------------------------------------------
@@ -83,7 +85,7 @@ fi
 #-------------------------------------------------------------------------------
 # STEP 3: SETUP DJANGO DB BACKEND
 
-sudo -u "$VIRES_USER" ex "$SETTINGS" <<END
+ex "$SETTINGS" <<END
 1,\$s/\('ENGINE'[	 ]*:[	 ]*\).*\(,\)/\1'$DBENGINE',/
 1,\$s/\('NAME'[	 ]*:[	 ]*\).*\(,\)/\1'$DBNAME',/
 1,\$s/\('USER'[	 ]*:[	 ]*\).*\(,\)/\1'$DBUSER',/
@@ -147,7 +149,7 @@ done
 
 # set the service url and log-file
 #/^[	 ]*logging_filename[	 ]*=/s;\(^[	 ]*logging_filename[	 ]*=\).*;\1${EOXSLOG};
-sudo -u "$VIRES_USER" ex "$EOXSCONF" <<END
+ex "$EOXSCONF" <<END
 /^[	 ]*http_service_url[	 ]*=/s;\(^[	 ]*http_service_url[	 ]*=\).*;\1${EOXSURL};
 g/^#.*supported_crs/,/^$/d
 /\[services\.ows\.wms\]/a
@@ -192,7 +194,7 @@ wq
 END
 
 #set the limits
-sudo -u "$VIRES_USER" ex "$EOXSCONF" <<END
+ex "$EOXSCONF" <<END
 g/^[ 	#]*maxsize[ 	]/d
 /\[services\.ows\.wcs\]/a
 # maximum allowed output coverage size
@@ -208,13 +210,13 @@ END
 # set the allowed hosts
 # NOTE: Set the hostname manually if needed.
 #TODO add vires.services and env.host to ALLOWED_HOSTS
-sudo -u "$VIRES_USER" ex "$SETTINGS" <<END
+ex "$SETTINGS" <<END
 1,\$s/\(^ALLOWED_HOSTS\s*=\s*\).*/\1['${HOSTNAME}','127.0.0.1','::1']/
 wq
 END
 
 # set-up logging
-sudo -u "$VIRES_USER" ex "$SETTINGS" <<END
+ex "$SETTINGS" <<END
 g/^DEBUG\s*=/s#\(^DEBUG\s*=\s*\).*#\1False#
 g/^LOGGING\s*=/,/^}/d
 a
@@ -291,14 +293,14 @@ $EOXSLOG {
 END
 
 # create fixtures directory
-sudo -u "$VIRES_USER" mkdir -p "$FIXTURES_DIR"
+mkdir -p "$FIXTURES_DIR"
 
 #-------------------------------------------------------------------------------
 # STEP 6: VIRES SPECIFIC SETTINGS
 
 info "VIRES specific configuration ..."
 
-sudo -u "$VIRES_USER" ex "$SETTINGS" <<END
+ex "$SETTINGS" <<END
 /^INSTALLED_APPS\s*=/
 /^)/
 a
@@ -320,7 +322,7 @@ COMPONENTS += (
 wq
 END
 
-#sudo -u "$VIRES_USER" ex "$URLS" <<END
+#ex "$URLS" <<END
 #$ a
 #
 # VIRES specific views
@@ -331,7 +333,7 @@ END
 #END
 
 EOXSCONF="${INSTROOT}/${INSTANCE}/${INSTANCE}/conf/eoxserver.conf"
-#sudo -u "$VIRES_USER" ex "$EOXSCONF" <<END
+#ex "$EOXSCONF" <<END
 #$ a
 #[vires]
 ## VIRES specific settings
@@ -348,12 +350,18 @@ EOXSCONF="${INSTROOT}/${INSTANCE}/${INSTANCE}/conf/eoxserver.conf"
 info "Initializing EOxServer instance '${INSTANCE}' ..."
 
 # collect static files
-sudo -u "$VIRES_USER" python "$MNGCMD" collectstatic -l --noinput
+python "$MNGCMD" collectstatic -l --noinput
 
 # setup new database
-sudo -u "$VIRES_USER" python "$MNGCMD" syncdb --noinput
+python "$MNGCMD" syncdb --noinput
 
 #-------------------------------------------------------------------------------
 # STEP 8: FINAL WEB SERVER RESTART
+
+info "Changing ownership of $INSTROOT/$INSTANCE to $VIRES_USER"
+chown -vR "$VIRES_USER:$VIRES_GROUP" "$INSTROOT/$INSTANCE"
+
+#-------------------------------------------------------------------------------
+# STEP 9: FINAL WEB SERVER RESTART
 service httpd restart
 
