@@ -32,6 +32,7 @@ INSTANCE="`basename "$VIRES_SERVER_HOME"`"
 INSTROOT="`dirname "$VIRES_SERVER_HOME"`"
 
 SETTINGS="${INSTROOT}/${INSTANCE}/${INSTANCE}/settings.py"
+WSGI_FILE="${INSTROOT}/${INSTANCE}/${INSTANCE}/wsgi.py"
 URLS="${INSTROOT}/${INSTANCE}/${INSTANCE}/urls.py"
 FIXTURES_DIR="${INSTROOT}/${INSTANCE}/${INSTANCE}/data/fixtures"
 INSTSTAT_URL="/${INSTANCE}_static" # DO NOT USE THE TRAILING SLASH!!!
@@ -143,6 +144,28 @@ do
 wq
 END
 done
+
+# enable virtualenv in wsgi.py if necessary
+if [ -z "$ENABLE_VIRTUALENV"] then
+    ex "$WSGI_FILE" <<END
+%/^# Start load virtualenv$/,/^# End load virtualenv%/d
+/^import sys/a
+# Start load virtualenv
+import site
+# Add the site-packages of the chosen virtualenv to work with
+site.addsitedir("${ENABLE_VIRTUALENV}/local/lib/python2.7/site-packages")
+# End load virtualenv
+.
+%/^# Start activate virtualenv$/,/^# End activate virtualenv$/d
+/^os.environ["DJANGO_SETTINGS_MODULE"]/a
+# Start activate virtualenv
+activate_env=os.path.expanduser("${ENABLE_VIRTUALENV}/bin/activate")
+execfile(activate_env, dict(__file__=activate_env))
+# End activate virtualenv
+.
+wq
+END
+fi
 
 #-------------------------------------------------------------------------------
 # STEP 5: EOXSERVER CONFIGURATION

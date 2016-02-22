@@ -77,3 +77,6 @@ export DBUSER=${DBUSER:-eoxs_admin_${INSTANCE}}
 export DBPASSWD=${DBPASSWD:-${INSTANCE}_admin_eoxs_`head -c 24 < /dev/urandom | base64 | tr '/' '_'`}
 export DBHOST=${DBHOST:-}
 export DBPORT=${DBPORT:-}
+
+# are we using virtualenv
+export ENABLE_VIRTUALENV=${ENABLE_VIRTUALENV:-}
