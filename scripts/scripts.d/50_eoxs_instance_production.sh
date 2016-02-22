@@ -146,7 +146,7 @@ END
 done
 
 # enable virtualenv in wsgi.py if necessary
-if [ -z "$ENABLE_VIRTUALENV" ]
+if [ -n "$ENABLE_VIRTUALENV" ]
 then
     info "Enabling virtualenv ..."
     ex -V "$WSGI_FILE" <<END
