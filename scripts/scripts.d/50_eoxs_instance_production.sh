@@ -90,8 +90,8 @@ ex "$SETTINGS" <<END
 1,\$s/\('NAME'[	 ]*:[	 ]*\).*\(,\)/\1'$DBNAME',/
 1,\$s/\('USER'[	 ]*:[	 ]*\).*\(,\)/\1'$DBUSER',/
 1,\$s/\('PASSWORD'[	 ]*:[	 ]*\).*\(,\)/\1'$DBPASSWD',/
-1,\$s/\('HOST'[	 ]*:[	 ]*\).*\(,\)/#\1'$DBHOST',/
-1,\$s/\('PORT'[	 ]*:[	 ]*\).*\(,\)/#\1'$DBPORT',/
+1,\$s/\('HOST'[	 ]*:[	 ]*\).*\(,\)/\1'$DBHOST',/
+1,\$s/\('PORT'[	 ]*:[	 ]*\).*\(,\)/\1'$DBPORT',/
 1,\$s:\(STATIC_URL[	 ]*=[	 ]*\).*:\1'$INSTSTAT_URL/':
 wq
 END
@@ -219,7 +219,7 @@ END
 ex "$SETTINGS" <<END
 g/^DEBUG\s*=/s#\(^DEBUG\s*=\s*\).*#\1False#
 g/^LOGGING\s*=/,/^}/d
-a
+-1a
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': True,
