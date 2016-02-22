@@ -146,7 +146,8 @@ END
 done
 
 # enable virtualenv in wsgi.py if necessary
-if [ -z "$ENABLE_VIRTUALENV"] then
+if [ -z "$ENABLE_VIRTUALENV"]
+then
     ex "$WSGI_FILE" <<END
 %/^# Start load virtualenv$/,/^# End load virtualenv%/d
 /^import sys/a
