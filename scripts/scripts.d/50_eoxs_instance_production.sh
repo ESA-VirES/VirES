@@ -243,7 +243,7 @@ END
 ex "$SETTINGS" <<END
 g/^DEBUG\s*=/s#\(^DEBUG\s*=\s*\).*#\1False#
 g/^LOGGING\s*=/,/^}/d
--1a
+i
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': True,
@@ -324,24 +324,31 @@ mkdir -p "$FIXTURES_DIR"
 
 info "VIRES specific configuration ..."
 
+{ ex "$SETTINGS" || /bin/true ; } <<END
+/^# VIRES specific apps - BEGIN/,/# VIRES specific apps - END/d
+/^# VIRES specific components - BEGIN/,/# VIRES specific components - END/d
+END
+
 ex "$SETTINGS" <<END
 /^INSTALLED_APPS\s*=/
 /^)/
 a
-# VIRES specific apps
+# VIRES specific apps - BEGIN
 INSTALLED_APPS += (
     'vires',
 )
+# VIRES specific apps - END
 .
 /^COMPONENTS\s*=/
 /^)/a
-# VIRES specific components
+# VIRES specific components - BEGIN
 COMPONENTS += (
     'vires.processes.*',
     'vires.ows.**',
     'vires.forward_models.*',
     'vires.mapserver.**'
 )
+# VIRES specific components - END
 .
 wq
 END
