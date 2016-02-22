@@ -71,8 +71,22 @@ then
     CONF=
 fi
 
+set -x
 if [ -z "$CONF" ]
 then
+    if [ -n "$SSL_CACERTIFICATE_FILE" ]
+    then
+        SSL_CACERTIFICATE_FILE_LINE="SSLCACertificateFile $SSL_CACERTIFICATE_FILE"
+    else
+        SSL_CACERTIFICATE_FILE_LINE="#SSLCACertificateFile <cacertificate_file>"
+    fi
+    if [ -n "$SSL_CERTIFICATE_CHAINFILE" ]
+    then
+        SSL_CERTIFICATE_CHAINFILE_LINE="SSLCertificateChainFile $SSL_CERTIFICATE_CHAINFILE"
+    else
+        SSL_CERTIFICATE_CHAINFILE_LINE="#SSLCertificateChainFile <certificate_chain_file>"
+    fi
+    
     CONF="$CONF_DEFAULT_SSL"
     echo "Default secured virtual host not located creating own one in: $CONF"
     cat >"$CONF" <<END
@@ -89,8 +103,8 @@ then
     SSLHonorCipherOrder on
     SSLCertificateFile $SSL_CERTIFICATE_FILE
     SSLCertificateKeyFile $SSL_CERTIFICATE_KEYFILE
-    SSLCACertificateFile $SSL_CACERTIFICATE_FILE
-    SSLCertificateChainFile $SSL_CERTIFICATE_CHAINFILE
+    $SSL_CACERTIFICATE_FILE_LINE
+    $SSL_CERTIFICATE_CHAINFILE_LINE
 
 </VirtualHost>
 END

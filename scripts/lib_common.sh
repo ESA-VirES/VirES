@@ -67,8 +67,8 @@ export VIRES_CLIENT_HOME=${VIRES_CLIENT_HOME:-$VIRES_ROOT/eoxc}
 # some apache configurations
 export SSL_CERTIFICATE_FILE=${SSL_CERTIFICATE_FILE:-/etc/pki/tls/certs/localhost.crt}
 export SSL_CERTIFICATE_KEYFILE=${SSL_CERTIFICATE_KEYFILE:-/etc/pki/tls/private/localhost.key}
-export SSL_CACERTIFICATE_FILE=${SSL_CACERTIFICATE_FILE:-/dev/null}
-export SSL_CERTIFICATE_CHAINFILE=${SSL_CERTIFICATE_CHAINFILE:-/dev/null}
+export SSL_CACERTIFICATE_FILE=${SSL_CACERTIFICATE_FILE:-}
+export SSL_CERTIFICATE_CHAINFILE=${SSL_CERTIFICATE_CHAINFILE:-}
 
 # some database configuration
 INSTANCE="`basename "$VIRES_SERVER_HOME"`"
