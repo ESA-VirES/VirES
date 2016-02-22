@@ -149,7 +149,7 @@ done
 if [ -n "$ENABLE_VIRTUALENV" ]
 then
     info "Enabling virtualenv ..."
-    ex -V "$WSGI_FILE" <<END
+    { ex "$WSGI_FILE" || /bin/true ; } <<END
 /^# Start load virtualenv$/,/^# End load virtualenv$/d
 /^import sys/a
 # Start load virtualenv
@@ -161,7 +161,7 @@ site.addsitedir("${ENABLE_VIRTUALENV}/local/lib/python2.7/site-packages")
 /^# Start activate virtualenv$/,/^# End activate virtualenv$/d
 /^os.environ/a
 # Start activate virtualenv
-activate_env=os.path.expanduser("${ENABLE_VIRTUALENV}/bin/activate")
+activate_env=os.path.expanduser("${ENABLE_VIRTUALENV}/bin/activate_this.py")
 execfile(activate_env, dict(__file__=activate_env))
 # End activate virtualenv
 .
