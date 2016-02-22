@@ -146,10 +146,11 @@ END
 done
 
 # enable virtualenv in wsgi.py if necessary
-if [ -z "$ENABLE_VIRTUALENV"]
+if [ -n "$ENABLE_VIRTUALENV" ]
 then
-    ex "$WSGI_FILE" <<END
-%/^# Start load virtualenv$/,/^# End load virtualenv%/d
+    info "Enabling virtualenv ..."
+    { ex "$WSGI_FILE" || /bin/true ; } <<END
+/^# Start load virtualenv$/,/^# End load virtualenv$/d
 /^import sys/a
 # Start load virtualenv
 import site
@@ -157,10 +158,10 @@ import site
 site.addsitedir("${ENABLE_VIRTUALENV}/local/lib/python2.7/site-packages")
 # End load virtualenv
 .
-%/^# Start activate virtualenv$/,/^# End activate virtualenv$/d
-/^os.environ["DJANGO_SETTINGS_MODULE"]/a
+/^# Start activate virtualenv$/,/^# End activate virtualenv$/d
+/^os.environ/a
 # Start activate virtualenv
-activate_env=os.path.expanduser("${ENABLE_VIRTUALENV}/bin/activate")
+activate_env=os.path.expanduser("${ENABLE_VIRTUALENV}/bin/activate_this.py")
 execfile(activate_env, dict(__file__=activate_env))
 # End activate virtualenv
 .
@@ -298,7 +299,6 @@ wq
 END
 
 # touch the logfile and set the right permissions
-[ ! -f "$EOXSLOG" ] || rm -fv "$EOXSLOG"
 [ -d "`dirname "$EOXSLOG"`" ] || mkdir -p "`dirname "$EOXSLOG"`"
 touch "$EOXSLOG"
 chown -v "$VIRES_USER:$VIRES_GROUP" "$EOXSLOG"
