@@ -107,7 +107,8 @@ local	$DBNAME	all	reject
 wq
 END
 
-service postgresql restart
+sudo systemctl restart postgresql.service
+sudo systemctl status postgresql.service
 
 #-------------------------------------------------------------------------------
 # STEP 3: SETUP DJANGO DB BACKEND
@@ -148,21 +149,17 @@ do
         Options +ExecCGI -MultiViews +FollowSymLinks
         AddHandler wsgi-script .py
         WSGIProcessGroup $EOXS_WSGI_PROCESS_GROUP
-            AllowOverride None
-            Order Allow,Deny
-            Allow from all
         Header set Access-Control-Allow-Origin "*"
         Header set Access-Control-Allow-Headers Content-Type
         Header set Access-Control-Allow-Methods "POST, GET"
+        Require all granted
     </Directory>
 
     # static content
     Alias $INSTSTAT_URL "$INSTSTAT_DIR"
     <Directory "$INSTSTAT_DIR">
         Options -MultiViews +FollowSymLinks
-            AllowOverride None
-            Order Allow,Deny
-            Allow from all
+        Require all granted
         Header set Access-Control-Allow-Origin "*"
     </Directory>
 
@@ -182,7 +179,7 @@ sudo -u "$VIRES_USER" ex "$EOXSCONF" <<END
 g/^#.*supported_crs/,/^$/d
 /\[services\.ows\.wms\]/a
 
-supported_crs=4326,3857,900913, # WGS84, WGS84 Pseudo-Mercator, and GoogleEarth spherical mercator
+supported_crs=4326,3857,#900913, # WGS84, WGS84 Pseudo-Mercator, and GoogleEarth spherical mercator
         3035, #ETRS89
         2154, # RGF93 / Lambert-93
         32601,32602,32603,32604,32605,32606,32607,32608,32609,32610, # WGS84 UTM  1N-10N
@@ -201,7 +198,7 @@ supported_crs=4326,3857,900913, # WGS84, WGS84 Pseudo-Mercator, and GoogleEarth 
 .
 /\[services\.ows\.wcs\]/a
 
-supported_crs=4326,3857,900913, # WGS84, WGS84 Pseudo-Mercator, and GoogleEarth spherical mercator
+supported_crs=4326,3857,#900913, # WGS84, WGS84 Pseudo-Mercator, and GoogleEarth spherical mercator
         3035, #ETRS89
         2154, # RGF93 / Lambert-93
         32601,32602,32603,32604,32605,32606,32607,32608,32609,32610, # WGS84 UTM  1N-10N
@@ -236,7 +233,7 @@ wq
 END
 
 # set the allowed hosts
-# NOTE: Set the hostname manually if needed.
+# NOTE: Set the exact hostname manually if needed.
 sudo -u "$VIRES_USER" ex "$SETTINGS" <<END
 1,\$s/\(^ALLOWED_HOSTS\s*=\s*\).*/\1['*','127.0.0.1','::1']/
 wq
@@ -384,5 +381,5 @@ sudo -u "$VIRES_USER" python "$MNGCMD" syncdb --noinput
 
 #-------------------------------------------------------------------------------
 # STEP 8: FINAL WEB SERVER RESTART
-service httpd restart
-
+sudo systemctl restart httpd.service
+sudo systemctl status httpd.service

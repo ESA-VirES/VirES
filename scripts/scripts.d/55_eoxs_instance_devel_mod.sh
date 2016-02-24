@@ -31,4 +31,5 @@ END
 
 #-------------------------------------------------------------------------------
 # FINAL WEB SERVER RESTART
-service httpd restart
+sudo systemctl restart httpd.service
+sudo systemctl status httpd.service

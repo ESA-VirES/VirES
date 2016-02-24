@@ -63,4 +63,5 @@ done
 #-------------------------------------------------------------------------------
 # Restart Apache web server.
 
-service httpd restart
+sudo systemctl restart httpd.service
+sudo systemctl status httpd.service
