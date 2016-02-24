@@ -38,4 +38,5 @@ wq
 END
 fi
 
-service httpd restart
+sudo systemctl restart httpd.service
+sudo systemctl status httpd.service

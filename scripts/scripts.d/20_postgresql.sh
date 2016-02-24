@@ -10,48 +10,51 @@
 
 info "Installing PosgreSQL RDBMS ... "
 
+PG_DATA_DIR_DEFAULT="/var/lib/pgsql/data"
+PG_DATA_DIR="${VIRES_PGDATA_DIR:-$PG_DATA_DIR_DEFAULT}"
 #======================================================================
 
-# STEP 0: Shut-down the porgress if already installed and running.
-
-if [ -f "/etc/init.d/postgresql" ]
-then 
-    service postgresql stop || :
-    info "Removing the existing PosgreSQL DB cluster ..."
-    # remove existing DB cluster - all data will be lost
-    [ ! -d "/var/lib/pgsql/data" ] || rm -fR "/var/lib/pgsql/data" 
-    [ ! -d "$VIRES_PGDATA_DIR" ] || rm -fR "$VIRES_PGDATA_DIR" 
-fi
-
-# STEP 1: INSTALL RPMS
-
+# STEP 1: INSTALL RPM PACKAGES
 yum --assumeyes install postgresql postgresql-server postgis python-psycopg2
 
-# STEP 2: CONFIGURE THE STORAGE DIRECTORY 
+# STEP 2: Shut-down the postgress if already installed and running.
+if [ -n "`systemctl | grep postgresql.service`" ]
+then
+    info "Stopping running PostgreSQL server ..."
+    sudo systemctl stop postgresql.service
+fi
 
-if [ -n "$VIRES_PGDATA_DIR" ]
-then 
-    info "Setting the PostgreSQL data location to: $VIRES_PGDATA_DIR"
-    echo "PGDATA=\"$VIRES_PGDATA_DIR\"" > /etc/sysconfig/pgsql/postgresql
-fi 
+# STEP 3: CONFIGURE THE STORAGE DIRECTORY
+info "Removing the existing PosgreSQL DB cluster ..."
+[ ! -d "$PG_DATA_DIR_DEFAULT" ] || rm -fR "$PG_DATA_DIR_DEFAULT"
+[ ! -d "$PG_DATA_DIR" ] || rm -fR "$PG_DATA_DIR"
 
-# STEP 3: INIT THE DB AND START THE SERVICE  
+info "Setting the PostgreSQL data location to: $PG_DATA_DIR"
+cat >/etc/systemd/system/postgresql.service <<END
+.include /lib/systemd/system/postgresql.service
+[Service]
+Environment=PGDATA=$PG_DATA_DIR
+END
+sudo systemctl daemon-reload
 
-service postgresql initdb
-chkconfig postgresql on
-service postgresql start
+# STEP 4: INIT THE DB AND START THE SERVICE
+info "New database initialisation ... "
 
-# STEP 4: SETUP POSTGIS DATABASE TEMPLATE 
+sudo postgresql-setup initdb
+sudo systemctl disable postgresql.service # DO NOT REMOVE!
+sudo systemctl enable postgresql.service
+sudo systemctl start postgresql.service
+sudo systemctl status postgresql.service
 
+# STEP 5: SETUP POSTGIS DATABASE TEMPLATE
 if [ -z "`sudo sudo -u postgres psql --list | grep template_postgis`" ] 
 then 
     sudo -u postgres createdb template_postgis
-    sudo -u postgres createlang plpgsql template_postgis
+    #sudo -u postgres createlang plpgsql template_postgis
 
     PG_SHARE=/usr/share/pgsql
     POSTGIS_SQL="postgis-64.sql"
     [ -f "$PG_SHARE/contrib/$POSTGIS_SQL" ] || POSTGIS_SQL="postgis.sql"
-
     sudo -u postgres psql -q -d template_postgis -f "$PG_SHARE/contrib/$POSTGIS_SQL"
     sudo -u postgres psql -q -d template_postgis -f "$PG_SHARE/contrib/spatial_ref_sys.sql"
     sudo -u postgres psql -q -d template_postgis -c "GRANT ALL ON geometry_columns TO PUBLIC;"

@@ -11,4 +11,3 @@
 info "Installing JQ JSON processor ..."
 
 yum --assumeyes install jq
-

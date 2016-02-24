@@ -15,35 +15,28 @@ info "Installing Apache HTTP server ... "
 CONF_DEFAULT="/etc/httpd/conf.d/vires.conf"
 CONF_DEFAULT_SSL="/etc/httpd/conf.d/vires_ssl.conf"
 
+# WSGI socket prefix
+SOCKET_PREFIX="run/wsgi"
 #======================================================================
 
-SOCKET_PREFIX="run/wsgi"
-
-# STEP 1:  INSTALL RPMS
-
-yum --assumeyes install httpd mod_wsgi mod_ssl
+# STEP 1:  INSTALL RPM PACKAGES
+yum --assumeyes install httpd mod_wsgi mod_ssl crypto-utils
 
 
-# STEP 2: FIREWALL SETUP
-
-# we enable access to port 80 and 443 from anywhere
-# and make the iptables chages permanent
-if [ -z "`iptables -L | grep '^ACCEPT *tcp *-- *anywhere *anywhere *state *NEW *tcp *dpt:http'`" ]
+# STEP 2: FIREWALL SETUP (OPTIONAL)
+# We enable access to port 80 and 443 from anywhere
+# and make the firewal chages permanent.
+if [ "$ENABLE_FIREWALL" = "YES" ]
 then
-    iptables -I INPUT -m state --state NEW -m tcp -p tcp --dport 80 -j ACCEPT
-    service iptables save
-fi
-if [ -z "`iptables -L | grep '^ACCEPT *tcp *-- *anywhere *anywhere *state *NEW *tcp *dpt:https'`" ]
-then
-    iptables -I INPUT -m state --state NEW -m tcp -p tcp --dport 443 -j ACCEPT
-    service iptables save
+    for SERVICE in http https
+    do
+        sudo firewall-cmd --add-service=$SERVICE
+        sudo firewall-cmd --permanent --add-service=$SERVICE
+    done
 fi
 
-
-# STEP 3: SETUP THE DEFAUT SITE
-
+# STEP 3: SETUP THE SITE
 #NOTE 1: Current setup does not support multiple virtual hosts.
-
 
 # setup default unsecured site
 CONF=`locate_apache_conf 80`
@@ -95,22 +88,9 @@ else
     echo "Default secured virtual host located in: $CONF"
 fi
 
-# check whether WSGI socket is set already - if not do so
-CONF="`locate_wsgi_socket_prefix_conf`"
-if [ -z "$CONF" ]
-then # set socket prefix if not already set
-    echo "WSGISocketPrefix is set to: $SOCKET_PREFIX"
-
-    echo "WSGISocketPrefix $SOCKET_PREFIX" >> /etc/httpd/conf.d/wsgi.conf
-else
-    echo "WSGISocketPrefix set already:"
-    grep -nH WSGISocketPrefix "$CONF"
-fi
-
 # STEP 4: START THE SERVICE
 
-# enable the HTTP service
-chkconfig httpd on
-
-#
-service httpd start
+# enable start the httpd service
+sudo systemctl enable httpd.service
+sudo systemctl start httpd.service
+sudo systemctl status httpd.service

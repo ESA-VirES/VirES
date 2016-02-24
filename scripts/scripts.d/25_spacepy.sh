@@ -12,4 +12,3 @@ info "Installing SpacePy package and its dependencies ..."
 
 # install the package and its dependencies
 yum --assumeyes install python-spacepy
-
