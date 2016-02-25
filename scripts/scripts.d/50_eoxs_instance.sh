@@ -149,6 +149,7 @@ do
         Options +ExecCGI -MultiViews +FollowSymLinks
         AddHandler wsgi-script .py
         WSGIProcessGroup $EOXS_WSGI_PROCESS_GROUP
+        WSGIApplicationGroup %{GLOBAL}
         Header set Access-Control-Allow-Origin "*"
         Header set Access-Control-Allow-Headers Content-Type
         Header set Access-Control-Allow-Methods "POST, GET"
