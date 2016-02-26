@@ -18,7 +18,7 @@ info "Loading available EOxServer fixtures ... "
 
 INSTANCE="`basename "$VIRES_SERVER_HOME"`"
 INSTROOT="`dirname "$VIRES_SERVER_HOME"`"
-FIXTURES_DIR_SRC="$CONTRIB_DIR/fixtures"
+FIXTURES_DIR_SRC="${FIXTURES_DIR_SRC:-$CONTRIB_DIR/fixtures}"
 FIXTURES_DIR_DST="${INSTROOT}/${INSTANCE}/${INSTANCE}/data/fixtures"
 MNGCMD="${INSTROOT}/${INSTANCE}/manage.py"
 
