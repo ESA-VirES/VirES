@@ -27,6 +27,8 @@ pushd .
 cd eoxmagmod/qdipolelib
 make clean build install
 popd
+# make sure we build the package from scratch
+[ -d './build' ] && rm -fvR './build'
 # install python package
 python ./setup.py install
 popd
