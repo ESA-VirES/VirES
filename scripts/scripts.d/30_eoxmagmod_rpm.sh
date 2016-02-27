@@ -1,7 +1,7 @@
 #!/bin/sh
 #-------------------------------------------------------------------------------
 #
-# Purpose: EOX magnetic model library - local RPM package
+# Purpose: EOX magnetic model library - optional local RPM package
 # Author(s): Martin Paces <martin.paces@eox.at>
 #-------------------------------------------------------------------------------
 # Copyright (C) 2015 EOX IT Services GmbH
@@ -15,8 +15,12 @@ info "Installing EOxMagMod from a local RPM package ..."
 # locate latest RPM package
 FNAME="`ls "$CONTRIB_DIR"/eoxmagmod-*.rpm | sort | tail -n 1`"
 
-[ -n "$FNAME" -a -f "$FNAME" ] || { error "Failed to locate the RPM package." ; exit 1 ; }
-
-# install the package and its dependencies
-yum --assumeyes install "$FNAME"
-
+if [ -n "$FNAME" -a -f "$FNAME" ]
+then 
+    info "Following local RPM package located:"
+    info "$FNAME"
+    yum --assumeyes install "$FNAME"
+else
+    # defaulting to yum repository
+    yum --assumeyes install eoxmagmod
+fi
