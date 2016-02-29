@@ -11,6 +11,10 @@
 
 info "Configuring EOxServer instance ... "
 
+# Configuration switches - all default to YES
+CONFIGURE_VIRES=${CONFIGURE_VIRES:-YES}
+CONFIGURE_ALLAUTH=${CONFIGURE_ALLAUTH:-YES}
+
 # NOTE: Multiple EOxServer instances are not foreseen in VIRES.
 
 [ -z "$VIRES_HOSTNAME" ] && error "Missing the required VIRES_HOSTNAME variable!"
@@ -321,11 +325,16 @@ END
 sudo -u "$VIRES_USER" mkdir -p "$FIXTURES_DIR"
 
 #-------------------------------------------------------------------------------
-# STEP 6: VIRES SPECIFIC SETTINGS
+# STEP 6: APPLICATION SPECIFIC SETTINGS
 
-info "VIRES specific configuration ..."
+if [ "$CONFIGURE_VIRES" != "YES" ]
+then
+    warn "VIRES specific configuration is disabled."
+else
+    info "VIRES specific configuration ..."
 
-sudo -u "$VIRES_USER" ex "$SETTINGS" <<END
+    # extending the EOxServer settings.py
+    sudo -u "$VIRES_USER" ex "$SETTINGS" <<END
 /^INSTALLED_APPS\s*=/
 /^)/
 a
@@ -347,28 +356,93 @@ COMPONENTS += (
 wq
 END
 
-#sudo -u "$VIRES_USER" ex "$URLS" <<END
-#$ a
-#
-# VIRES specific views
-#urlpatterns += patterns('',
-#)
-#.
-#wq
-#END
+fi # end of VIRES configuration
 
-EOXSCONF="${INSTROOT}/${INSTANCE}/${INSTANCE}/conf/eoxserver.conf"
-#sudo -u "$VIRES_USER" ex "$EOXSCONF" <<END
-#$ a
-#[vires]
-## VIRES specific settings
-#
-## default user identifier set in case of missing authentication subsystem.
-##default_user=<username>
-#
-#.
-#wq
-#END
+
+if [ "$CONFIGURE_ALLAUTH" != "YES" ]
+then
+    warn "ALLAUTH specific configuration is disabled."
+else
+    info "ALLAUTH specific configuration ..."
+
+    # extending the EOxServer settings.py
+    sudo -u "$VIRES_USER" ex "$SETTINGS" <<END
+/^INSTALLED_APPS\s*=/
+/^)/
+a
+# allauth specific apps
+INSTALLED_APPS += (
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    #'allauth.socialaccount.providers.github',
+    'allauth.socialaccount.providers.facebook',
+    #'allauth.socialaccount.providers.twitter',
+    #'allauth.socialaccount.providers.dropbox_oauth2'
+)
+.
+/^MIDDLEWARE_CLASSES\s*=/
+/^)/a
+
+# allauth specific middleware classes
+MIDDLEWARE_CLASSES += (
+    'django.middleware.csrf.CsrfViewMiddleware',
+    # SessionAuthenticationMiddleware is only available in django 1.7
+    # 'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware'
+)
+
+AUTHENTICATION_BACKENDS = (
+    # Needed to login by username in Django admin, regardless of allauth
+    'django.contrib.auth.backends.ModelBackend',
+    # allauth specific authentication methods, such as login by e-mail
+    'allauth.account.auth_backends.AuthenticationBackend',
+)
+
+# Django allauth
+SITE_ID = 1 # ID from django.contrib.sites
+LOGIN_URL = "accounts/login/"
+LOGIN_REDIRECT_URL = "/eoxc/"
+ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
+ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 3
+ACCOUNT_UNIQUE_EMAIL = True
+#ACCOUNT_EMAIL_SUBJECT_PREFIX = [vires.services]
+ACCOUNT_CONFIRM_EMAIL_ON_GET = True
+ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
+ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'http'
+ACCOUNT_PASSWORD_MIN_LENGTH = 8
+ACCOUNT_LOGIN_ON_PASSWORD_RESET = True
+ACCOUNT_USERNAME_REQUIRED = True
+SOCIALACCOUNT_AUTO_SIGNUP = True
+SOCIALACCOUNT_EMAIL_REQUIRED = True
+SOCIALACCOUNT_EMAIL_VERIFICATION = 'mandatory'
+SOCIALACCOUNT_QUERY_EMAIL = True
+
+TEMPLATE_CONTEXT_PROCESSORS = (
+    # Required by allauth template tags
+    'django.core.context_processors.request',
+    'django.contrib.auth.context_processors.auth'
+)
+.
+wq
+END
+
+    # extending the EOxServer settings.py
+    sudo -u "$VIRES_USER" ex "$URLS" <<END
+$ a
+
+#VIRES specific views
+urlpatterns += patterns('',
+    # enable authentication urls
+    url(r'^accounts/', include('allauth.urls')),
+)
+.
+wq
+END
+
+fi # end of ALLAUTH configuration
 
 #-------------------------------------------------------------------------------
 # STEP 7: EOXSERVER INITIALISATION
