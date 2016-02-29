@@ -18,15 +18,16 @@ MAPSERVER_PY_RPM="`ls "$CONTRIB_DIR"/mapserver-python-[0-9]*.x86_64.rpm 2>/dev/n
 MAPSERVER_RPM_VERSION="`basename "$MAPSERVER_RPM" | sed -e 's/^mapserver-//'`"
 MAPSERVER_PY_RPM_VERSION="`basename "$MAPSERVER_PY_RPM" | sed -e 's/^mapserver-python-//'`"
 
-# if thereare the required RPMs and all have the same version
+# install from yum repository first
+#(yum update below doesn't throw an error on nothing to do)
+yum --assumeyes install mapserver mapserver-python
+
+# if there are the required RPMs and all have the same version
 # preferably install the local packages
 if [ -n "$MAPSERVER_RPM" -a -n "$MAPSERVER_PY_RPM" -a "$MAPSERVER_RPM_VERSION" = "$MAPSERVER_PY_RPM_VERSION" ]
 then
     info "Following local RPM packages located:"
     info "$MAPSERVER_RPM"
     info "$MAPSERVER_PY_RPM"
-    yum --assumeyes install "$MAPSERVER_RPM" "$MAPSERVER_PY_RPM"
-else 
-    # defaulting to yum repository
-    yum --assumeyes install mapserver mapserver-python
+    yum --assumeyes update "$MAPSERVER_RPM" "$MAPSERVER_PY_RPM"
 fi
