@@ -32,7 +32,7 @@ VERSION_FILE="`dirname $0`/../version.txt"
 export VIRES_INSTALLER_VERSION="`cat "$VERSION_FILE"`"
 
 # flag indicating whether the installation script shall enable the firewall
-export ENABLE_FIREWALL=${ENABLE_FIREWALL:-YES}
+export ENABLE_FIREWALL=${ENABLE_FIREWALL:-NO}
 
 # public hostname (or IP number) under which the ODA-OS shall be accessable
 # NOTE: Critical parameter! Be sure you set it to the proper value.
@@ -66,3 +66,20 @@ export EOXS_WSGI_PROCESS_GROUP=vires_eoxs_ows
 
 # location of the VirES Client home directory
 export VIRES_CLIENT_HOME=${VIRES_CLIENT_HOME:-$VIRES_ROOT/eoxc}
+
+# some apache configurations
+export SSL_CERTIFICATE_FILE=${SSL_CERTIFICATE_FILE:-/etc/pki/tls/certs/localhost.crt}
+export SSL_CERTIFICATE_KEYFILE=${SSL_CERTIFICATE_KEYFILE:-/etc/pki/tls/private/localhost.key}
+export SSL_CACERTIFICATE_FILE=${SSL_CACERTIFICATE_FILE:-}
+export SSL_CERTIFICATE_CHAINFILE=${SSL_CERTIFICATE_CHAINFILE:-}
+
+# some database configuration
+INSTANCE="`basename "$VIRES_SERVER_HOME"`"
+export DBNAME=${DBNAME:-eoxs_${INSTANCE}}
+export DBUSER=${DBUSER:-eoxs_admin_${INSTANCE}}
+export DBPASSWD=${DBPASSWD:-${INSTANCE}_admin_eoxs_`head -c 24 < /dev/urandom | base64 | tr '/' '_'`}
+export DBHOST=${DBHOST:-}
+export DBPORT=${DBPORT:-}
+
+# are we using virtualenv
+export ENABLE_VIRTUALENV=${ENABLE_VIRTUALENV:-}

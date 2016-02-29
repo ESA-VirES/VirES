@@ -1,0 +1,1 @@
+../scripts.d/10_rpm_repos.sh

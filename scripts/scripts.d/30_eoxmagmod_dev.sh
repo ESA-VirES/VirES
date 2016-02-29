@@ -20,7 +20,6 @@ yum --assumeyes install gcc-gfortran python-devel numpy wmm2010-lib wmm2010-deve
 # STEP 2: INSTALL EOXMM
 # Install EOxMagMod in the development mode.
 pushd .
-cd $EOXMM_DEV_PATH
 # make sure we build the package from scratch
 [ -d './build' ] && rm -fvR './build'
 # install python package
