@@ -10,8 +10,8 @@
 
 info "Installing Django ..."
 
-# RPM INSTALL 
-yum --assumeyes install Django14
+# STEP 1:  INSTALL PACKAGES
+yum --assumeyes install python-django
 
-# PIP INSTALLERS
+# STEP 2:  PIP INSTALLERS
 #pip install Django==1.4

@@ -49,9 +49,7 @@ do
     Alias $VIRES_CLIENT_URL "$VIRES_CLIENT_HOME"
     <Directory "$VIRES_CLIENT_HOME">
         Options -MultiViews +FollowSymLinks
-        AllowOverride None
-        Order Allow,Deny
-        Allow from all
+        Require all granted
     </Directory>
 
     # EOXC00_END - VirES Client - Do not edit or remove this line!
@@ -63,4 +61,5 @@ done
 #-------------------------------------------------------------------------------
 # Restart Apache web server.
 
-service httpd restart
+sudo systemctl restart httpd.service
+sudo systemctl status httpd.service

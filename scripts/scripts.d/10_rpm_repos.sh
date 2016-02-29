@@ -8,18 +8,18 @@
 
 . `dirname $0`/../lib_logging.sh  
 
-info "Installing common RPM repositories ..."
+info "Installing extra RPM repositories ..."
 
 # EPEL: http://fedoraproject.org/wiki/EPEL
-rpm -q --quiet epel-release || rpm -Uvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm
+yum --assumeyes install install epel-release
 
 # ELGIS: http://elgis.argeo.org/
-rpm -q --quiet elgis-release || rpm -Uvh http://elgis.argeo.org/repos/6/elgis-release-6-6_0.noarch.rpm
+#rpm -q --quiet elgis-release || rpm -Uvh http://elgis.argeo.org/repos/6/elgis-release-6-6_0.noarch.rpm
 
 # EOX - EOX RPM repository 
-rpm -q --quiet eox-release || rpm -Uvh http://yum.packages.eox.at/el/eox-release-6-2.noarch.rpm
+rpm -q --quiet eox-release || rpm -Uvh http://yum.packages.eox.at/el/eox-release-7-0.noarch.rpm
 
-#info "Enabling EOX testing repository for explicitly listed packages only..."
+#info "Enabling EOX testing repository for explicitly listed packages ..."
 #
 #ex /etc/yum.repos.d/eox-testing.repo <<END
 #1,\$s/^[ 	]*enabled[ 	]*=.*\$/enabled = 1/
