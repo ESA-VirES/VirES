@@ -13,6 +13,11 @@ info "Configuring EOxServer instance ... "
 
 # NOTE: Don't use commands starting with 'sudo -u "$VIRES_USER"' as they
 #       don't play nice with fabric and virtualenv.
+
+# Configuration switches - all default to YES
+CONFIGURE_VIRES=${CONFIGURE_VIRES:-YES}
+CONFIGURE_ALLAUTH=${CONFIGURE_ALLAUTH:-YES}
+
 # NOTE: Multiple EOxServer instances are not foreseen in VIRES.
 
 [ -z "$VIRES_HOSTNAME" ] && error "Missing the required VIRES_HOSTNAME variable!"
@@ -121,21 +126,18 @@ do
         Options +ExecCGI -MultiViews +FollowSymLinks
         AddHandler wsgi-script .py
         WSGIProcessGroup $EOXS_WSGI_PROCESS_GROUP
-            AllowOverride None
-            Order Allow,Deny
-            Allow from all
+        WSGIApplicationGroup %{GLOBAL}
         Header set Access-Control-Allow-Origin "*"
         Header set Access-Control-Allow-Headers Content-Type
         Header set Access-Control-Allow-Methods "POST, GET"
+        Require all granted
     </Directory>
 
     # static content
     Alias $INSTSTAT_URL "$INSTSTAT_DIR"
     <Directory "$INSTSTAT_DIR">
         Options -MultiViews +FollowSymLinks
-            AllowOverride None
-            Order Allow,Deny
-            Allow from all
+        Require all granted
         Header set Access-Control-Allow-Origin "*"
     </Directory>
 
@@ -172,14 +174,20 @@ fi
 #-------------------------------------------------------------------------------
 # STEP 5: EOXSERVER CONFIGURATION
 
-# set the service url and log-file
-#/^[	 ]*logging_filename[	 ]*=/s;\(^[	 ]*logging_filename[	 ]*=\).*;\1${EOXSLOG};
+# remove any previous configuration blocks
+{ ex "$EOXSCONF" || /bin/true ; } <<END
+/^# WMS_SUPPORTED_CRS - BEGIN/,/^# WMS_SUPPORTED_CRS - END/d
+/^# WCS_SUPPORTED_CRS - BEGIN/,/^# WCS_SUPPORTED_CRS - END/d
+wq
+END
+
+# set the new configuration
 ex "$EOXSCONF" <<END
 /^[	 ]*http_service_url[	 ]*=/s;\(^[	 ]*http_service_url[	 ]*=\).*;\1${EOXSURL};
 g/^#.*supported_crs/,/^$/d
 /\[services\.ows\.wms\]/a
-
-supported_crs=4326,3857,900913, # WGS84, WGS84 Pseudo-Mercator, and GoogleEarth spherical mercator
+# WMS_SUPPORTED_CRS - BEGIN - Do not edit or remove this line!
+supported_crs=4326,3857,#900913, # WGS84, WGS84 Pseudo-Mercator, and GoogleEarth spherical mercator
         3035, #ETRS89
         2154, # RGF93 / Lambert-93
         32601,32602,32603,32604,32605,32606,32607,32608,32609,32610, # WGS84 UTM  1N-10N
@@ -195,10 +203,11 @@ supported_crs=4326,3857,900913, # WGS84, WGS84 Pseudo-Mercator, and GoogleEarth 
         32741,32742,32743,32744,32745,32746,32747,32748,32749,32750, # WGS84 UTM 41S-50S
         32751,32752,32753,32754,32755,32756,32757,32758,32759,32760  # WGS84 UTM 51S-60S
         #32661,32761, # WGS84 UPS-N and UPS-S
+# WMS_SUPPORTED_CRS - END - Do not edit or remove this line!
 .
 /\[services\.ows\.wcs\]/a
-
-supported_crs=4326,3857,900913, # WGS84, WGS84 Pseudo-Mercator, and GoogleEarth spherical mercator
+# WCS_SUPPORTED_CRS - BEGIN - Do not edit or remove this line!
+supported_crs=4326,3857,#900913, # WGS84, WGS84 Pseudo-Mercator, and GoogleEarth spherical mercator
         3035, #ETRS89
         2154, # RGF93 / Lambert-93
         32601,32602,32603,32604,32605,32606,32607,32608,32609,32610, # WGS84 UTM  1N-10N
@@ -214,6 +223,7 @@ supported_crs=4326,3857,900913, # WGS84, WGS84 Pseudo-Mercator, and GoogleEarth 
         32741,32742,32743,32744,32745,32746,32747,32748,32749,32750, # WGS84 UTM 41S-50S
         32751,32752,32753,32754,32755,32756,32757,32758,32759,32760  # WGS84 UTM 51S-60S
         #32661,32761, # WGS84 UPS-N and UPS-S
+# WCS_SUPPORTED_CRS - END - Do not edit or remove this line!
 .
 wq
 END
@@ -320,61 +330,147 @@ END
 mkdir -p "$FIXTURES_DIR"
 
 #-------------------------------------------------------------------------------
-# STEP 6: VIRES SPECIFIC SETTINGS
+# STEP 6: APPLICATION SPECIFIC SETTINGS
 
-info "VIRES specific configuration ..."
+info "Application specific configuration ..."
 
+# remove any previous configuration blocks
 { ex "$SETTINGS" || /bin/true ; } <<END
-/^# VIRES specific apps - BEGIN/,/# VIRES specific apps - END/d
-/^# VIRES specific components - BEGIN/,/# VIRES specific components - END/d
+/^# VIRES APPS - BEGIN/,/^# VIRES APPS - END/d
+/^# VIRES COMPONENTS - BEGIN/,/^# VIRES COMPONENTS - END/d
+/^# ALLAUTH APPS - BEGIN/,/^# ALLAUTH APPS - END/d
+/^# ALLAUTH MIDDLEWARE_CLASSES - BEGIN/,/^# ALLAUTH MIDDLEWARE_CLASSES - END/d
+wq
 END
 
-ex "$SETTINGS" <<END
+{ ex "$URLS" || /bin/true ; } <<END
+/^# ALLAUTH URLS - BEGIN/,/^# ALLAUTH URLS - END/d
+wq
+END
+
+# configure the apps ...
+
+if [ "$CONFIGURE_VIRES" != "YES" ]
+then
+    warn "VIRES specific configuration is disabled."
+else
+    info "VIRES specific configuration ..."
+
+    # extending the EOxServer settings.py
+    ex "$SETTINGS" <<END
 /^INSTALLED_APPS\s*=/
 /^)/
 a
-# VIRES specific apps - BEGIN
+# VIRES APPS - BEGIN - Do not edit or remove this line!
 INSTALLED_APPS += (
     'vires',
 )
-# VIRES specific apps - END
+# VIRES APPS - END - Do not edit or remove this line!
 .
 /^COMPONENTS\s*=/
 /^)/a
-# VIRES specific components - BEGIN
+# VIRES COMPONENTS - BEGIN - Do not edit or remove this line!
 COMPONENTS += (
     'vires.processes.*',
     'vires.ows.**',
     'vires.forward_models.*',
     'vires.mapserver.**'
 )
-# VIRES specific components - END
+# VIRES COMPONENTS - END - Do not edit or remove this line!
 .
 wq
 END
 
-#ex "$URLS" <<END
-#$ a
-#
-# VIRES specific views
-#urlpatterns += patterns('',
-#)
-#.
-#wq
-#END
+fi # end of VIRES configuration
 
-EOXSCONF="${INSTROOT}/${INSTANCE}/${INSTANCE}/conf/eoxserver.conf"
-#ex "$EOXSCONF" <<END
-#$ a
-#[vires]
-## VIRES specific settings
-#
-## default user identifier set in case of missing authentication subsystem.
-##default_user=<username>
-#
-#.
-#wq
-#END
+
+if [ "$CONFIGURE_ALLAUTH" != "YES" ]
+then
+    warn "ALLAUTH specific configuration is disabled."
+else
+    info "ALLAUTH specific configuration ..."
+
+    # extending the EOxServer settings.py
+    ex "$SETTINGS" <<END
+/^INSTALLED_APPS\s*=/
+/^)/
+a
+# ALLAUTH APPS - BEGIN - Do not edit or remove this line!
+INSTALLED_APPS += (
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    #'allauth.socialaccount.providers.github',
+    'allauth.socialaccount.providers.facebook',
+    #'allauth.socialaccount.providers.twitter',
+    #'allauth.socialaccount.providers.dropbox_oauth2'
+)
+# ALLAUTH APPS - END - Do not edit or remove this line!
+.
+/^MIDDLEWARE_CLASSES\s*=/
+/^)/a
+# ALLAUTH MIDDLEWARE_CLASSES - BEGIN - Do not edit or remove this line!
+
+# allauth specific middleware classes
+MIDDLEWARE_CLASSES += (
+    'django.middleware.csrf.CsrfViewMiddleware',
+    # SessionAuthenticationMiddleware is only available in django 1.7
+    # 'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware'
+)
+
+AUTHENTICATION_BACKENDS = (
+    # Needed to login by username in Django admin, regardless of allauth
+    'django.contrib.auth.backends.ModelBackend',
+    # allauth specific authentication methods, such as login by e-mail
+    'allauth.account.auth_backends.AuthenticationBackend',
+)
+
+# Django allauth
+SITE_ID = 1 # ID from django.contrib.sites
+LOGIN_URL = "accounts/login/"
+LOGIN_REDIRECT_URL = "/eoxc/"
+ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
+ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 3
+ACCOUNT_UNIQUE_EMAIL = True
+#ACCOUNT_EMAIL_SUBJECT_PREFIX = [vires.services]
+ACCOUNT_CONFIRM_EMAIL_ON_GET = True
+ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
+ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'http'
+ACCOUNT_PASSWORD_MIN_LENGTH = 8
+ACCOUNT_LOGIN_ON_PASSWORD_RESET = True
+ACCOUNT_USERNAME_REQUIRED = True
+SOCIALACCOUNT_AUTO_SIGNUP = True
+SOCIALACCOUNT_EMAIL_REQUIRED = True
+SOCIALACCOUNT_EMAIL_VERIFICATION = 'mandatory'
+SOCIALACCOUNT_QUERY_EMAIL = True
+
+TEMPLATE_CONTEXT_PROCESSORS = (
+    # Required by allauth template tags
+    'django.core.context_processors.request',
+    'django.contrib.auth.context_processors.auth'
+)
+# ALLAUTH MIDDLEWARE_CLASSES - END - Do not edit or remove this line!
+.
+wq
+END
+
+    # extending the EOxServer settings.py
+    ex "$URLS" <<END
+$ a
+# ALLAUTH URLS - BEGIN - Do not edit or remove this line!
+urlpatterns += patterns('',
+    # enable authentication urls
+    url(r'^accounts/', include('allauth.urls')),
+)
+# ALLAUTH URLS - END - Do not edit or remove this line!
+.
+wq
+END
+
+fi # end of ALLAUTH configuration
 
 #-------------------------------------------------------------------------------
 # STEP 7: EOXSERVER INITIALISATION
@@ -387,12 +483,12 @@ python "$MNGCMD" collectstatic -l --noinput
 python "$MNGCMD" syncdb --noinput
 
 #-------------------------------------------------------------------------------
-# STEP 8: FINAL WEB SERVER RESTART
+# STEP 8: CHANGE OWNERSHIP OF THE CONFIGURATION FILES
 
 info "Changing ownership of $INSTROOT/$INSTANCE to $VIRES_USER"
 chown -vR "$VIRES_USER:$VIRES_GROUP" "$INSTROOT/$INSTANCE"
 
 #-------------------------------------------------------------------------------
 # STEP 9: FINAL WEB SERVER RESTART
-service httpd restart
-
+systemctl restart httpd.service
+systemctl status httpd.service

@@ -177,13 +177,19 @@ done
 #-------------------------------------------------------------------------------
 # STEP 5: EOXSERVER CONFIGURATION
 
-# set the service url and log-file
-#/^[	 ]*logging_filename[	 ]*=/s;\(^[	 ]*logging_filename[	 ]*=\).*;\1${EOXSLOG};
+# remove any previous configuration blocks
+{ sudo -u "$VIRES_USER" ex "$EOXSCONF" || /bin/true ; } <<END
+/^# WMS_SUPPORTED_CRS - BEGIN/,/^# WMS_SUPPORTED_CRS - END/d
+/^# WCS_SUPPORTED_CRS - BEGIN/,/^# WCS_SUPPORTED_CRS - END/d
+wq
+END
+
+# set the new configuration
 sudo -u "$VIRES_USER" ex "$EOXSCONF" <<END
 /^[	 ]*http_service_url[	 ]*=/s;\(^[	 ]*http_service_url[	 ]*=\).*;\1${EOXSURL};
 g/^#.*supported_crs/,/^$/d
 /\[services\.ows\.wms\]/a
-
+# WMS_SUPPORTED_CRS - BEGIN - Do not edit or remove this line!
 supported_crs=4326,3857,#900913, # WGS84, WGS84 Pseudo-Mercator, and GoogleEarth spherical mercator
         3035, #ETRS89
         2154, # RGF93 / Lambert-93
@@ -200,9 +206,10 @@ supported_crs=4326,3857,#900913, # WGS84, WGS84 Pseudo-Mercator, and GoogleEarth
         32741,32742,32743,32744,32745,32746,32747,32748,32749,32750, # WGS84 UTM 41S-50S
         32751,32752,32753,32754,32755,32756,32757,32758,32759,32760  # WGS84 UTM 51S-60S
         #32661,32761, # WGS84 UPS-N and UPS-S
+# WMS_SUPPORTED_CRS - END - Do not edit or remove this line!
 .
 /\[services\.ows\.wcs\]/a
-
+# WCS_SUPPORTED_CRS - BEGIN - Do not edit or remove this line!
 supported_crs=4326,3857,#900913, # WGS84, WGS84 Pseudo-Mercator, and GoogleEarth spherical mercator
         3035, #ETRS89
         2154, # RGF93 / Lambert-93
@@ -219,6 +226,7 @@ supported_crs=4326,3857,#900913, # WGS84, WGS84 Pseudo-Mercator, and GoogleEarth
         32741,32742,32743,32744,32745,32746,32747,32748,32749,32750, # WGS84 UTM 41S-50S
         32751,32752,32753,32754,32755,32756,32757,32758,32759,32760  # WGS84 UTM 51S-60S
         #32661,32761, # WGS84 UPS-N and UPS-S
+# WCS_SUPPORTED_CRS - END - Do not edit or remove this line!
 .
 wq
 END
@@ -248,7 +256,7 @@ END
 sudo -u "$VIRES_USER" ex "$SETTINGS" <<END
 g/^DEBUG\s*=/s#\(^DEBUG\s*=\s*\).*#\1False#
 g/^LOGGING\s*=/,/^}/d
-a
+i
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': True,
@@ -302,7 +310,7 @@ LOGGING = {
 wq
 END
 
-# touch the logfifile and set the right permissions
+# touch the logfile and set the right permissions
 [ ! -f "$EOXSLOG" ] || rm -fv "$EOXSLOG"
 [ -d "`dirname "$EOXSLOG"`" ] || mkdir -p "`dirname "$EOXSLOG"`"
 touch "$EOXSLOG"
@@ -327,6 +335,24 @@ sudo -u "$VIRES_USER" mkdir -p "$FIXTURES_DIR"
 #-------------------------------------------------------------------------------
 # STEP 6: APPLICATION SPECIFIC SETTINGS
 
+info "Application specific configuration ..."
+
+# remove any previous configuration blocks
+{ sudo -u "$VIRES_USER" ex "$SETTINGS" || /bin/true ; } <<END
+/^# VIRES APPS - BEGIN/,/^# VIRES APPS - END/d
+/^# VIRES COMPONENTS - BEGIN/,/^# VIRES COMPONENTS - END/d
+/^# ALLAUTH APPS - BEGIN/,/^# ALLAUTH APPS - END/d
+/^# ALLAUTH MIDDLEWARE_CLASSES - BEGIN/,/^# ALLAUTH MIDDLEWARE_CLASSES - END/d
+wq
+END
+
+{ sudo -u "$VIRES_USER" ex "$URLS" || /bin/true ; } <<END
+/^# ALLAUTH URLS - BEGIN/,/^# ALLAUTH URLS - END/d
+wq
+END
+
+# configure the apps ...
+
 if [ "$CONFIGURE_VIRES" != "YES" ]
 then
     warn "VIRES specific configuration is disabled."
@@ -338,20 +364,22 @@ else
 /^INSTALLED_APPS\s*=/
 /^)/
 a
-# VIRES specific apps
+# VIRES APPS - BEGIN - Do not edit or remove this line!
 INSTALLED_APPS += (
     'vires',
 )
+# VIRES APPS - END - Do not edit or remove this line!
 .
 /^COMPONENTS\s*=/
 /^)/a
-# VIRES specific components
+# VIRES COMPONENTS - BEGIN - Do not edit or remove this line!
 COMPONENTS += (
     'vires.processes.*',
     'vires.ows.**',
     'vires.forward_models.*',
     'vires.mapserver.**'
 )
+# VIRES COMPONENTS - END - Do not edit or remove this line!
 .
 wq
 END
@@ -370,7 +398,7 @@ else
 /^INSTALLED_APPS\s*=/
 /^)/
 a
-# allauth specific apps
+# ALLAUTH APPS - BEGIN - Do not edit or remove this line!
 INSTALLED_APPS += (
     'allauth',
     'allauth.account',
@@ -380,9 +408,11 @@ INSTALLED_APPS += (
     #'allauth.socialaccount.providers.twitter',
     #'allauth.socialaccount.providers.dropbox_oauth2'
 )
+# ALLAUTH APPS - END - Do not edit or remove this line!
 .
 /^MIDDLEWARE_CLASSES\s*=/
 /^)/a
+# ALLAUTH MIDDLEWARE_CLASSES - BEGIN - Do not edit or remove this line!
 
 # allauth specific middleware classes
 MIDDLEWARE_CLASSES += (
@@ -425,6 +455,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.request',
     'django.contrib.auth.context_processors.auth'
 )
+# ALLAUTH MIDDLEWARE_CLASSES - END - Do not edit or remove this line!
 .
 wq
 END
@@ -432,12 +463,12 @@ END
     # extending the EOxServer settings.py
     sudo -u "$VIRES_USER" ex "$URLS" <<END
 $ a
-
-#VIRES specific views
+# ALLAUTH URLS - BEGIN - Do not edit or remove this line!
 urlpatterns += patterns('',
     # enable authentication urls
     url(r'^accounts/', include('allauth.urls')),
 )
+# ALLAUTH URLS - END - Do not edit or remove this line!
 .
 wq
 END
