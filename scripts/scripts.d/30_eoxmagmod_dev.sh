@@ -15,7 +15,7 @@ info "Installing EOxMagMod from sources ..."
 EOXMM_DEV_PATH="${EOXMM_DEV_PATH:-/usr/local/eoxmagmod}"
 
 # STEP 1: INSTALL DEPENDENCIES
-yum --assumeyes install gcc-gfortran python-devel numpy wmm2010-lib wmm2010-devel qdipole
+yum --assumeyes install gcc-gfortran python-devel numpy wmm2010-lib wmm2010-devel qdipole qdipole-devel
 
 # STEP 2: INSTALL EOXMM
 # Install EOxMagMod in the development mode.
