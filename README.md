@@ -31,8 +31,7 @@ packages form the predefined location. As not all SW packages are available
 on-line some of the SW packages might need to be copied manually
 and put in the `contrib/` directory beforehand.
 
-(Currently, the built web client and the Mapserver 7 RPM package need to be
-copied manually.  More details TBD.)
+(Currently, the built web client needs to be copied manually. More details TBD.)
 
 
 #### Step 1 - Get the Installation Scripts
@@ -42,8 +41,8 @@ either as on of the [tagged
 releases](https://github.com/ESA-VirES/VirES/releases)
 or by cloning of the repository:
 
-```
-$ git clone https://github.com/ESA-VirES/VirES.git
+```bash
+git clone https://github.com/ESA-VirES/VirES.git
 ```
 
 #### Step 2 - Prepare the installed SW packages
@@ -55,22 +54,22 @@ to the `VirES/contrib/` directory.
 
 Execute the installation script with the root's permission:
 
-```
-$ sudo VirES/scripts/install.sh
+```bash
+sudo VirES/scripts/install.sh
 ```
 
 The output os the `install.sh` command is automatically saved to a log file
 which can be inspected in case of failure.
 
-```
-$ less -rS  install.log
+```bash
+less -rS  install.log
 ```
 
 The `install.sh` command executes the individual installation scrips
 located in the `scripts/install.d/` directory:
 
-```
-$ ls VirES/scripts/install.d/
+```bash
+ls VirES/scripts/install.d/
 00_selinux.sh    20_apache.sh         30_eoxs_rpm.sh
 05_limits.sh     20_django.sh         30_vires_rpm.sh
 10_rpm_repos.sh  20_gdal.sh           31_eoxs_wsgi.sh
@@ -85,8 +84,8 @@ numerical prefix. However, the `install.sh` command allows execution of
 the explicitly selected scripts as, e.g., in following command
 (re-)installing and (re-)configuring the EOxServer instance:
 
-```
-$ sudo VirES/scripts/install.sh
+```bash
+sudo VirES/scripts/install.sh
 VirES/scripts/install.d/{50_eoxs_instance.sh,70_eoxs_load_fixtures.sh}
 ```
 
@@ -101,23 +100,32 @@ instance of the VirES server.
 
 #### Step 1 - Clone the Required Repositories
 
+```bash
+git clone git@github.com:ESA-VirES/VirES.git
+git clone git@github.com:ESA-VirES/VirES-Server.git
+git clone git@github.com:EOxServer/eoxserver.git
+git clone git@github.com:ESA-VirES/MagneticModel.git
 ```
-$ git clone git@github.com:ESA-VirES/VirES.git
-$ git clone git@github.com:ESA-VirES/VirES-Server.git
-$ git clone git@github.com:EOxServer/eoxserver.git
-$ git clone git@github.com:ESA-VirES/MagneticModel.git
+
+Currently, the built web client needs to be copied manually to the `contrib`
+directory:
+
+```bash
+cp WebClient-Framework.tar.gz VirES/contrib/
 ```
 
 #### Step 2 - Start the Vagrant Machine
 
-```
-$ cd VirES/vagrant
-$ vagrant up
-$ vagrant ssh
+```bash
+cd VirES/vagrant
+vagrant up
+vagrant ssh
 ```
 
 #### Quick Start
+
 To access the server use following URLs:
+
 ```
 http://localhost:8300
 http://localhost:8300/eoxs
