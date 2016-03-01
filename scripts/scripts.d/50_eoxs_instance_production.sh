@@ -480,7 +480,9 @@ info "Initializing EOxServer instance '${INSTANCE}' ..."
 python "$MNGCMD" collectstatic -l --noinput
 
 # setup new database
-python "$MNGCMD" syncdb --noinput
+#TODO: proper migration mamangement
+python "$MNGCMD" makemigrations
+python "$MNGCMD" migrate
 
 #-------------------------------------------------------------------------------
 # STEP 8: CHANGE OWNERSHIP OF THE CONFIGURATION FILES

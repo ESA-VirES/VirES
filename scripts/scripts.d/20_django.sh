@@ -11,7 +11,9 @@
 info "Installing Django ..."
 
 # STEP 1:  INSTALL PACKAGES
-yum --assumeyes install python-django
+#yum --assumeyes install python-django
 
 # STEP 2:  PIP INSTALLERS
-#pip install Django==1.4
+# NOTE: Django 1.8 < 1.8.2 has a bug preventing PostgreSQL DB connections!
+#       Namely, do not install 'Django==1.8'.
+pip install 'Django>=1.8.2,<1.9'

@@ -483,7 +483,7 @@ info "Initializing EOxServer instance '${INSTANCE}' ..."
 sudo -u "$VIRES_USER" python "$MNGCMD" collectstatic -l --noinput
 
 # setup new database
-sudo -u "$VIRES_USER" python "$MNGCMD" syncdb --noinput
+sudo -u "$VIRES_USER" python "$MNGCMD" migrate
 
 #-------------------------------------------------------------------------------
 # STEP 8: FINAL WEB SERVER RESTART
