@@ -111,8 +111,8 @@ local	$DBNAME	all	reject
 wq
 END
 
-sudo systemctl restart postgresql.service
-sudo systemctl status postgresql.service
+systemctl restart postgresql.service
+systemctl status postgresql.service
 
 #-------------------------------------------------------------------------------
 # STEP 3: SETUP DJANGO DB BACKEND
@@ -487,5 +487,5 @@ sudo -u "$VIRES_USER" python "$MNGCMD" migrate
 
 #-------------------------------------------------------------------------------
 # STEP 8: FINAL WEB SERVER RESTART
-sudo systemctl restart httpd.service
-sudo systemctl status httpd.service
+systemctl restart httpd.service
+systemctl status httpd.service

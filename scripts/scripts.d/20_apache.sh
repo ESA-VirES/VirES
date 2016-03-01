@@ -27,8 +27,8 @@ if [ "$ENABLE_FIREWALL" = "YES" ]
 then
     for SERVICE in http https
     do
-        sudo firewall-cmd --add-service=$SERVICE
-        sudo firewall-cmd --permanent --add-service=$SERVICE
+        firewall-cmd --add-service=$SERVICE
+        firewall-cmd --permanent --add-service=$SERVICE
     done
 fi
 
@@ -104,6 +104,6 @@ fi
 # STEP 4: START THE SERVICE
 
 # enable start the httpd service
-sudo systemctl enable httpd.service
-sudo systemctl start httpd.service
-sudo systemctl status httpd.service
+systemctl enable httpd.service
+systemctl start httpd.service
+systemctl status httpd.service

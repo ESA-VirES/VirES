@@ -16,6 +16,6 @@ info "Starting the firewall ... "
 }
 
 # Start the firewall daemon using the default firewall zone enabled services.
-sudo systemctl enable firewalld
+systemctl enable firewalld
 systemctl start firewalld.service
 systemctl status firewalld.service
