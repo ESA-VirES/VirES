@@ -107,6 +107,13 @@ git clone git@github.com:EOxServer/eoxserver.git
 git clone git@github.com:ESA-VirES/MagneticModel.git
 ```
 
+Switch branch of eoxserver
+```bash
+cd eoxserver
+git checkout 0.4
+git pull
+```
+
 Currently, the built web client needs to be copied manually to the `contrib`
 directory:
 
