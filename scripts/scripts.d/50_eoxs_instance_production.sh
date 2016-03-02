@@ -31,6 +31,8 @@ CONFIGURE_ALLAUTH=${CONFIGURE_ALLAUTH:-YES}
 [ -z "$DBPASSWD" ] && error "Missing the required DBPASSWD variable!"
 [ -z "$DBHOST" ] && error "Missing the required DBHOST variable!"
 [ -z "$DBPORT" ] && error "Missing the required DBPORT variable!"
+[ -z "$SMTP_HOSTNAME" ] && error "Missing the required SMTP_HOSTNAME variable!"
+[ -z "$SMTP_DEFAULT_SENDER" ] && error "Missing the required SMTP_DEFAULT_SENDER variable!"
 
 HOSTNAME="$VIRES_HOSTNAME"
 INSTANCE="`basename "$VIRES_SERVER_HOME"`"
@@ -51,6 +53,11 @@ DBUSER=$DBUSER
 DBPASSWD=$DBPASSWD
 DBHOST=$DBHOST
 DBPORT=$DBPORT
+
+SMTP_USE_TLS=${SMTP_USE_TLS:-YES}
+SMTP_HOSTNAME="$SMTP_HOSTNAME"
+SMTP_PORT=${SMTP_PORT:-25}
+SMTP_DEFAULT_SENDER="$SMTP_DEFAULT_SENDER"
 
 EOXSLOG="${VIRES_LOGDIR}/eoxserver/${INSTANCE}/eoxserver.log"
 EOXSCONF="${INSTROOT}/${INSTANCE}/${INSTANCE}/conf/eoxserver.conf"
@@ -340,6 +347,7 @@ info "Application specific configuration ..."
 /^# VIRES COMPONENTS - BEGIN/,/^# VIRES COMPONENTS - END/d
 /^# ALLAUTH APPS - BEGIN/,/^# ALLAUTH APPS - END/d
 /^# ALLAUTH MIDDLEWARE_CLASSES - BEGIN/,/^# ALLAUTH MIDDLEWARE_CLASSES - END/d
+/^# EMAIL_BACKEND - BEGIN/,/^# EMAIL_BACKEND - END/d
 wq
 END
 
@@ -438,7 +446,7 @@ ACCOUNT_UNIQUE_EMAIL = True
 #ACCOUNT_EMAIL_SUBJECT_PREFIX = [vires.services]
 ACCOUNT_CONFIRM_EMAIL_ON_GET = True
 ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
-ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'http'
+ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'https'
 ACCOUNT_PASSWORD_MIN_LENGTH = 8
 ACCOUNT_LOGIN_ON_PASSWORD_RESET = True
 ACCOUNT_USERNAME_REQUIRED = True
@@ -471,6 +479,27 @@ wq
 END
 
 fi # end of ALLAUTH configuration
+
+# e-mail backend settings
+if [ "$SMTP_USE_TLS" == YES -o "$SMTP_USE_TLS" == "True" ]
+then
+    _SMTP_USE_TLS="True"
+else
+    _SMTP_USE_TLS="False"
+fi
+
+ex "$SETTINGS" <<END
+\$a
+# EMAIL_BACKEND - BEGIN - Do not edit or remove this line!
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_USE_TLS = $_SMTP_USE_TLS
+EMAIL_HOST = '$SMTP_HOSTNAME'
+EMAIL_PORT = $SMTP_PORT
+DEFAULT_FROM_EMAIL = '$SMTP_DEFAULT_SENDER'
+# EMAIL_BACKEND - END - Do not edit or remove this line!
+.
+wq
+END
 
 #-------------------------------------------------------------------------------
 # STEP 7: EOXSERVER INITIALISATION
