@@ -36,7 +36,7 @@ info "Installation package located in: $FNAME"
 tar -xzf "$FNAME" --directory="$TMPDIR"
 
 # move to destination
-ROOT="`find "$TMPDIR" -mindepth 1 -maxdepth 1 -type d \( -name 'VirES-Client*' -o -name 'WebClient-Framework*' \) | head -n 1`"
+ROOT="`find "$TMPDIR" -mindepth 1 -maxdepth 1 -type d | head -n 1`"
 mv -f "$ROOT" "$VIRES_CLIENT_HOME"
 
 # fix permisions
