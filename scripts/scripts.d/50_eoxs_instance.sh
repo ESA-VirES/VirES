@@ -432,7 +432,7 @@ AUTHENTICATION_BACKENDS = (
 # Django allauth
 SITE_ID = 1 # ID from django.contrib.sites
 LOGIN_URL = "accounts/login/"
-LOGIN_REDIRECT_URL = "/eoxc/"
+LOGIN_REDIRECT_URL = "/eoxs/workspace/"
 ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
@@ -460,13 +460,20 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 wq
 END
 
+# Remove url pattern for standard ows replaced later on with wrapped ows
+sed -i '/url(r..ows.., include("eoxserver.services.urls")),/d' "$URLS"
+
     # extending the EOxServer settings.py
     sudo -u "$VIRES_USER" ex "$URLS" <<END
 $ a
 # ALLAUTH URLS - BEGIN - Do not edit or remove this line!
+from vires.views import workspace
+
 urlpatterns += patterns('',
+    url(r'^ows$', include("vires.urls")),
     # enable authentication urls
     url(r'^accounts/', include('allauth.urls')),
+    url(r'^workspace/', workspace),
 )
 # ALLAUTH URLS - END - Do not edit or remove this line!
 .
