@@ -437,7 +437,7 @@ AUTHENTICATION_BACKENDS = (
 # Django allauth
 SITE_ID = 1 # ID from django.contrib.sites
 LOGIN_URL = "accounts/login/"
-LOGIN_REDIRECT_URL = "/eoxc/"
+LOGIN_REDIRECT_URL = "/eoxs/workspace/"
 ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
