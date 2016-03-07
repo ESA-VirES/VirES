@@ -121,7 +121,13 @@ directory:
 cp WebClient-Framework.tar.gz VirES/contrib/
 ```
 
-#### Step 2 - Start the Vagrant Machine
+#### Step 2 - Customisation
+
+The custom configuration option to be applied to your Vagrant instance can
+be put in the optional `VirES/vagrant/user.conf` file. The environment
+variables defined in this file will override the installation defaults.
+
+#### Step 3 - Start the Vagrant Machine
 
 ```bash
 cd VirES/vagrant
