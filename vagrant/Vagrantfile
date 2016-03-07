@@ -35,8 +35,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.synced_folder "../../VirES-Server", "/usr/local/vires", owner: "root", group: "root"
   config.vm.synced_folder "../../MagneticModel/eoxmagmod", "/usr/local/eoxmagmod", owner: "root", group: "root"
   config.vm.synced_folder "../", "/home/vagrant/VirES", owner: "vagrant", group: "vagrant"
-  # optional data directory (Point to your own data directory. The final server data location is still TBD.)
-  #config.vm.synced_folder "<guest data path>", "/var/data", owner: "root", group: "root"
+  # data directory (Change to your custom data directory if necessary.)
+  config.vm.synced_folder "../data", "/mnt/data", owner: "root", group: "root"
 
   # Shell provisioning
   config.vm.provision :shell, :inline => "cd /home/vagrant/VirES/scripts/ ; /bin/sh ./install.sh -d", run: "always"
