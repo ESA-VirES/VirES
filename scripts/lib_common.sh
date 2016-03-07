@@ -39,7 +39,7 @@ export ENABLE_FIREWALL=${ENABLE_FIREWALL:-NO}
 export VIRES_HOSTNAME=${VIRES_HOSTNAME:-$HOSTNAME}
 
 # root directory of the VirES - by default set to '/srv/vires'
-export VIRES_ROOT=${VIRES_ROOT:-/srv/vires}
+export VIRES_ROOT=${VIRES_ROOT:-/var/www/vires}
 
 # directory where the log files shall be placed - by default set to '/var/log/vires'
 export VIRES_LOGDIR=${VIRES_LOGDIR:-/var/log/vires}
@@ -48,10 +48,10 @@ export VIRES_LOGDIR=${VIRES_LOGDIR:-/var/log/vires}
 export VIRES_TMPDIR=${VIRES_TMPDIR:-/tmp/vires}
 
 # directory where the PosgreSQL DB stores the files
-export VIRES_PGDATA_DIR=${VIRES_PGDATA_DIR:-/srv/pgdata}
+export VIRES_PGDATA_DIR=${VIRES_PGDATA_DIR:-/var/lib/pgsql/data}
 
 # directory of the long-term data storage - by default set to '/srv/eodata'
-export VIRES_DATADIR=${VIRES_DATADIR:-/srv/eodata}
+export VIRES_DATADIR=${VIRES_DATADIR:-/mnt/data}
 
 # names of the ODA-OS user and group - by default set to 'vires:vires'
 export VIRES_GROUP=${VIRES_GROUP:-vires}
