@@ -1,7 +1,7 @@
 #!/bin/sh
 #-------------------------------------------------------------------------------
 #
-# Purpose: Load fixtures to the EOxServer instance.
+# Purpose: Copy templates to the EOxServer instance.
 # Author(s): Martin Paces <martin.paces@eox.at>
 #            Daniel Santillan <daniel.santillan@eox.at>
 #-------------------------------------------------------------------------------
@@ -12,15 +12,15 @@
 
 info "Copy available templates ... "
 
+[ -z "$CONTRIB_DIR" ] && error "Missing the required CONTRIB_DIR variable!"
 [ -z "$VIRES_SERVER_HOME" ] && error "Missing the required VIRES_SERVER_HOME variable!"
 [ -z "$VIRES_USER" ] && error "Missing the required VIRES_USER variable!"
-
+[ -z "$VIRES_GROUP" ] && error "Missing the required VIRES_GROUP variable!"
 
 INSTANCE="`basename "$VIRES_SERVER_HOME"`"
 INSTROOT="`dirname "$VIRES_SERVER_HOME"`"
-VAGRANT_SRC="/usr/local/vires-dempo_ops/templates"
-TEMPLATES_DIR_SRC="${TEMPLATES_DIR_SRC:-$VAGRANT_SRC}"
+TEMPLATES_DIR_SRC="${TEMPLATES_DIR_SRC:-$CONTRIB_DIR/templates}"
 TEMPLATES_DIR_DST="${INSTROOT}/${INSTANCE}/${INSTANCE}/templates"
 
-
-sudo -u "$VIRES_USER" cp -r "$TEMPLATES_DIR_SRC/." "$TEMPLATES_DIR_DST"
+cp -r "$TEMPLATES_DIR_SRC/." "$TEMPLATES_DIR_DST"
+chown -vr "$VIRES_USER:$VIRES_GROUP" "$TEMPLATES_DIR_DST"

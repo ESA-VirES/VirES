@@ -83,3 +83,12 @@ export DBPORT=${DBPORT:-}
 
 # are we using virtualenv
 export ENABLE_VIRTUALENV=${ENABLE_VIRTUALENV:-}
+
+# Switch controlling wether the AllAuth gets configured or not.
+export CONFIGURE_ALLAUTH=${CONFIGURE_ALLAUTH:-YES}
+
+# Optional location of the loaded fixtures.
+export FIXTURES_DIR_SRC="${FIXTURES_DIR_SRC}"
+
+# Optional location of the loaded templates.
+export TEMPLATES_DIR_SRC="${TEMPLATES_DIR_SRC}"
