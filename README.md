@@ -127,6 +127,13 @@ The custom configuration option to be applied to your Vagrant instance can
 be put in the optional `VirES/vagrant/user.conf` file. The environment
 variables defined in this file will override the installation defaults.
 
+Example `user.conf`:
+```
+CONFIGURE_ALLAUTH=YES
+TEMPLATES_DIR_SRC="/usr/local/vires-dempo_ops/templates"
+FIXTURES_DIR_SRC="/usr/local/vires-dempo_ops/fixtures"
+```
+
 #### Step 3 - Start the Vagrant Machine
 
 ```bash
