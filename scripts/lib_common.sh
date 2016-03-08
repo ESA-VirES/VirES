@@ -85,7 +85,7 @@ export DBPORT=${DBPORT:-}
 export ENABLE_VIRTUALENV=${ENABLE_VIRTUALENV:-}
 
 # Switch controlling wether the AllAuth gets configured or not.
-export CONFIGURE_ALLAUTH=${CONFIGURE_ALLAUTH:-YES}
+export CONFIGURE_ALLAUTH=${CONFIGURE_ALLAUTH:-NO}
 
 # Optional location of the loaded fixtures.
 export FIXTURES_DIR_SRC="${FIXTURES_DIR_SRC}"
