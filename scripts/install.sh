@@ -30,7 +30,11 @@ set -o pipefail
 
 INSTALL_LOG="./install.log"
 
+#NOTE: The optional 'user.conf' is used the custom user's configuration options
+#      overiding the defaults in 'lib_common.sh'.
+
 #source common parts
+[ -f "`dirname $0`/user.conf" ] && . `dirname $0`/user.conf
 . `dirname $0`/lib_common.sh
 . `dirname $0`/lib_logging.sh
 

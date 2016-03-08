@@ -1,0 +1,1 @@
+../scripts.d/56_copy_templates.sh

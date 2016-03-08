@@ -411,7 +411,8 @@ INSTALLED_APPS += (
     #'allauth.socialaccount.providers.github',
     'allauth.socialaccount.providers.facebook',
     #'allauth.socialaccount.providers.twitter',
-    #'allauth.socialaccount.providers.dropbox_oauth2'
+    #'allauth.socialaccount.providers.dropbox_oauth2',
+    #'eoxs_allauth',
 )
 # ALLAUTH APPS - END - Do not edit or remove this line!
 .
@@ -437,7 +438,7 @@ AUTHENTICATION_BACKENDS = (
 # Django allauth
 SITE_ID = 1 # ID from django.contrib.sites
 LOGIN_URL = "accounts/login/"
-LOGIN_REDIRECT_URL = "/eoxc/"
+LOGIN_REDIRECT_URL = "/eoxs/workspace/"
 ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
@@ -460,8 +461,17 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.request',
     'django.contrib.auth.context_processors.auth'
 )
+
+EOXS_ALLAUTH_WORKSPACE_TEMPLATE="vires/workspace.html"
+
 # ALLAUTH MIDDLEWARE_CLASSES - END - Do not edit or remove this line!
 .
+wq
+END
+
+# Remove url pattern for standard ows replaced later on with wrapped ows
+{ sudo -u "$VIRES_USER" ex "$URLS" || /bin/true ; } <<END
+/^urlpatterns = patterns(/,/^)/s/^\\s/# /
 wq
 END
 
@@ -469,7 +479,11 @@ END
     ex "$URLS" <<END
 $ a
 # ALLAUTH URLS - BEGIN - Do not edit or remove this line!
+from eoxs_allauth.views import workspace as eoxs_allauth_workspace
+
 urlpatterns += patterns('',
+    url(r'^/?$', eoxs_allauth_workspace),
+    url(r'^ows$', include("eoxs_allauth.urls")),
     # enable authentication urls
     url(r'^accounts/', include('allauth.urls')),
 )

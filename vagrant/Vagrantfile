@@ -33,7 +33,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   config.vm.synced_folder "../../eoxserver", "/usr/local/eoxserver", owner: "root", group: "root"
   config.vm.synced_folder "../../VirES-Server", "/usr/local/vires", owner: "root", group: "root"
-  config.vm.synced_folder "../../MagneticModel/eoxmagmod", "/usr/local/eoxmagmod", owner: "root", group: "root"
+  #config.vm.synced_folder "../../MagneticModel/eoxmagmod", "/usr/local/eoxmagmod", owner: "root", group: "root"
+  #config.vm.synced_folder "../../vires-dempo_ops", "/usr/local/vires-dempo_ops", owner: "root", group: "root"
   config.vm.synced_folder "../", "/home/vagrant/VirES", owner: "vagrant", group: "vagrant"
   # data directory (Change to your custom data directory if necessary.)
   config.vm.synced_folder "../data", "/mnt/data", owner: "root", group: "root"

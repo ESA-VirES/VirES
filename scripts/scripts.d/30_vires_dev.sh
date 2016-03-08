@@ -8,7 +8,7 @@
 
 . `dirname $0`/../lib_logging.sh
 
-info "Installing VirES-Server in the development mode."
+info "Installing VirES-Server packages in the development mode."
 
 # Path to the VirES-Server development directory tree:
 VIRES_DEV_PATH="${VIRES_DEV_PATH:-/usr/local/vires}"
@@ -17,8 +17,14 @@ VIRES_DEV_PATH="${VIRES_DEV_PATH:-/usr/local/vires}"
 yum --assumeyes install python-matplotlib python-setuptools
 
 # STEP 2: INSTALL VIRES
-# Install VirES-SERVER in the development mode.
+# Install VirES EOxServer extension
 pushd .
-cd $VIRES_DEV_PATH
+cd "$VIRES_DEV_PATH/vires"
+python ./setup.py develop
+popd
+
+# STEP 3: INSTALL EOxServer django-allauth integration
+pushd .
+cd "$VIRES_DEV_PATH/eoxs_allauth"
 python ./setup.py develop
 popd
