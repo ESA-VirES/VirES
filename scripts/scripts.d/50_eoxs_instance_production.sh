@@ -130,7 +130,7 @@ do
     # EOxServer instance configured by the automatic installation script
 
     # static content
-    Alias $STATIC_URL_PATH "$INSTSTAT_DIR"
+    Alias "$STATIC_URL_PATH" "$INSTSTAT_DIR"
     <Directory "$INSTSTAT_DIR">
         Options -MultiViews +FollowSymLinks
         Require all granted
