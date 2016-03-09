@@ -42,10 +42,12 @@ SETTINGS="${INSTROOT}/${INSTANCE}/${INSTANCE}/settings.py"
 WSGI_FILE="${INSTROOT}/${INSTANCE}/${INSTANCE}/wsgi.py"
 URLS="${INSTROOT}/${INSTANCE}/${INSTANCE}/urls.py"
 FIXTURES_DIR="${INSTROOT}/${INSTANCE}/${INSTANCE}/data/fixtures"
-INSTSTAT_URL="/${INSTANCE}_static" # DO NOT USE THE TRAILING SLASH!!!
 INSTSTAT_DIR="${INSTROOT}/${INSTANCE}/${INSTANCE}/static"
 WSGI="${INSTROOT}/${INSTANCE}/${INSTANCE}/wsgi.py"
 MNGCMD="${INSTROOT}/${INSTANCE}/manage.py"
+BASE_URL_PATH="/${INSTANCE}" # DO NOT USE THE TRAILING SLASH!!!
+#BASE_URL_PATH="/"
+STATIC_URL_PATH="/${INSTANCE}_static" # DO NOT USE THE TRAILING SLASH!!!
 
 DBENGINE="django.contrib.gis.db.backends.postgis"
 DBNAME=$DBNAME
@@ -61,7 +63,7 @@ SMTP_DEFAULT_SENDER="$SMTP_DEFAULT_SENDER"
 
 EOXSLOG="${VIRES_LOGDIR}/eoxserver/${INSTANCE}/eoxserver.log"
 EOXSCONF="${INSTROOT}/${INSTANCE}/${INSTANCE}/conf/eoxserver.conf"
-EOXSURL="http://${HOSTNAME}/${INSTANCE}/ows?"
+EOXSURL="${BASE_URL_PATH}/ows?"
 EOXSMAXSIZE="20480"
 EOXSMAXPAGE="200"
 
@@ -105,7 +107,7 @@ ex "$SETTINGS" <<END
 1,\$s/\('PASSWORD'[	 ]*:[	 ]*\).*\(,\)/\1'$DBPASSWD',/
 1,\$s/\('HOST'[	 ]*:[	 ]*\).*\(,\)/\1'$DBHOST',/
 1,\$s/\('PORT'[	 ]*:[	 ]*\).*\(,\)/\1'$DBPORT',/
-1,\$s:\(STATIC_URL[	 ]*=[	 ]*\).*:\1'$INSTSTAT_URL/':
+1,\$s:\(STATIC_URL[	 ]*=[	 ]*\).*:\1'$STATIC_URL_PATH/':
 wq
 END
 
@@ -127,25 +129,25 @@ do
 
     # EOxServer instance configured by the automatic installation script
 
-    # WSGI service endpoint
-    Alias /$INSTANCE "${INSTROOT}/${INSTANCE}/${INSTANCE}/wsgi.py"
-    <Directory "${INSTROOT}/${INSTANCE}/${INSTANCE}">
-        Options +ExecCGI -MultiViews +FollowSymLinks
-        AddHandler wsgi-script .py
-        WSGIProcessGroup $EOXS_WSGI_PROCESS_GROUP
-        WSGIApplicationGroup %{GLOBAL}
-        Header set Access-Control-Allow-Origin "*"
-        Header set Access-Control-Allow-Headers Content-Type
-        Header set Access-Control-Allow-Methods "POST, GET"
-        Require all granted
-    </Directory>
-
     # static content
-    Alias $INSTSTAT_URL "$INSTSTAT_DIR"
+    Alias $STATIC_URL_PATH "$INSTSTAT_DIR"
     <Directory "$INSTSTAT_DIR">
         Options -MultiViews +FollowSymLinks
         Require all granted
         Header set Access-Control-Allow-Origin "*"
+    </Directory>
+
+    # WSGI service endpoint
+    Alias $BASE_URL_PATH "${INSTROOT}/${INSTANCE}/${INSTANCE}/wsgi.py"
+    <Directory "${INSTROOT}/${INSTANCE}/${INSTANCE}">
+        <Files "wsgi.py">
+            WSGIProcessGroup $EOXS_WSGI_PROCESS_GROUP
+            WSGIApplicationGroup %{GLOBAL}
+            Header set Access-Control-Allow-Origin "*"
+            Header set Access-Control-Allow-Headers Content-Type
+            Header set Access-Control-Allow-Methods "POST, GET"
+            Require all granted
+        </Files>
     </Directory>
 
     # EOXS00_END - EOxServer instance - Do not edit or remove this line!
@@ -438,7 +440,7 @@ AUTHENTICATION_BACKENDS = (
 # Django allauth
 SITE_ID = 1 # ID from django.contrib.sites
 LOGIN_URL = "accounts/login/"
-LOGIN_REDIRECT_URL = "/eoxs/workspace/"
+LOGIN_REDIRECT_URL = "$BASE_URL_PATH"
 ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
@@ -469,7 +471,7 @@ EOXS_ALLAUTH_WORKSPACE_TEMPLATE="vires/workspace.html"
 wq
 END
 
-# Remove url pattern for standard ows replaced later on with wrapped ows
+# Remove original url patterns
 { sudo -u "$VIRES_USER" ex "$URLS" || /bin/true ; } <<END
 /^urlpatterns = patterns(/,/^)/s/^\\s/# /
 wq
