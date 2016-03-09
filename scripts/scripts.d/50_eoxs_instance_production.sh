@@ -138,7 +138,7 @@ do
     </Directory>
 
     # WSGI service endpoint
-    Alias $BASE_URL_PATH "${INSTROOT}/${INSTANCE}/${INSTANCE}/wsgi.py"
+    WSGIScriptAlias "$BASE_URL_PATH" "${INSTROOT}/${INSTANCE}/${INSTANCE}/wsgi.py"
     <Directory "${INSTROOT}/${INSTANCE}/${INSTANCE}">
         <Files "wsgi.py">
             WSGIProcessGroup $EOXS_WSGI_PROCESS_GROUP
