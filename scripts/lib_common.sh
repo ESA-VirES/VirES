@@ -36,7 +36,7 @@ export ENABLE_FIREWALL=${ENABLE_FIREWALL:-NO}
 
 # public hostname (or IP number) under which the ODA-OS shall be accessable
 # NOTE: Critical parameter! Be sure you set it to the proper value.
-export VIRES_HOSTNAME=${VIRES_HOSTNAME:-$HOSTNAME}
+export VIRES_HOSTNAME=${VIRES_HOSTNAME}
 
 # root directory of the VirES - by default set to '/srv/vires'
 export VIRES_ROOT=${VIRES_ROOT:-/var/www/vires}
@@ -92,3 +92,16 @@ export FIXTURES_DIR_SRC="${FIXTURES_DIR_SRC}"
 
 # Optional location of the loaded templates.
 export TEMPLATES_DIR_SRC="${TEMPLATES_DIR_SRC}"
+
+# Apache options
+# the site configuration files
+export CONF_HTTP
+export CONF_HTTPS
+
+# optinal configuration file templates
+export CONF_HTTP_TEMPLATE
+export CONF_HTTPS_TEMPLATE
+
+# configuration switches
+export CONFIGURE_HTTP
+export CONFIGURE_HTTPS

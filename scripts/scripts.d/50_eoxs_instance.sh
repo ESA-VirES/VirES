@@ -17,14 +17,14 @@ CONFIGURE_ALLAUTH=${CONFIGURE_ALLAUTH:-YES}
 
 # NOTE: Multiple EOxServer instances are not foreseen in VIRES.
 
-[ -z "$VIRES_HOSTNAME" ] && error "Missing the required VIRES_HOSTNAME variable!"
+#[ -z "$VIRES_HOSTNAME" ] && error "Missing the required VIRES_HOSTNAME variable!"
 [ -z "$VIRES_SERVER_HOME" ] && error "Missing the required VIRES_SERVER_HOME variable!"
 [ -z "$VIRES_USER" ] && error "Missing the required VIRES_USER variable!"
 [ -z "$VIRES_GROUP" ] && error "Missing the required VIRES_GROUP variable!"
 [ -z "$VIRES_LOGDIR" ] && error "Missing the required VIRES_LOGDIR variable!"
 [ -z "$VIRES_TMPDIR" ] && error "Missing the required VIRES_TMPDIR variable!"
 
-HOSTNAME="$VIRES_HOSTNAME"
+#HOSTNAME="$VIRES_HOSTNAME"
 INSTANCE="`basename "$VIRES_SERVER_HOME"`"
 INSTROOT="`dirname "$VIRES_SERVER_HOME"`"
 

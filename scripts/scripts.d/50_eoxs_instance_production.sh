@@ -117,10 +117,9 @@ END
 info "Mapping EOxServer instance '${INSTANCE}' to URL path '${INSTANCE}' ..."
 
 # locate proper configuration file (see also apache configuration)
-{
-    locate_apache_conf 80
-    locate_apache_conf 443
-} | while read CONF
+_PORT=443 # HTTPS only
+[ `locate_apache_conf $_PORT $HOSTNAME` ] && error "Failed to locate Apache virtual host $HOSTNAME:$_PORT configuration!"
+locate_apache_conf $_PORT $HOSTNAME | while read CONF
 do
     { ex "$CONF" || /bin/true ; } <<END
 /EOXS00_BEGIN/,/EOXS00_END/de

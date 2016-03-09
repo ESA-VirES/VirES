@@ -46,8 +46,18 @@ _locate_conf()
 
 locate_apache_conf()
 {
-    _locate_conf '^[ 	]*<VirtualHost[ 	]*_default_:'${1:-80}'>' || \
-    _locate_conf '^[ 	]*<VirtualHost[ 	]*\*:'${1:-80}'>' || true
+    PORT=${1:-80}
+    if [ $# -gt 1 ]
+    then 
+        shift
+        HOSTS=$* 
+    else
+        HOSTS="\* _default_"
+    fi
+    for HOST in $HOSTS
+    do
+        _locate_conf '^[ 	]*<VirtualHost[ 	]*'"${HOST}:${PORT}"'>' || true
+    done
 }
 
 locate_wsgi_socket_prefix_conf()
