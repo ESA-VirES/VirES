@@ -62,7 +62,7 @@ export VIRES_SERVER_HOME=${VIRES_SERVER_HOME:-$VIRES_ROOT/eoxs}
 # WSGI daemon - number of processes to be used by the VirES EOxServer instances
 export EOXS_WSGI_NPROC=${EOXS_WSGI_NPROC:-4}
 # WSGI daemon - process group to be used by the VirES EOxServer instances
-export EOXS_WSGI_PROCESS_GROUP=vires_eoxs_ows
+export EOXS_WSGI_PROCESS_GROUP=${EOXS_WSGI_PROCESS_GROUP:-vires_eoxs_ows}
 
 # location of the VirES Client home directory
 export VIRES_CLIENT_HOME=${VIRES_CLIENT_HOME:-$VIRES_ROOT/eoxc}
