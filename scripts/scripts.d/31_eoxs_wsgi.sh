@@ -31,7 +31,7 @@ END
 else
     ex "$CONF" <<END
 g/^[ 	]*WSGIDaemonProcess[ 	]*$EOXS_WSGI_PROCESS_GROUP/d
-a
+i
 $WSGI_DAEMON
 .
 wq
