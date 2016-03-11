@@ -154,7 +154,6 @@ do
     Alias "$STATIC_URL_PATH" "$INSTSTAT_DIR"
     <Directory "$INSTSTAT_DIR">
         Options -MultiViews +FollowSymLinks
-        Require all granted
         Header set Access-Control-Allow-Origin "*"
     </Directory>
 
@@ -167,7 +166,6 @@ do
             Header set Access-Control-Allow-Origin "*"
             Header set Access-Control-Allow-Headers Content-Type
             Header set Access-Control-Allow-Methods "POST, GET"
-            Require all granted
         </Files>
     </Directory>
 

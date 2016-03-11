@@ -49,7 +49,6 @@ do
     Alias $VIRES_CLIENT_URL "$VIRES_CLIENT_HOME"
     <Directory "$VIRES_CLIENT_HOME">
         Options -MultiViews +FollowSymLinks
-        Require all granted
     </Directory>
 
     # EOXC00_END - VirES Client - Do not edit or remove this line!
