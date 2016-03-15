@@ -308,6 +308,7 @@ LOGGING = {
     }
 }
 .
+/^\s*'eoxserver.resources.processes',/s/'eoxserver.resources.processes'/#&/
 wq
 END
 
