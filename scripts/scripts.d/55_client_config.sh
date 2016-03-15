@@ -17,7 +17,8 @@ info "Configuring VirES client ..."
 
 
 BASIC_AUTH_PASSWD_FILE="/etc/httpd/authn/damats-passwords"
-VIRES_SERVER_URL="/`basename "$VIRES_SERVER_HOME"`"
+#VIRES_SERVER_URL="/`basename "$VIRES_SERVER_HOME"`"
+VIRES_SERVER_URL=""
 VIRES_CLIENT_URL="/`basename "$VIRES_CLIENT_HOME"`"
 CONFIG_JSON="${VIRES_CLIENT_HOME}/scripts/config.json"
 
@@ -27,7 +28,7 @@ CONFIG_JSON="${VIRES_CLIENT_HOME}/scripts/config.json"
 # locate original replaced URL
 OLD_URL="`sudo -u "$VIRES_USER" jq -r '.mapConfig.products[].download.url | select(.)' "$CONFIG_JSON" | sed -ne '/^https\{0,1\}:\/\/localhost.*\/ows$/p' | head -n 1`"
 
-sudo -u "$VIRES_USER" sed -i -e "s#\"${OLD_URL}#\"${VIRES_SERVER_URL}/ows#g" "$CONFIG_JSON" 
+sudo -u "$VIRES_USER" sed -i -e "s#\"${OLD_URL}#\"${VIRES_SERVER_URL}/ows#g" "$CONFIG_JSON"
 
 #-------------------------------------------------------------------------------
 # Integration with the Apache web server
@@ -44,6 +45,8 @@ do
 /EOXC00_BEGIN/,/EOXC00_END/de
 /^[ 	]*<\/VirtualHost>/i
     # EOXC00_BEGIN - VirES Client - Do not edit or remove this line!
+
+    RedirectMatch permanent ^/$ /eoxc/
 
     # VirES Client
     Alias $VIRES_CLIENT_URL "$VIRES_CLIENT_HOME"
