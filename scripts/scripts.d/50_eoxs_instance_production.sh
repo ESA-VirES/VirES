@@ -373,6 +373,11 @@ a
 INSTALLED_APPS += (
     'vires',
 )
+
+VIRES_AUX_DB_DST = join(PROJECT_DIR, "aux_dst.cdf")
+VIRES_AUX_DB_KP = join(PROJECT_DIR, "aux_kp.cdf")
+VIRES_AUX_DB_IBIA = join(PROJECT_DIR, "aux_ibia.cdf")
+
 # VIRES APPS - END - Do not edit or remove this line!
 .
 /^COMPONENTS\s*=/
