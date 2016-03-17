@@ -14,7 +14,7 @@ info "Configuring WSGI daemon to be used by the EOxServer instances."
 [ -z "$VIRES_USER" ] && error "Missing the required VIRES_USER variable!"
 [ -z "$VIRES_GROUP" ] && error "Missing the required VIRES_GROUP variable!"
 
-# number of EOxServer deamon processess
+# number of EOxServer daemon processes
 EOXS_WSGI_NPROC=${EOXS_WSGI_NPROC:-4}
 # process group label
 EOXS_WSGI_PROCESS_GROUP=${EOXS_WSGI_PROCESS_GROUP:-eoxs_ows}
@@ -38,5 +38,6 @@ wq
 END
 fi
 
-systemctl restart httpd.service
-systemctl status httpd.service
+#Disabled in order to restart apache only after deployment is fully configured
+#systemctl restart httpd.service
+#systemctl status httpd.service

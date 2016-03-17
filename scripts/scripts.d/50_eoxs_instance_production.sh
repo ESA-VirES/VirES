@@ -540,5 +540,7 @@ chown -vR "$VIRES_USER:$VIRES_GROUP" "$INSTROOT/$INSTANCE"
 
 #-------------------------------------------------------------------------------
 # STEP 9: FINAL WEB SERVER RESTART
-systemctl restart httpd.service
-systemctl status httpd.service
+
+#Disabled in order to restart apache only after deployment is fully configured
+#systemctl restart httpd.service
+#systemctl status httpd.service
