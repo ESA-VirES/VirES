@@ -15,7 +15,7 @@ info "Configuring VirES client ..."
 [ -z "$VIRES_CLIENT_HOME" ] && error "Missing the required VIRES_CLIENT_HOME variable!"
 [ -z "$VIRES_USER" ] && error "Missing the required VIRES_USER variable!"
 
-
+CONFIGURE_ALLAUTH="${CONFIGURE_ALLAUTH:-YES}"
 BASIC_AUTH_PASSWD_FILE="/etc/httpd/authn/damats-passwords"
 #VIRES_SERVER_URL="/`basename "$VIRES_SERVER_HOME"`"
 VIRES_SERVER_URL=""
@@ -35,13 +35,24 @@ sudo -u "$VIRES_USER" sed -i -e "s#\"${OLD_URL}#\"${VIRES_SERVER_URL}/ows#g" "$C
 
 info "Configuring Apache web server"
 
+if [ "$CONFIGURE_ALLAUTH" == "YES" ]
+then
+    warn "ALLAUTH enabled. Removing self-standing client configuration."
+fi
+
 # locate proper configuration file (see also apache configuration)
 {
     locate_apache_conf 80
     locate_apache_conf 443
 } | while read CONF
 do
+
     { ex "$CONF" || /bin/true ; } <<END
+/EOXC00_BEGIN/,/EOXC00_END/de
+wq
+END
+
+    [ "$CONFIGURE_ALLAUTH" == "YES" ] || ex "$CONF" <<END
 /EOXC00_BEGIN/,/EOXC00_END/de
 /^[ 	]*<\/VirtualHost>/i
     # EOXC00_BEGIN - VirES Client - Do not edit or remove this line!
