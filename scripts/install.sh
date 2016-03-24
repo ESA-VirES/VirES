@@ -58,9 +58,9 @@ INSTALL_LOG="./install.log"
         then
             info "Creating $4: $3"
             mkdir -p "$3"
+            chown -v "$1" "$3"
+            chmod -v "$2" "$3"
         fi
-        chown -v "$1" "$3"
-        chmod -v "$2" "$3"
     }
 
     id -g "$VIRES_GROUP" >/dev/null 2>&1 || \
