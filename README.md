@@ -124,7 +124,7 @@ cp WebClient-Framework.tar.gz VirES/contrib/
 #### Step 2 - Customisation
 
 The custom configuration option to be applied to your Vagrant instance can
-be put in the optional `VirES/vagrant/user.conf` file. The environment
+be put in the optional `VirES/scripts/user.conf` file. The environment
 variables defined in this file will override the installation defaults.
 
 Example `user.conf`:
