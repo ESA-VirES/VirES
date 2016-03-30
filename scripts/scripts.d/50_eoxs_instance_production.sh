@@ -391,6 +391,14 @@ COMPONENTS += (
 )
 # VIRES COMPONENTS - END - Do not edit or remove this line!
 .
+/^MIDDLEWARE_CLASSES\s*=/
+/^)/a
+
+# VirES Specific middleware classes
+MIDDLEWARE_CLASSES += (
+    'django.middleware.gzip.GZipMiddleware',
+)
+.
 wq
 END
 
