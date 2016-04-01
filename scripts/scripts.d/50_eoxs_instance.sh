@@ -79,7 +79,7 @@ sudo -u "$VIRES_USER" python -c 'import eoxserver' || {
 }
 
 sudo -u "$VIRES_USER" mkdir -p "$INSTROOT/$INSTANCE"
-sudo -u "$VIRES_USER" eoxserver-admin.py create_instance "$INSTANCE" "$INSTROOT/$INSTANCE"
+sudo -u "$VIRES_USER" eoxserver-instance.py "$INSTANCE" "$INSTROOT/$INSTANCE"
 
 #-------------------------------------------------------------------------------
 # STEP 2: CREATE POSTGRES DATABASE
