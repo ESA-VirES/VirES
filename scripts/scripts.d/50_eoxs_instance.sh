@@ -407,15 +407,27 @@ else
 a
 # ALLAUTH APPS - BEGIN - Do not edit or remove this line!
 INSTALLED_APPS += (
+    'eoxs_allauth',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
-    #'allauth.socialaccount.providers.github',
     'allauth.socialaccount.providers.facebook',
-    #'allauth.socialaccount.providers.twitter',
-    #'allauth.socialaccount.providers.dropbox_oauth2',
-    #'eoxs_allauth',
+    'allauth.socialaccount.providers.twitter',
+    'allauth.socialaccount.providers.linkedin_oauth2',
+    'allauth.socialaccount.providers.google',
+    'django_countries',
 )
+
+SOCIALACCOUNT_PROVIDERS = \
+    {'linkedin_oauth2':
+      {'SCOPE': ['r_emailaddress', 'r_basicprofile'],
+       'PROFILE_FIELDS': ['id',
+                         'first-name',
+                         'last-name',
+                         'email-address',
+                         'picture-url',
+                         'public-profile-url', 'industry', 'positions', 'location']}}
+
 # ALLAUTH APPS - END - Do not edit or remove this line!
 .
 /^MIDDLEWARE_CLASSES\s*=/
@@ -453,15 +465,17 @@ ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'http'
 ACCOUNT_PASSWORD_MIN_LENGTH = 8
 ACCOUNT_LOGIN_ON_PASSWORD_RESET = True
 ACCOUNT_USERNAME_REQUIRED = True
-SOCIALACCOUNT_AUTO_SIGNUP = True
+SOCIALACCOUNT_AUTO_SIGNUP = False
 SOCIALACCOUNT_EMAIL_REQUIRED = True
 SOCIALACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 SOCIALACCOUNT_QUERY_EMAIL = True
+ACCOUNT_SIGNUP_FORM_CLASS = 'eoxs_allauth.forms.ESASignupForm'
 
 TEMPLATE_CONTEXT_PROCESSORS = (
     # Required by allauth template tags
     'django.core.context_processors.request',
-    'django.contrib.auth.context_processors.auth'
+    'django.contrib.auth.context_processors.auth',
+    'django.contrib.messages.context_processors.messages',
 )
 
 EOXS_ALLAUTH_WORKSPACE_TEMPLATE="vires/workspace.html"
@@ -482,17 +496,22 @@ END
 $ a
 # ALLAUTH URLS - BEGIN - Do not edit or remove this line!
 from eoxs_allauth.views import workspace as eoxs_allauth_workspace
+from eoxs_allauth.views import ProfileUpdate
+from django.views.generic import TemplateView
 
 urlpatterns += patterns('',
     url(r'^/?$', eoxs_allauth_workspace),
     url(r'^ows$', include("eoxs_allauth.urls")),
     # enable authentication urls
+    url(r'^accounts/profile/$', ProfileUpdate.as_view(), name='account_change_profile'),
+    url(r'^accounts/tos$', TemplateView.as_view(template_name='account/tos.html'), name='tos'),
     url(r'^accounts/', include('allauth.urls')),
 )
 # ALLAUTH URLS - END - Do not edit or remove this line!
 .
 wq
 END
+
 
 fi # end of ALLAUTH configuration
 
@@ -504,7 +523,9 @@ info "Initializing EOxServer instance '${INSTANCE}' ..."
 sudo -u "$VIRES_USER" python "$MNGCMD" collectstatic -l --noinput
 
 # setup new database
+sudo python "$MNGCMD" makemigrations eoxs_allauth
 sudo -u "$VIRES_USER" python "$MNGCMD" migrate
+
 
 #-------------------------------------------------------------------------------
 # STEP 8: FINAL WEB SERVER RESTART
