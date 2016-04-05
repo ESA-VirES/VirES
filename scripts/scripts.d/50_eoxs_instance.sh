@@ -512,6 +512,7 @@ urlpatterns += patterns('',
 wq
 END
 
+sudo python "$MNGCMD" makemigrations eoxs_allauth
 
 fi # end of ALLAUTH configuration
 
@@ -523,7 +524,6 @@ info "Initializing EOxServer instance '${INSTANCE}' ..."
 sudo -u "$VIRES_USER" python "$MNGCMD" collectstatic -l --noinput
 
 # setup new database
-sudo python "$MNGCMD" makemigrations eoxs_allauth
 sudo -u "$VIRES_USER" python "$MNGCMD" migrate
 
 
