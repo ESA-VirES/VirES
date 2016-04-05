@@ -391,14 +391,6 @@ COMPONENTS += (
 )
 # VIRES COMPONENTS - END - Do not edit or remove this line!
 .
-/^MIDDLEWARE_CLASSES\s*=/
-/^)/a
-
-# VirES Specific middleware classes
-MIDDLEWARE_CLASSES += (
-    'django.middleware.gzip.GZipMiddleware',
-)
-.
 wq
 END
 
@@ -453,6 +445,11 @@ MIDDLEWARE_CLASSES += (
     # SessionAuthenticationMiddleware is only available in django 1.7
     # 'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware'
+)
+
+# VirES Specific middleware classes
+MIDDLEWARE_CLASSES += (
+    'django.middleware.gzip.GZipMiddleware',
 )
 
 AUTHENTICATION_BACKENDS = (
