@@ -35,11 +35,9 @@
 
 
 source `dirname $0`/../lib_logging.sh
-source `dirname $0`/../lib_common.sh
 
-###  TO BE RUN ONLY ON  SWARM-SERV1 !!!
 
-info 'Installing NFS-Utils -> NFS-Server/NFS-Client ...'
+info 'Installing and configuring NFS-Utils, NFS-Server, and NFS-Client ...'
 
 # configuration switches
 INSTALL_NFSSERVER=${INSTALL_SERVER:-NO}
@@ -59,6 +57,7 @@ fi
 
 if [ "$INSTALL_NFSSERVER" = "YES" ]
 then
+    info 'Installing and configuring NFS-Server ...'
     if [ ! -d $VIRES_DATADIR'/ftp_in' ]; then
         mkdir -p -m 0775  $VIRES_DATADIR'/ftp_in'
         chown $VIRES_USER:$VIRES_GROUP  $VIRES_DATADIR'/ftp_in'
@@ -93,6 +92,8 @@ fi
 
 if [ "$INSTALL_NFSCLIENT" = "YES" ]
 then
+    info 'Installing and configuring NFS-Client ...'
+
     systemctl enable rpcbind
     systemctl start rpcbind
 
@@ -100,7 +101,7 @@ then
     grep -e -q "${VIRES_DATADIR}" /etc/fstab
 if [ $? != 0 ]; then
 cat <<EOF>  /etc/fstab
-## mount the swarm data storage (nfs-exported by swarm-serv1)
+## mount the nfs-exported swarm data storage
 ${NFSSERVER_HOSTNAME}:${VIRES_DATADIR}   ${VIRES_DATADIR}       nfs     defaults,nosuid,noexec,nodev  0 0
 EOF
 
