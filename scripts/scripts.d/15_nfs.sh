@@ -76,8 +76,9 @@ then
     systemctl start rpc-statd
 
     # setup of exports
-    if [ ! `grep -q -e "^${VIRES_DATADIR}" /etc/exports` ]; then
-        cat <<EOF>  /etc/exports
+    if [ -z "`grep -e "^${VIRES_DATADIR}" /etc/exports`" ]; then
+        cat <<EOF>>  /etc/exports
+
 ${VIRES_DATADIR}  ${NFSCLIENT_HOSTNAME}(ro,async)
 EOF
     fi
@@ -96,8 +97,9 @@ then
     systemctl start rpcbind
 
     # local mount of external data-disk
-    if [ ! `grep -q -e "${VIRES_DATADIR}" /etc/fstab` ]; then
-        cat <<EOF>  /etc/fstab
+    if [ -z "`grep -e "${VIRES_DATADIR}" /etc/fstab`" ]; then
+        cat <<EOF>>  /etc/fstab
+
 ## mount the nfs-exported swarm data storage
 ${NFSSERVER_HOSTNAME}:${VIRES_DATADIR}   ${VIRES_DATADIR}       nfs     defaults,nosuid,noexec,nodev  0 0
 EOF
