@@ -569,13 +569,25 @@ python "$MNGCMD" makemigrations
 python "$MNGCMD" migrate
 
 #-------------------------------------------------------------------------------
-# STEP 8: CHANGE OWNERSHIP OF THE CONFIGURATION FILES
+# STEP 8: APP-SPECIFIC INITIALISATION
+
+if [ "$CONFIGURE_VIRES" == "YES" ]
+then
+    # load rangetypes
+    python "$MNGCMD" vires_rangetype_load || true
+
+    # register models
+    python "$MNGCMD" vires_model_add "SIFM" "IGRF12" "CHAOS-5-Combined" || true
+fi
+
+#-------------------------------------------------------------------------------
+# STEP 9: CHANGE OWNERSHIP OF THE CONFIGURATION FILES
 
 info "Changing ownership of $INSTROOT/$INSTANCE to $VIRES_USER"
 chown -vR "$VIRES_USER:$VIRES_GROUP" "$INSTROOT/$INSTANCE"
 
 #-------------------------------------------------------------------------------
-# STEP 9: FINAL WEB SERVER RESTART
+# STEP 10: FINAL WEB SERVER RESTART
 
 #Disabled in order to restart apache only after deployment is fully configured
 #systemctl restart httpd.service

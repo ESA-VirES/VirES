@@ -536,8 +536,19 @@ sudo -u "$VIRES_USER" python "$MNGCMD" collectstatic -l --noinput
 # setup new database
 sudo -u "$VIRES_USER" python "$MNGCMD" migrate
 
+#-------------------------------------------------------------------------------
+# STEP 8: APP-SPECIFIC INITIALISATION
+
+if [ "$CONFIGURE_VIRES" == "YES" ]
+then
+    # load rangetypes
+    sudo -u "$VIRES_USER" python "$MNGCMD" vires_rangetype_load || true
+
+    # register models
+    sudo -u "$VIRES_USER" python "$MNGCMD" vires_model_add "SIFM" "IGRF12" "CHAOS-5-Combined" || true
+fi
 
 #-------------------------------------------------------------------------------
-# STEP 8: FINAL WEB SERVER RESTART
+# STEP 9: FINAL WEB SERVER RESTART
 systemctl restart httpd.service
 systemctl status httpd.service
