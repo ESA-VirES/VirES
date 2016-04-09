@@ -364,6 +364,15 @@ then
 else
     info "VIRES specific configuration ..."
 
+    # remove unnecessary or conflicting component paths
+    { ex "$SETTINGS" || /bin/true ; } <<END
+g/^COMPONENTS\s*=\s*(/,/^)/s/'eoxserver\.services\.ows\.wcs\.\*\*'/#&/
+g/^COMPONENTS\s*=\s*(/,/^)/s/'eoxserver\.services\.native\.\*\*'/#&/
+g/^COMPONENTS\s*=\s*(/,/^)/s/'eoxserver\.services\.gdal\.\*\*'/#&/
+g/^COMPONENTS\s*=\s*(/,/^)/s/'eoxserver\.services\.mapserver\.\*\*'/#&/
+wq
+END
+
     # extending the EOxServer settings.py
     ex "$SETTINGS" <<END
 /^INSTALLED_APPS\s*=/
@@ -384,6 +393,7 @@ VIRES_AUX_DB_IBIA = join(PROJECT_DIR, "aux_ibia.cdf")
 /^)/a
 # VIRES COMPONENTS - BEGIN - Do not edit or remove this line!
 COMPONENTS += (
+    'eoxserver.services.mapserver.wms.*',
     'vires.processes.*',
     'vires.ows.**',
     'vires.forward_models.*',
