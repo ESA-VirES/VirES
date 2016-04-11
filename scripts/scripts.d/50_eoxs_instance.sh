@@ -545,7 +545,8 @@ then
     sudo -u "$VIRES_USER" python "$MNGCMD" vires_rangetype_load || true
 
     # register models
-    sudo -u "$VIRES_USER" python "$MNGCMD" vires_model_add "SIFM" "IGRF12" "CHAOS-5-Combined" || true
+    sudo -u "$VIRES_USER" python "$MNGCMD" vires_model_remove -all
+    sudo -u "$VIRES_USER" python "$MNGCMD" vires_model_add "SIFM" "IGRF12" "CHAOS-5-Combined"
 fi
 
 #-------------------------------------------------------------------------------

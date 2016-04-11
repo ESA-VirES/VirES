@@ -577,7 +577,8 @@ then
     python "$MNGCMD" vires_rangetype_load || true
 
     # register models
-    python "$MNGCMD" vires_model_add "SIFM" "IGRF12" "CHAOS-5-Combined" || true
+    python "$MNGCMD" vires_model_remove -all
+    python "$MNGCMD" vires_model_add "SIFM" "IGRF12" "CHAOS-5-Combined"
 fi
 
 #-------------------------------------------------------------------------------
