@@ -364,6 +364,15 @@ then
 else
     info "VIRES specific configuration ..."
 
+    # remove unnecessary or conflicting component paths
+    { ex "$SETTINGS" || /bin/true ; } <<END
+g/^COMPONENTS\s*=\s*(/,/^)/s/'eoxserver\.services\.ows\.wcs\.\*\*'/#&/
+g/^COMPONENTS\s*=\s*(/,/^)/s/'eoxserver\.services\.native\.\*\*'/#&/
+g/^COMPONENTS\s*=\s*(/,/^)/s/'eoxserver\.services\.gdal\.\*\*'/#&/
+g/^COMPONENTS\s*=\s*(/,/^)/s/'eoxserver\.services\.mapserver\.\*\*'/#&/
+wq
+END
+
     # extending the EOxServer settings.py
     ex "$SETTINGS" <<END
 /^INSTALLED_APPS\s*=/
@@ -384,6 +393,7 @@ VIRES_AUX_DB_IBIA = join(PROJECT_DIR, "aux_ibia.cdf")
 /^)/a
 # VIRES COMPONENTS - BEGIN - Do not edit or remove this line!
 COMPONENTS += (
+    'eoxserver.services.mapserver.wms.*',
     'vires.processes.*',
     'vires.ows.**',
     'vires.forward_models.*',
@@ -559,13 +569,26 @@ python "$MNGCMD" makemigrations
 python "$MNGCMD" migrate
 
 #-------------------------------------------------------------------------------
-# STEP 8: CHANGE OWNERSHIP OF THE CONFIGURATION FILES
+# STEP 8: APP-SPECIFIC INITIALISATION
+
+if [ "$CONFIGURE_VIRES" == "YES" ]
+then
+    # load rangetypes
+    python "$MNGCMD" vires_rangetype_load || true
+
+    # register models
+    python "$MNGCMD" vires_model_remove --all
+    python "$MNGCMD" vires_model_add "SIFM" "IGRF12" "CHAOS-5-Combined"
+fi
+
+#-------------------------------------------------------------------------------
+# STEP 9: CHANGE OWNERSHIP OF THE CONFIGURATION FILES
 
 info "Changing ownership of $INSTROOT/$INSTANCE to $VIRES_USER"
 chown -vR "$VIRES_USER:$VIRES_GROUP" "$INSTROOT/$INSTANCE"
 
 #-------------------------------------------------------------------------------
-# STEP 9: FINAL WEB SERVER RESTART
+# STEP 10: FINAL WEB SERVER RESTART
 
 #Disabled in order to restart apache only after deployment is fully configured
 #systemctl restart httpd.service

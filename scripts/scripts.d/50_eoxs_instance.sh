@@ -361,6 +361,15 @@ then
 else
     info "VIRES specific configuration ..."
 
+    # remove unnecessary or conflicting component paths
+    { sudo -u "$VIRES_USER" ex "$SETTINGS" || /bin/true ; } <<END
+g/^COMPONENTS\s*=\s*(/,/^)/s/'eoxserver\.services\.ows\.wcs\.\*\*'/#&/
+g/^COMPONENTS\s*=\s*(/,/^)/s/'eoxserver\.services\.native\.\*\*'/#&/
+g/^COMPONENTS\s*=\s*(/,/^)/s/'eoxserver\.services\.gdal\.\*\*'/#&/
+g/^COMPONENTS\s*=\s*(/,/^)/s/'eoxserver\.services\.mapserver\.\*\*'/#&/
+wq
+END
+
     # extending the EOxServer settings.py
     sudo -u "$VIRES_USER" ex "$SETTINGS" <<END
 /^INSTALLED_APPS\s*=/
@@ -381,6 +390,7 @@ VIRES_AUX_DB_IBIA = join(PROJECT_DIR, "aux_ibia.cdf")
 /^)/a
 # VIRES COMPONENTS - BEGIN - Do not edit or remove this line!
 COMPONENTS += (
+    'eoxserver.services.mapserver.wms.*',
     'vires.processes.*',
     'vires.ows.**',
     'vires.forward_models.*',
@@ -526,8 +536,20 @@ sudo -u "$VIRES_USER" python "$MNGCMD" collectstatic -l --noinput
 # setup new database
 sudo -u "$VIRES_USER" python "$MNGCMD" migrate
 
+#-------------------------------------------------------------------------------
+# STEP 8: APP-SPECIFIC INITIALISATION
+
+if [ "$CONFIGURE_VIRES" == "YES" ]
+then
+    # load rangetypes
+    sudo -u "$VIRES_USER" python "$MNGCMD" vires_rangetype_load || true
+
+    # register models
+    sudo -u "$VIRES_USER" python "$MNGCMD" vires_model_remove --all
+    sudo -u "$VIRES_USER" python "$MNGCMD" vires_model_add "SIFM" "IGRF12" "CHAOS-5-Combined"
+fi
 
 #-------------------------------------------------------------------------------
-# STEP 8: FINAL WEB SERVER RESTART
+# STEP 9: FINAL WEB SERVER RESTART
 systemctl restart httpd.service
 systemctl status httpd.service
