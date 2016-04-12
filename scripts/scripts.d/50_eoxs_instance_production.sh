@@ -318,8 +318,8 @@ END
 # touch the logfile and set the right permissions
 [ -d "`dirname "$EOXSLOG"`" ] || mkdir -p "`dirname "$EOXSLOG"`"
 touch "$EOXSLOG"
-chown -v "$VIRES_USER:$VIRES_GROUP" "$EOXSLOG"
-chmod -v 0664 "$EOXSLOG"
+chown "$VIRES_USER:$VIRES_GROUP" "$EOXSLOG"
+chmod 0664 "$EOXSLOG"
 
 #setup logrotate configuration
 cat >"/etc/logrotate.d/vires_eoxserver_${INSTANCE}" <<END
