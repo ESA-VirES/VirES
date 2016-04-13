@@ -153,6 +153,7 @@ do
     # static content
     Alias "$STATIC_URL_PATH" "$INSTSTAT_DIR"
     <Directory "$INSTSTAT_DIR">
+        EnableSendfile off
         Options -MultiViews +FollowSymLinks
         Header set Access-Control-Allow-Origin "*"
     </Directory>
