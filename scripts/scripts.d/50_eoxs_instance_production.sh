@@ -525,7 +525,8 @@ urlpatterns += patterns('',
     url(r'^ows$', include("eoxs_allauth.urls")),
     # enable authentication urls
     url(r'^accounts/profile/$', ProfileUpdate.as_view(), name='account_change_profile'),
-    url(r'^accounts/tos$', TemplateView.as_view(template_name='account/tos.html'), name='tos'),
+    url(r'^accounts/datatc$', TemplateView.as_view(template_name='account/datatc.html'), name='datatc'),
+    url(r'^accounts/servicetc$', TemplateView.as_view(template_name='account/servicetc.html'), name='servicetc'),
     url(r'^accounts/', include('allauth.urls')),
 )
 # ALLAUTH URLS - END - Do not edit or remove this line!
