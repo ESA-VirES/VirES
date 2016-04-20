@@ -153,6 +153,7 @@ do
     # static content
     Alias "$STATIC_URL_PATH" "$INSTSTAT_DIR"
     <Directory "$INSTSTAT_DIR">
+        EnableSendfile off
         Options -MultiViews +FollowSymLinks
         Header set Access-Control-Allow-Origin "*"
     </Directory>
@@ -316,8 +317,8 @@ END
 [ ! -f "$EOXSLOG" ] || rm -fv "$EOXSLOG"
 [ -d "`dirname "$EOXSLOG"`" ] || mkdir -p "`dirname "$EOXSLOG"`"
 touch "$EOXSLOG"
-chown -v "$VIRES_USER:$VIRES_GROUP" "$EOXSLOG"
-chmod -v 0664 "$EOXSLOG"
+chown "$VIRES_USER:$VIRES_GROUP" "$EOXSLOG"
+chmod 0664 "$EOXSLOG"
 
 #setup logrotate configuration
 cat >"/etc/logrotate.d/vires_eoxserver_${INSTANCE}" <<END
@@ -361,6 +362,15 @@ then
 else
     info "VIRES specific configuration ..."
 
+    # remove unnecessary or conflicting component paths
+    { sudo -u "$VIRES_USER" ex "$SETTINGS" || /bin/true ; } <<END
+g/^COMPONENTS\s*=\s*(/,/^)/s/'eoxserver\.services\.ows\.wcs\.\*\*'/#&/
+g/^COMPONENTS\s*=\s*(/,/^)/s/'eoxserver\.services\.native\.\*\*'/#&/
+g/^COMPONENTS\s*=\s*(/,/^)/s/'eoxserver\.services\.gdal\.\*\*'/#&/
+g/^COMPONENTS\s*=\s*(/,/^)/s/'eoxserver\.services\.mapserver\.\*\*'/#&/
+wq
+END
+
     # extending the EOxServer settings.py
     sudo -u "$VIRES_USER" ex "$SETTINGS" <<END
 /^INSTALLED_APPS\s*=/
@@ -381,6 +391,7 @@ VIRES_AUX_DB_IBIA = join(PROJECT_DIR, "aux_ibia.cdf")
 /^)/a
 # VIRES COMPONENTS - BEGIN - Do not edit or remove this line!
 COMPONENTS += (
+    'eoxserver.services.mapserver.wms.*',
     'vires.processes.*',
     'vires.ows.**',
     'vires.forward_models.*',
@@ -451,7 +462,7 @@ AUTHENTICATION_BACKENDS = (
 
 # Django allauth
 SITE_ID = 1 # ID from django.contrib.sites
-LOGIN_URL = "accounts/login/"
+LOGIN_URL = "/accounts/login/"
 LOGIN_REDIRECT_URL = "$BASE_URL_PATH"
 ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
 ACCOUNT_EMAIL_REQUIRED = True
@@ -504,7 +515,9 @@ urlpatterns += patterns('',
     url(r'^ows$', include("eoxs_allauth.urls")),
     # enable authentication urls
     url(r'^accounts/profile/$', ProfileUpdate.as_view(), name='account_change_profile'),
-    url(r'^accounts/tos$', TemplateView.as_view(template_name='account/tos.html'), name='tos'),
+    url(r'^accounts/faq$', TemplateView.as_view(template_name='account/faq.html'), name='faq'),
+    url(r'^accounts/datatc$', TemplateView.as_view(template_name='account/datatc.html'), name='datatc'),
+    url(r'^accounts/servicetc$', TemplateView.as_view(template_name='account/servicetc.html'), name='servicetc'),
     url(r'^accounts/', include('allauth.urls')),
 )
 # ALLAUTH URLS - END - Do not edit or remove this line!
@@ -526,8 +539,20 @@ sudo -u "$VIRES_USER" python "$MNGCMD" collectstatic -l --noinput
 # setup new database
 sudo -u "$VIRES_USER" python "$MNGCMD" migrate
 
+#-------------------------------------------------------------------------------
+# STEP 8: APP-SPECIFIC INITIALISATION
+
+if [ "$CONFIGURE_VIRES" == "YES" ]
+then
+    # load rangetypes
+    sudo -u "$VIRES_USER" python "$MNGCMD" vires_rangetype_load || true
+
+    # register models
+    sudo -u "$VIRES_USER" python "$MNGCMD" vires_model_remove --all
+    sudo -u "$VIRES_USER" python "$MNGCMD" vires_model_add "SIFM" "IGRF12" "CHAOS-5-Combined"
+fi
 
 #-------------------------------------------------------------------------------
-# STEP 8: FINAL WEB SERVER RESTART
+# STEP 9: FINAL WEB SERVER RESTART
 systemctl restart httpd.service
 systemctl status httpd.service

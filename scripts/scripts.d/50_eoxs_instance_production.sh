@@ -318,8 +318,8 @@ END
 # touch the logfile and set the right permissions
 [ -d "`dirname "$EOXSLOG"`" ] || mkdir -p "`dirname "$EOXSLOG"`"
 touch "$EOXSLOG"
-chown -v "$VIRES_USER:$VIRES_GROUP" "$EOXSLOG"
-chmod -v 0664 "$EOXSLOG"
+chown "$VIRES_USER:$VIRES_GROUP" "$EOXSLOG"
+chmod 0664 "$EOXSLOG"
 
 #setup logrotate configuration
 cat >"/etc/logrotate.d/vires_eoxserver_${INSTANCE}" <<END
@@ -364,6 +364,15 @@ then
 else
     info "VIRES specific configuration ..."
 
+    # remove unnecessary or conflicting component paths
+    { ex "$SETTINGS" || /bin/true ; } <<END
+g/^COMPONENTS\s*=\s*(/,/^)/s/'eoxserver\.services\.ows\.wcs\.\*\*'/#&/
+g/^COMPONENTS\s*=\s*(/,/^)/s/'eoxserver\.services\.native\.\*\*'/#&/
+g/^COMPONENTS\s*=\s*(/,/^)/s/'eoxserver\.services\.gdal\.\*\*'/#&/
+g/^COMPONENTS\s*=\s*(/,/^)/s/'eoxserver\.services\.mapserver\.\*\*'/#&/
+wq
+END
+
     # extending the EOxServer settings.py
     ex "$SETTINGS" <<END
 /^INSTALLED_APPS\s*=/
@@ -384,6 +393,7 @@ VIRES_AUX_DB_IBIA = join(PROJECT_DIR, "aux_ibia.cdf")
 /^)/a
 # VIRES COMPONENTS - BEGIN - Do not edit or remove this line!
 COMPONENTS += (
+    'eoxserver.services.mapserver.wms.*',
     'vires.processes.*',
     'vires.ows.**',
     'vires.forward_models.*',
@@ -461,7 +471,7 @@ AUTHENTICATION_BACKENDS = (
 
 # Django allauth
 SITE_ID = 1 # ID from django.contrib.sites
-LOGIN_URL = "accounts/login/"
+LOGIN_URL = "/accounts/login/"
 LOGIN_REDIRECT_URL = "$BASE_URL_PATH"
 ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
 ACCOUNT_EMAIL_REQUIRED = True
@@ -515,7 +525,9 @@ urlpatterns += patterns('',
     url(r'^ows$', include("eoxs_allauth.urls")),
     # enable authentication urls
     url(r'^accounts/profile/$', ProfileUpdate.as_view(), name='account_change_profile'),
-    url(r'^accounts/tos$', TemplateView.as_view(template_name='account/tos.html'), name='tos'),
+    url(r'^accounts/faq$', TemplateView.as_view(template_name='account/faq.html'), name='faq'),
+    url(r'^accounts/datatc$', TemplateView.as_view(template_name='account/datatc.html'), name='datatc'),
+    url(r'^accounts/servicetc$', TemplateView.as_view(template_name='account/servicetc.html'), name='servicetc'),
     url(r'^accounts/', include('allauth.urls')),
 )
 # ALLAUTH URLS - END - Do not edit or remove this line!
@@ -559,13 +571,26 @@ python "$MNGCMD" makemigrations
 python "$MNGCMD" migrate
 
 #-------------------------------------------------------------------------------
-# STEP 8: CHANGE OWNERSHIP OF THE CONFIGURATION FILES
+# STEP 8: APP-SPECIFIC INITIALISATION
+
+if [ "$CONFIGURE_VIRES" == "YES" ]
+then
+    # load rangetypes
+    python "$MNGCMD" vires_rangetype_load || true
+
+    # register models
+    python "$MNGCMD" vires_model_remove --all
+    python "$MNGCMD" vires_model_add "SIFM" "IGRF12" "CHAOS-5-Combined"
+fi
+
+#-------------------------------------------------------------------------------
+# STEP 9: CHANGE OWNERSHIP OF THE CONFIGURATION FILES
 
 info "Changing ownership of $INSTROOT/$INSTANCE to $VIRES_USER"
 chown -vR "$VIRES_USER:$VIRES_GROUP" "$INSTROOT/$INSTANCE"
 
 #-------------------------------------------------------------------------------
-# STEP 9: FINAL WEB SERVER RESTART
+# STEP 10: FINAL WEB SERVER RESTART
 
 #Disabled in order to restart apache only after deployment is fully configured
 #systemctl restart httpd.service
