@@ -20,13 +20,20 @@ BASIC_AUTH_PASSWD_FILE="/etc/httpd/authn/damats-passwords"
 #VIRES_SERVER_URL="/`basename "$VIRES_SERVER_HOME"`"
 VIRES_SERVER_URL=""
 VIRES_CLIENT_URL="/`basename "$VIRES_CLIENT_HOME"`"
-CONFIG_JSON="${VIRES_CLIENT_HOME}/scripts/config.json"
+if [ "$CONFIGURE_ALLAUTH" == "YES" ]
+then
+    INSTANCE="`basename "$VIRES_SERVER_HOME"`"
+    CONFIG_JSON="${VIRES_SERVER_HOME}/${INSTANCE}/static/workspace/scripts/config.json"
+else
+    CONFIG_JSON="${VIRES_CLIENT_HOME}/scripts/config.json"
+fi
 
 #-------------------------------------------------------------------------------
 # Client configuration.
 
 # locate original replaced URL
-OLD_URL="`sudo -u "$VIRES_USER" jq -r '.mapConfig.products[].download.url | select(.)' "$CONFIG_JSON" | sed -ne '/^https\{0,1\}:\/\/localhost.*\/ows$/p' | head -n 1`"
+#OLD_URL="`sudo -u "$VIRES_USER" jq -r '.mapConfig.products[].download.url | select(.)' "$CONFIG_JSON" | sed -ne '/^https\{0,1\}:\/\/localhost.*\/ows$/p' | head -n 1`"
+OLD_URL="//.*vires\.services/ows"
 
 sudo -u "$VIRES_USER" sed -i -e "s#\"${OLD_URL}#\"${VIRES_SERVER_URL}/ows#g" "$CONFIG_JSON"
 

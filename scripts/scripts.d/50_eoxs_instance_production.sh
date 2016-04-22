@@ -62,6 +62,7 @@ SMTP_PORT=${SMTP_PORT:-25}
 SMTP_DEFAULT_SENDER="$SMTP_DEFAULT_SENDER"
 
 EOXSLOG="${VIRES_LOGDIR}/eoxserver/${INSTANCE}/eoxserver.log"
+ACCESSLOG="${VIRES_LOGDIR}/eoxserver/${INSTANCE}/access.log"
 EOXSCONF="${INSTROOT}/${INSTANCE}/${INSTANCE}/conf/eoxserver.conf"
 EOXSURL="${BASE_URL_PATH}/ows?"
 EOXSMAXSIZE="20480"
@@ -267,28 +268,40 @@ LOGGING = {
     'filters': {
         'require_debug_false': {
             '()': 'django.utils.log.RequireDebugFalse'
-        }
+        },
+        'request_filter': {
+            '()': 'django_requestlogging.logging_filters.RequestFilter'
+        },
     },
     'formatters': {
-        'simple': {
-            'format': '[%(module)s] %(levelname)s: %(message)s'
+        'default': {
+            'format': '%(asctime)s.%(msecs)03d %(name)s %(levelname)s: %(message)s',
+            'datefmt': '%Y-%m-%dT%H:%M:%S',
         },
-        'verbose': {
-            'format': '[%(asctime)s][%(module)s] %(levelname)s: %(message)s'
-        }
+        'access': {
+            'format': '%(asctime)s.%(msecs)03d %(remote_addr)s %(username)s %(name)s %(levelname)s: %(message)s',
+            'datefmt': '%Y-%m-%dT%H:%M:%S',
+        },
     },
     'handlers': {
         'eoxserver_file': {
             'level': 'DEBUG',
             'class': 'logging.handlers.WatchedFileHandler',
             'filename': '${EOXSLOG}',
-            'formatter': 'verbose',
+            'formatter': 'default',
             'filters': [],
+        },
+        'access_file': {
+            'level': 'INFO',
+            'class': 'logging.handlers.WatchedFileHandler',
+            'filename': '${ACCESSLOG}',
+            'formatter': 'access',
+            'filters': ['request_filter'],
         },
         'stderr_stream': {
             'level': 'INFO',
             'class': 'logging.StreamHandler',
-            'formatter': 'simple',
+            'formatter': 'default',
             'filters': [],
         },
     },
@@ -298,9 +311,9 @@ LOGGING = {
             'level': 'DEBUG' if DEBUG else 'INFO',
             'propagate': False,
         },
-        'vires': {
-            'handlers': ['eoxserver_file'],
-            'level': 'DEBUG' if DEBUG else 'INFO',
+        'access': {
+            'handlers': ['access_file'],
+            'level': 'INFO',
             'propagate': False,
         },
         '': {
@@ -316,10 +329,14 @@ wq
 END
 
 # touch the logfile and set the right permissions
-[ -d "`dirname "$EOXSLOG"`" ] || mkdir -p "`dirname "$EOXSLOG"`"
-touch "$EOXSLOG"
-chown "$VIRES_USER:$VIRES_GROUP" "$EOXSLOG"
-chmod 0664 "$EOXSLOG"
+_create_log_file() {
+    [ -d "`dirname "$1"`" ] || mkdir -p "`dirname "$1"`"
+    touch "$1"
+    chown "$VIRES_USER:$VIRES_GROUP" "$1"
+    chmod 0664 "$1"
+}
+_create_log_file "$EOXSLOG"
+_create_log_file "$ACCESSLOG"
 
 #setup logrotate configuration
 cat >"/etc/logrotate.d/vires_eoxserver_${INSTANCE}" <<END
@@ -329,6 +346,14 @@ $EOXSLOG {
     minsize 1M
     compress
     rotate 7
+    missingok
+}
+$ACCESSLOG {
+    copytruncate
+    weekly
+    minsize 1M
+    compress
+    rotate 8
     missingok
 }
 END
@@ -345,8 +370,12 @@ info "Application specific configuration ..."
 { ex "$SETTINGS" || /bin/true ; } <<END
 /^# VIRES APPS - BEGIN/,/^# VIRES APPS - END/d
 /^# VIRES COMPONENTS - BEGIN/,/^# VIRES COMPONENTS - END/d
+/^# VIRES LOGGING - BEGIN/,/^# VIRES LOGGING - END/d
 /^# ALLAUTH APPS - BEGIN/,/^# ALLAUTH APPS - END/d
 /^# ALLAUTH MIDDLEWARE_CLASSES - BEGIN/,/^# ALLAUTH MIDDLEWARE_CLASSES - END/d
+/^# ALLAUTH LOGGING - BEGIN/,/^# ALLAUTH LOGGING - END/d
+/^# REQUESTLOGGING APPS - BEGIN/,/^# REQUESTLOGGING APPS - END/d
+/^# REQUESTLOGGING MIDDLEWARE_CLASSES - BEGIN/,/^# REQUESTLOGGING MIDDLEWARE_CLASSES - END/d
 /^# EMAIL_BACKEND - BEGIN/,/^# EMAIL_BACKEND - END/d
 wq
 END
@@ -400,6 +429,15 @@ COMPONENTS += (
     'vires.mapserver.**'
 )
 # VIRES COMPONENTS - END - Do not edit or remove this line!
+.
+\$a
+# VIRES LOGGING - BEGIN - Do not edit or remove this line!
+LOGGING['loggers']['vires'] = {
+    'handlers': ['eoxserver_file'],
+    'level': 'DEBUG' if DEBUG else 'INFO',
+    'propagate': False,
+}
+# VIRES LOGGING - END - Do not edit or remove this line!
 .
 wq
 END
@@ -491,7 +529,6 @@ SOCIALACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 SOCIALACCOUNT_QUERY_EMAIL = True
 ACCOUNT_SIGNUP_FORM_CLASS = 'eoxs_allauth.forms.ESASignupForm'
 
-
 TEMPLATE_CONTEXT_PROCESSORS = (
     # Required by allauth template tags
     'django.core.context_processors.request',
@@ -502,6 +539,15 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 EOXS_ALLAUTH_WORKSPACE_TEMPLATE="vires/workspace.html"
 
 # ALLAUTH MIDDLEWARE_CLASSES - END - Do not edit or remove this line!
+.
+\$a
+# ALLAUTH LOGGING - BEGIN - Do not edit or remove this line!
+LOGGING['loggers']['eoxs_allauth'] = {
+    'handlers': ['access_file'],
+    'level': 'DEBUG' if DEBUG else 'INFO',
+    'propagate': False,
+}
+# ALLAUTH LOGGING - END - Do not edit or remove this line!
 .
 wq
 END
@@ -558,6 +604,31 @@ DEFAULT_FROM_EMAIL = '$SMTP_DEFAULT_SENDER'
 wq
 END
 
+# REQUESTLOGGER configuration
+sudo -u "$VIRES_USER" ex "$SETTINGS" <<END
+/^INSTALLED_APPS\s*=/
+/^)/
+a
+# REQUESTLOGGING APPS - BEGIN - Do not edit or remove this line!
+INSTALLED_APPS += (
+    'django_requestlogging',
+)
+# REQUESTLOGGING APPS - END - Do not edit or remove this line!
+.
+/^MIDDLEWARE_CLASSES\s*=/
+/^)/a
+# REQUESTLOGGING MIDDLEWARE_CLASSES - BEGIN - Do not edit or remove this line!
+
+# request logger specific middleware classes
+MIDDLEWARE_CLASSES += (
+    'django_requestlogging.middleware.LogSetupMiddleware',
+)
+# REQUESTLOGGING MIDDLEWARE_CLASSES - END - Do not edit or remove this line!
+.
+wq
+END
+# end of REQUESTLOGGER configuration
+
 #-------------------------------------------------------------------------------
 # STEP 7: EOXSERVER INITIALISATION
 info "Initializing EOxServer instance '${INSTANCE}' ..."
@@ -566,7 +637,6 @@ info "Initializing EOxServer instance '${INSTANCE}' ..."
 python "$MNGCMD" collectstatic -l --noinput
 
 # setup new database
-#TODO: proper migration mamangement
 python "$MNGCMD" makemigrations
 python "$MNGCMD" migrate
 
