@@ -543,7 +543,7 @@ EOXS_ALLAUTH_WORKSPACE_TEMPLATE="vires/workspace.html"
 \$a
 # ALLAUTH LOGGING - BEGIN - Do not edit or remove this line!
 LOGGING['loggers']['eoxs_allauth'] = {
-    'handlers': ['eoxserver_file', 'access_file'],
+    'handlers': ['access_file'],
     'level': 'DEBUG' if DEBUG else 'INFO',
     'propagate': False,
 }
