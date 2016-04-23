@@ -322,7 +322,7 @@ LOGGING = {
     }
 }
 .
-/^\s*'eoxserver.resources.processes',/s/'eoxserver.resources.processes'/#&/
+g/^\s*'eoxserver.resources.processes',/s/'eoxserver.resources.processes'/#&/
 wq
 END
 
@@ -464,6 +464,8 @@ INSTALLED_APPS += (
     'allauth.socialaccount.providers.twitter',
     'allauth.socialaccount.providers.linkedin_oauth2',
     'allauth.socialaccount.providers.google',
+    #'allauth.socialaccount.providers.github',
+    #'allauth.socialaccount.providers.dropbox_oauth2',
     'django_countries',
 )
 
@@ -562,17 +564,13 @@ urlpatterns += patterns('',
     url(r'^ows$', include("eoxs_allauth.urls")),
     # enable authentication urls
     url(r'^accounts/profile/$', ProfileUpdate.as_view(), name='account_change_profile'),
-    url(r'^accounts/faq$', TemplateView.as_view(template_name='account/faq.html'), name='faq'),
-    url(r'^accounts/datatc$', TemplateView.as_view(template_name='account/datatc.html'), name='datatc'),
-    url(r'^accounts/servicetc$', TemplateView.as_view(template_name='account/servicetc.html'), name='servicetc'),
+    url(r'^accounts/tos$', TemplateView.as_view(template_name='account/tos.html'), name='tos'),
     url(r'^accounts/', include('allauth.urls')),
 )
 # ALLAUTH URLS - END - Do not edit or remove this line!
 .
 wq
 END
-
-sudo python "$MNGCMD" makemigrations eoxs_allauth
 
 fi # end of ALLAUTH configuration
 
@@ -609,6 +607,7 @@ info "Initializing EOxServer instance '${INSTANCE}' ..."
 sudo -u "$VIRES_USER" python "$MNGCMD" collectstatic -l --noinput
 
 # setup new database
+sudo -u "$VIRES_USER" python "$MNGCMD" makemigrations
 sudo -u "$VIRES_USER" python "$MNGCMD" migrate
 
 #-------------------------------------------------------------------------------
