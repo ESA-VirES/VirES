@@ -290,7 +290,7 @@ LOGGING = {
             'filters': [],
         },
         'access_file': {
-            'level': 'INFO',
+            'level': 'DEBUG',
             'class': 'logging.handlers.WatchedFileHandler',
             'filename': '${ACCESSLOG}',
             'formatter': 'access',
