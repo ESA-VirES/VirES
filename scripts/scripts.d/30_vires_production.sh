@@ -35,8 +35,8 @@ popd
 PACKAGE=EOxServer-allauth
 [ -z "`pip freeze | grep "$PACKAGE" `" ] || pip uninstall -y "$PACKAGE"
 pushd .
+cd "$VIRES_DEV_PATH/eoxs_allauth"
 [ ! -d build/ ] || rm -fvR build/
 [ ! -d dist/ ] || rm -fvR dist/
-cd "$VIRES_DEV_PATH/eoxs_allauth"
 python ./setup.py install
 popd
