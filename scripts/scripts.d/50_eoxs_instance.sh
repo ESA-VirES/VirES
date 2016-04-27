@@ -319,7 +319,7 @@ LOGGING = {
             'level': 'INFO' if DEBUG else 'WARNING',
             'propagate': False,
         },
-    }
+    },
 }
 .
 g/^\s*'eoxserver.resources.processes',/s/'eoxserver.resources.processes'/#&/
@@ -424,7 +424,7 @@ COMPONENTS += (
     'vires.processes.*',
     'vires.ows.**',
     'vires.forward_models.*',
-    'vires.mapserver.**'
+    'vires.mapserver.**',
 )
 # VIRES COMPONENTS - END - Do not edit or remove this line!
 .
@@ -469,15 +469,25 @@ INSTALLED_APPS += (
     'django_countries',
 )
 
-SOCIALACCOUNT_PROVIDERS = \
-    {'linkedin_oauth2':
-      {'SCOPE': ['r_emailaddress', 'r_basicprofile'],
-       'PROFILE_FIELDS': ['id',
+SOCIALACCOUNT_PROVIDERS = {
+    'linkedin_oauth2': {
+        'SCOPE': [
+            'r_emailaddress',
+            'r_basicprofile',
+        ],
+       'PROFILE_FIELDS': [
+            'id',
                          'first-name',
                          'last-name',
                          'email-address',
                          'picture-url',
-                         'public-profile-url', 'industry', 'positions', 'location']}}
+            'public-profile-url',
+            'industry',
+            'positions',
+            'location',
+        ],
+    },
+}
 
 # ALLAUTH APPS - END - Do not edit or remove this line!
 .
@@ -490,7 +500,7 @@ MIDDLEWARE_CLASSES += (
     'django.middleware.csrf.CsrfViewMiddleware',
     # SessionAuthenticationMiddleware is only available in django 1.7
     # 'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware'
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
 
 AUTHENTICATION_BACKENDS = (
@@ -563,10 +573,26 @@ urlpatterns += patterns('',
     url(r'^/?$', eoxs_allauth_workspace),
     url(r'^ows$', include("eoxs_allauth.urls")),
     # enable authentication urls
-    url(r'^accounts/profile/$', ProfileUpdate.as_view(), name='account_change_profile'),
-    url(r'^accounts/faq$', TemplateView.as_view(template_name='account/faq.html'), name='faq'),
-    url(r'^accounts/datatc$', TemplateView.as_view(template_name='account/datatc.html'), name='datatc'),
-    url(r'^accounts/servicetc$', TemplateView.as_view(template_name='account/servicetc.html'), name='servicetc'),
+    url(
+        r'^accounts/profile/$',
+        ProfileUpdate.as_view(),
+        name='account_change_profile'
+    ),
+    url(
+        r'^accounts/faq$',
+        TemplateView.as_view(template_name='account/faq.html'),
+        name='faq'
+    ),
+    url(
+        r'^accounts/datatc$',
+        TemplateView.as_view(template_name='account/datatc.html'),
+        name='datatc'
+    ),
+    url(
+        r'^accounts/servicetc$',
+         TemplateView.as_view(template_name='account/servicetc.html'),
+        name='servicetc'
+    ),
     url(r'^accounts/', include('allauth.urls')),
 )
 # ALLAUTH URLS - END - Do not edit or remove this line!

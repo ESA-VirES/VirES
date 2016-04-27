@@ -321,7 +321,7 @@ LOGGING = {
             'level': 'INFO' if DEBUG else 'WARNING',
             'propagate': False,
         },
-    }
+    },
 }
 .
 g/^\s*'eoxserver.resources.processes',/s/'eoxserver.resources.processes'/#&/
@@ -426,7 +426,7 @@ COMPONENTS += (
     'vires.processes.*',
     'vires.ows.**',
     'vires.forward_models.*',
-    'vires.mapserver.**'
+    'vires.mapserver.**',
 )
 # VIRES COMPONENTS - END - Do not edit or remove this line!
 .
@@ -570,10 +570,26 @@ urlpatterns += patterns('',
     url(r'^/?$', eoxs_allauth_workspace),
     url(r'^ows$', include("eoxs_allauth.urls")),
     # enable authentication urls
-    url(r'^accounts/profile/$', ProfileUpdate.as_view(), name='account_change_profile'),
-    url(r'^accounts/faq$', TemplateView.as_view(template_name='account/faq.html'), name='faq'),
-    url(r'^accounts/datatc$', TemplateView.as_view(template_name='account/datatc.html'), name='datatc'),
-    url(r'^accounts/servicetc$', TemplateView.as_view(template_name='account/servicetc.html'), name='servicetc'),
+    url(
+        r'^accounts/profile/$',
+        ProfileUpdate.as_view(),
+        name='account_change_profile'
+    ),
+    url(
+        r'^accounts/faq$',
+        TemplateView.as_view(template_name='account/faq.html'),
+        name='faq'
+    ),
+    url(
+        r'^accounts/datatc$',
+        TemplateView.as_view(template_name='account/datatc.html'),
+        name='datatc'
+    ),
+    url(
+        r'^accounts/servicetc$',
+         TemplateView.as_view(template_name='account/servicetc.html'),
+        name='servicetc'
+    ),
     url(r'^accounts/', include('allauth.urls')),
 )
 # ALLAUTH URLS - END - Do not edit or remove this line!
