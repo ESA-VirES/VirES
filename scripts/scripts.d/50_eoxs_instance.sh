@@ -131,7 +131,6 @@ sudo -u "$VIRES_USER" ex "$SETTINGS" <<END
 1,\$s:\(STATIC_URL[	 ]*=[	 ]*\).*:\1'$STATIC_URL_PATH/':
 wq
 END
-#ALLOWED_HOSTS = []
 
 #-------------------------------------------------------------------------------
 # STEP 4: APACHE WEB SERVER INTEGRATION
@@ -477,10 +476,10 @@ SOCIALACCOUNT_PROVIDERS = {
         ],
        'PROFILE_FIELDS': [
             'id',
-                         'first-name',
-                         'last-name',
-                         'email-address',
-                         'picture-url',
+            'first-name',
+            'last-name',
+            'email-address',
+            'picture-url',
             'public-profile-url',
             'industry',
             'positions',
