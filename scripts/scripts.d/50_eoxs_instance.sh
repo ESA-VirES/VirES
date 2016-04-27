@@ -310,7 +310,7 @@ LOGGING = {
         },
         'access': {
             'handlers': ['access_file'],
-            'level': 'INFO',
+            'level': 'DEBUG' if DEBUG else 'INFO',
             'propagate': False,
         },
         '': {
