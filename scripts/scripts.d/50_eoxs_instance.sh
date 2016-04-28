@@ -496,6 +496,7 @@ SOCIALACCOUNT_PROVIDERS = {
 
 # allauth specific middleware classes
 MIDDLEWARE_CLASSES += (
+    'eoxs_allauth.middleware.AccessLoggingMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     # SessionAuthenticationMiddleware is only available in django 1.7
     # 'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
@@ -515,7 +516,8 @@ LOGIN_URL = "/accounts/login/"
 LOGIN_REDIRECT_URL = "$BASE_URL_PATH"
 ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
 ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
+#ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
+ACCOUNT_EMAIL_VERIFICATION = 'none'
 ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 3
 ACCOUNT_UNIQUE_EMAIL = True
 #ACCOUNT_EMAIL_SUBJECT_PREFIX = [vires.services]
@@ -527,7 +529,8 @@ ACCOUNT_LOGIN_ON_PASSWORD_RESET = True
 ACCOUNT_USERNAME_REQUIRED = True
 SOCIALACCOUNT_AUTO_SIGNUP = False
 SOCIALACCOUNT_EMAIL_REQUIRED = True
-SOCIALACCOUNT_EMAIL_VERIFICATION = 'mandatory'
+#SOCIALACCOUNT_EMAIL_VERIFICATION = 'mandatory'
+SOCIALACCOUNT_EMAIL_VERIFICATION = ACCOUNT_EMAIL_VERIFICATION
 SOCIALACCOUNT_QUERY_EMAIL = True
 ACCOUNT_SIGNUP_FORM_CLASS = 'eoxs_allauth.forms.ESASignupForm'
 
@@ -538,17 +541,28 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.contrib.messages.context_processors.messages',
 )
 
-EOXS_ALLAUTH_WORKSPACE_TEMPLATE="vires/workspace.html"
+# EOxServer AllAuth
+PROFILE_UPDATE_SUCCESS_URL = "/accounts/profile/"
+PROFILE_UPDATE_SUCCESS_MESSAGE = "Profile was updated successfully."
+PROFILE_UPDATE_TEMPLATE = "account/userprofile_update_form.html"
+WORKSPACE_TEMPLATE="vires/workspace.html"
 
 # ALLAUTH MIDDLEWARE_CLASSES - END - Do not edit or remove this line!
 .
 \$a
 # ALLAUTH LOGGING - BEGIN - Do not edit or remove this line!
-LOGGING['loggers']['eoxs_allauth'] = {
-    'handlers': ['access_file'],
-    'level': 'DEBUG' if DEBUG else 'INFO',
-    'propagate': False,
-}
+LOGGING['loggers'].update({
+    'eoxs_allauth': {
+        'handlers': ['access_file'],
+        'level': 'DEBUG' if DEBUG else 'INFO',
+        'propagate': False,
+    },
+    'django.request': {
+        'handlers': ['access_file'],
+        'level': 'DEBUG' if DEBUG else 'INFO',
+        'propagate': False,
+    },
+})
 # ALLAUTH LOGGING - END - Do not edit or remove this line!
 .
 wq
@@ -564,17 +578,16 @@ END
     sudo -u "$VIRES_USER" ex "$URLS" <<END
 $ a
 # ALLAUTH URLS - BEGIN - Do not edit or remove this line!
-from eoxs_allauth.views import workspace as eoxs_allauth_workspace
-from eoxs_allauth.views import ProfileUpdate
+import eoxs_allauth.views
 from django.views.generic import TemplateView
 
 urlpatterns += patterns('',
-    url(r'^/?$', eoxs_allauth_workspace),
-    url(r'^ows$', include("eoxs_allauth.urls")),
+    url(r'^/?$', eoxs_allauth.views.workspace),
+    url(r'^ows$', eoxs_allauth.views.wrapped_ows),
     # enable authentication urls
     url(
         r'^accounts/profile/$',
-        ProfileUpdate.as_view(),
+        eoxs_allauth.views.ProfileUpdate.as_view(),
         name='account_change_profile'
     ),
     url(
