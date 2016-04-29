@@ -590,12 +590,7 @@ from django.views.generic import TemplateView
 urlpatterns += patterns('',
     url(r'^/?$', eoxs_allauth.views.workspace),
     url(r'^ows$', eoxs_allauth.views.wrapped_ows),
-    # enable authentication urls
-    url(
-        r'^accounts/profile/$',
-        eoxs_allauth.views.ProfileUpdate.as_view(),
-        name='account_change_profile'
-    ),
+    url(r'^accounts/', include('eoxs_allauth.urls')),
     url(
         r'^accounts/faq$',
         TemplateView.as_view(template_name='account/faq.html'),
@@ -611,7 +606,6 @@ urlpatterns += patterns('',
          TemplateView.as_view(template_name='account/servicetc.html'),
         name='servicetc'
     ),
-    url(r'^accounts/', include('allauth.urls')),
 )
 # ALLAUTH URLS - END - Do not edit or remove this line!
 .

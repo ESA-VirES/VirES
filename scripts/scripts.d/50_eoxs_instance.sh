@@ -516,8 +516,8 @@ LOGIN_URL = "/accounts/login/"
 LOGIN_REDIRECT_URL = "$BASE_URL_PATH"
 ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
 ACCOUNT_EMAIL_REQUIRED = True
-#ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
-ACCOUNT_EMAIL_VERIFICATION = 'none'
+ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
+#ACCOUNT_EMAIL_VERIFICATION = 'none'
 ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 3
 ACCOUNT_UNIQUE_EMAIL = True
 #ACCOUNT_EMAIL_SUBJECT_PREFIX = [vires.services]
@@ -584,12 +584,7 @@ from django.views.generic import TemplateView
 urlpatterns += patterns('',
     url(r'^/?$', eoxs_allauth.views.workspace),
     url(r'^ows$', eoxs_allauth.views.wrapped_ows),
-    # enable authentication urls
-    url(
-        r'^accounts/profile/$',
-        eoxs_allauth.views.ProfileUpdate.as_view(),
-        name='account_change_profile'
-    ),
+    url(r'^accounts/', include('eoxs_allauth.urls')),
     url(
         r'^accounts/faq$',
         TemplateView.as_view(template_name='account/faq.html'),
@@ -605,7 +600,6 @@ urlpatterns += patterns('',
          TemplateView.as_view(template_name='account/servicetc.html'),
         name='servicetc'
     ),
-    url(r'^accounts/', include('allauth.urls')),
 )
 # ALLAUTH URLS - END - Do not edit or remove this line!
 .
