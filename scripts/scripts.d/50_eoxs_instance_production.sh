@@ -21,6 +21,7 @@ CONFIGURE_ALLAUTH=${CONFIGURE_ALLAUTH:-YES}
 # NOTE: Multiple EOxServer instances are not foreseen in VIRES.
 
 [ -z "$VIRES_HOSTNAME" ] && error "Missing the required VIRES_HOSTNAME variable!"
+[ -z "$VIRES_HOSTNAME_INTERNAL" ] && error "Missing the required VIRES_HOSTNAME_INTERNAL variable!"
 [ -z "$VIRES_SERVER_HOME" ] && error "Missing the required VIRES_SERVER_HOME variable!"
 [ -z "$VIRES_USER" ] && error "Missing the required VIRES_USER variable!"
 [ -z "$VIRES_GROUP" ] && error "Missing the required VIRES_GROUP variable!"
@@ -62,6 +63,7 @@ SMTP_PORT=${SMTP_PORT:-25}
 SMTP_DEFAULT_SENDER="$SMTP_DEFAULT_SENDER"
 
 EOXSLOG="${VIRES_LOGDIR}/eoxserver/${INSTANCE}/eoxserver.log"
+ACCESSLOG="${VIRES_LOGDIR}/eoxserver/${INSTANCE}/access.log"
 EOXSCONF="${INSTROOT}/${INSTANCE}/${INSTANCE}/conf/eoxserver.conf"
 EOXSURL="${BASE_URL_PATH}/ows?"
 EOXSMAXSIZE="20480"
@@ -119,7 +121,10 @@ info "Mapping EOxServer instance '${INSTANCE}' to URL path '${INSTANCE}' ..."
 # locate proper configuration file (see also apache configuration)
 _PORT=443 # HTTPS only
 [ -z `locate_apache_conf $_PORT $HOSTNAME` ] && error "Failed to locate Apache virtual host $HOSTNAME:$_PORT configuration!"
-locate_apache_conf $_PORT $HOSTNAME | while read CONF
+{
+    locate_apache_conf $_PORT $HOSTNAME
+    locate_apache_conf $_PORT $VIRES_HOSTNAME_INTERNAL
+} | while read CONF
 do
     { ex "$CONF" || /bin/true ; } <<END
 /EOXS00_BEGIN/,/EOXS00_END/de
@@ -252,7 +257,7 @@ END
 # NOTE: Set the hostname manually if needed.
 #TODO add vires.services and env.host to ALLOWED_HOSTS
 ex "$SETTINGS" <<END
-1,\$s/\(^ALLOWED_HOSTS\s*=\s*\).*/\1['${HOSTNAME}','127.0.0.1','::1']/
+1,\$s/\(^ALLOWED_HOSTS\s*=\s*\).*/\1['${VIRES_HOSTNAME_INTERNAL}','${HOSTNAME}','127.0.0.1','::1']/
 wq
 END
 
@@ -267,28 +272,40 @@ LOGGING = {
     'filters': {
         'require_debug_false': {
             '()': 'django.utils.log.RequireDebugFalse'
-        }
+        },
+        'request_filter': {
+            '()': 'django_requestlogging.logging_filters.RequestFilter'
+        },
     },
     'formatters': {
-        'simple': {
-            'format': '[%(module)s] %(levelname)s: %(message)s'
+        'default': {
+            'format': '%(asctime)s.%(msecs)03d %(name)s %(levelname)s: %(message)s',
+            'datefmt': '%Y-%m-%dT%H:%M:%S',
         },
-        'verbose': {
-            'format': '[%(asctime)s][%(module)s] %(levelname)s: %(message)s'
-        }
+        'access': {
+            'format': '%(asctime)s.%(msecs)03d %(remote_addr)s %(username)s %(name)s %(levelname)s: %(message)s',
+            'datefmt': '%Y-%m-%dT%H:%M:%S',
+        },
     },
     'handlers': {
         'eoxserver_file': {
             'level': 'DEBUG',
             'class': 'logging.handlers.WatchedFileHandler',
             'filename': '${EOXSLOG}',
-            'formatter': 'verbose',
+            'formatter': 'default',
             'filters': [],
+        },
+        'access_file': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.WatchedFileHandler',
+            'filename': '${ACCESSLOG}',
+            'formatter': 'access',
+            'filters': ['request_filter'],
         },
         'stderr_stream': {
             'level': 'INFO',
             'class': 'logging.StreamHandler',
-            'formatter': 'simple',
+            'formatter': 'default',
             'filters': [],
         },
     },
@@ -298,8 +315,8 @@ LOGGING = {
             'level': 'DEBUG' if DEBUG else 'INFO',
             'propagate': False,
         },
-        'vires': {
-            'handlers': ['eoxserver_file'],
+        'access': {
+            'handlers': ['access_file'],
             'level': 'DEBUG' if DEBUG else 'INFO',
             'propagate': False,
         },
@@ -308,7 +325,7 @@ LOGGING = {
             'level': 'INFO' if DEBUG else 'WARNING',
             'propagate': False,
         },
-    }
+    },
 }
 .
 g/^\s*'eoxserver.resources.processes',/s/'eoxserver.resources.processes'/#&/
@@ -316,10 +333,14 @@ wq
 END
 
 # touch the logfile and set the right permissions
-[ -d "`dirname "$EOXSLOG"`" ] || mkdir -p "`dirname "$EOXSLOG"`"
-touch "$EOXSLOG"
-chown "$VIRES_USER:$VIRES_GROUP" "$EOXSLOG"
-chmod 0664 "$EOXSLOG"
+_create_log_file() {
+    [ -d "`dirname "$1"`" ] || mkdir -p "`dirname "$1"`"
+    touch "$1"
+    chown "$VIRES_USER:$VIRES_GROUP" "$1"
+    chmod 0664 "$1"
+}
+_create_log_file "$EOXSLOG"
+_create_log_file "$ACCESSLOG"
 
 #setup logrotate configuration
 cat >"/etc/logrotate.d/vires_eoxserver_${INSTANCE}" <<END
@@ -329,6 +350,14 @@ $EOXSLOG {
     minsize 1M
     compress
     rotate 7
+    missingok
+}
+$ACCESSLOG {
+    copytruncate
+    weekly
+    minsize 1M
+    compress
+    rotate 8
     missingok
 }
 END
@@ -345,8 +374,12 @@ info "Application specific configuration ..."
 { ex "$SETTINGS" || /bin/true ; } <<END
 /^# VIRES APPS - BEGIN/,/^# VIRES APPS - END/d
 /^# VIRES COMPONENTS - BEGIN/,/^# VIRES COMPONENTS - END/d
+/^# VIRES LOGGING - BEGIN/,/^# VIRES LOGGING - END/d
 /^# ALLAUTH APPS - BEGIN/,/^# ALLAUTH APPS - END/d
 /^# ALLAUTH MIDDLEWARE_CLASSES - BEGIN/,/^# ALLAUTH MIDDLEWARE_CLASSES - END/d
+/^# ALLAUTH LOGGING - BEGIN/,/^# ALLAUTH LOGGING - END/d
+/^# REQUESTLOGGING APPS - BEGIN/,/^# REQUESTLOGGING APPS - END/d
+/^# REQUESTLOGGING MIDDLEWARE_CLASSES - BEGIN/,/^# REQUESTLOGGING MIDDLEWARE_CLASSES - END/d
 /^# EMAIL_BACKEND - BEGIN/,/^# EMAIL_BACKEND - END/d
 wq
 END
@@ -397,9 +430,18 @@ COMPONENTS += (
     'vires.processes.*',
     'vires.ows.**',
     'vires.forward_models.*',
-    'vires.mapserver.**'
+    'vires.mapserver.**',
 )
 # VIRES COMPONENTS - END - Do not edit or remove this line!
+.
+\$a
+# VIRES LOGGING - BEGIN - Do not edit or remove this line!
+LOGGING['loggers']['vires'] = {
+    'handlers': ['eoxserver_file'],
+    'level': 'DEBUG' if DEBUG else 'INFO',
+    'propagate': False,
+}
+# VIRES LOGGING - END - Do not edit or remove this line!
 .
 wq
 END
@@ -433,15 +475,25 @@ INSTALLED_APPS += (
     'django_countries',
 )
 
-SOCIALACCOUNT_PROVIDERS = \
-    {'linkedin_oauth2':
-      {'SCOPE': ['r_emailaddress', 'r_basicprofile'],
-       'PROFILE_FIELDS': ['id',
-                         'first-name',
-                         'last-name',
-                         'email-address',
-                         'picture-url',
-                         'public-profile-url', 'industry', 'positions', 'location']}}
+SOCIALACCOUNT_PROVIDERS = {
+    'linkedin_oauth2': {
+        'SCOPE': [
+            'r_emailaddress',
+            'r_basicprofile',
+        ],
+       'PROFILE_FIELDS': [
+            'id',
+            'first-name',
+            'last-name',
+            'email-address',
+            'picture-url',
+            'public-profile-url',
+            'industry',
+            'positions',
+            'location',
+        ],
+    },
+}
 
 # ALLAUTH APPS - END - Do not edit or remove this line!
 .
@@ -451,10 +503,11 @@ SOCIALACCOUNT_PROVIDERS = \
 
 # allauth specific middleware classes
 MIDDLEWARE_CLASSES += (
+    'eoxs_allauth.middleware.AccessLoggingMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     # SessionAuthenticationMiddleware is only available in django 1.7
     # 'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware'
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
 
 # VirES Specific middleware classes
@@ -491,7 +544,6 @@ SOCIALACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 SOCIALACCOUNT_QUERY_EMAIL = True
 ACCOUNT_SIGNUP_FORM_CLASS = 'eoxs_allauth.forms.ESASignupForm'
 
-
 TEMPLATE_CONTEXT_PROCESSORS = (
     # Required by allauth template tags
     'django.core.context_processors.request',
@@ -499,9 +551,29 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.contrib.messages.context_processors.messages',
 )
 
-EOXS_ALLAUTH_WORKSPACE_TEMPLATE="vires/workspace.html"
+# EOxServer AllAuth
+PROFILE_UPDATE_SUCCESS_URL = "/accounts/profile/"
+PROFILE_UPDATE_SUCCESS_MESSAGE = "Profile was updated successfully."
+PROFILE_UPDATE_TEMPLATE = "account/userprofile_update_form.html"
+WORKSPACE_TEMPLATE="vires/workspace.html"
 
 # ALLAUTH MIDDLEWARE_CLASSES - END - Do not edit or remove this line!
+.
+\$a
+# ALLAUTH LOGGING - BEGIN - Do not edit or remove this line!
+LOGGING['loggers'].update({
+    'eoxs_allauth': {
+        'handlers': ['access_file'],
+        'level': 'DEBUG' if DEBUG else 'INFO',
+        'propagate': False,
+    },
+    'django.request': {
+        'handlers': ['access_file'],
+        'level': 'DEBUG' if DEBUG else 'INFO',
+        'propagate': False,
+    },
+})
+# ALLAUTH LOGGING - END - Do not edit or remove this line!
 .
 wq
 END
@@ -516,19 +588,28 @@ END
     ex "$URLS" <<END
 $ a
 # ALLAUTH URLS - BEGIN - Do not edit or remove this line!
-from eoxs_allauth.views import workspace as eoxs_allauth_workspace
-from eoxs_allauth.views import ProfileUpdate
+import eoxs_allauth.views
 from django.views.generic import TemplateView
 
 urlpatterns += patterns('',
-    url(r'^/?$', eoxs_allauth_workspace),
-    url(r'^ows$', include("eoxs_allauth.urls")),
-    # enable authentication urls
-    url(r'^accounts/profile/$', ProfileUpdate.as_view(), name='account_change_profile'),
-    url(r'^accounts/faq$', TemplateView.as_view(template_name='account/faq.html'), name='faq'),
-    url(r'^accounts/datatc$', TemplateView.as_view(template_name='account/datatc.html'), name='datatc'),
-    url(r'^accounts/servicetc$', TemplateView.as_view(template_name='account/servicetc.html'), name='servicetc'),
-    url(r'^accounts/', include('allauth.urls')),
+    url(r'^/?$', eoxs_allauth.views.workspace),
+    url(r'^ows$', eoxs_allauth.views.wrapped_ows),
+    url(r'^accounts/', include('eoxs_allauth.urls')),
+    url(
+        r'^accounts/faq$',
+        TemplateView.as_view(template_name='account/faq.html'),
+        name='faq'
+    ),
+    url(
+        r'^accounts/datatc$',
+        TemplateView.as_view(template_name='account/datatc.html'),
+        name='datatc'
+    ),
+    url(
+        r'^accounts/servicetc$',
+         TemplateView.as_view(template_name='account/servicetc.html'),
+        name='servicetc'
+    ),
 )
 # ALLAUTH URLS - END - Do not edit or remove this line!
 .
@@ -558,6 +639,31 @@ DEFAULT_FROM_EMAIL = '$SMTP_DEFAULT_SENDER'
 wq
 END
 
+# REQUESTLOGGER configuration
+sudo -u "$VIRES_USER" ex "$SETTINGS" <<END
+/^INSTALLED_APPS\s*=/
+/^)/
+a
+# REQUESTLOGGING APPS - BEGIN - Do not edit or remove this line!
+INSTALLED_APPS += (
+    'django_requestlogging',
+)
+# REQUESTLOGGING APPS - END - Do not edit or remove this line!
+.
+/^MIDDLEWARE_CLASSES\s*=/
+/^)/a
+# REQUESTLOGGING MIDDLEWARE_CLASSES - BEGIN - Do not edit or remove this line!
+
+# request logger specific middleware classes
+MIDDLEWARE_CLASSES += (
+    'django_requestlogging.middleware.LogSetupMiddleware',
+)
+# REQUESTLOGGING MIDDLEWARE_CLASSES - END - Do not edit or remove this line!
+.
+wq
+END
+# end of REQUESTLOGGER configuration
+
 #-------------------------------------------------------------------------------
 # STEP 7: EOXSERVER INITIALISATION
 info "Initializing EOxServer instance '${INSTANCE}' ..."
@@ -566,7 +672,6 @@ info "Initializing EOxServer instance '${INSTANCE}' ..."
 python "$MNGCMD" collectstatic -l --noinput
 
 # setup new database
-#TODO: proper migration mamangement
 python "$MNGCMD" makemigrations
 python "$MNGCMD" migrate
 
