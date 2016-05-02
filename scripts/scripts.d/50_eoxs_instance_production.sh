@@ -257,7 +257,7 @@ END
 # NOTE: Set the hostname manually if needed.
 #TODO add vires.services and env.host to ALLOWED_HOSTS
 ex "$SETTINGS" <<END
-1,\$s/\(^ALLOWED_HOSTS\s*=\s*\).*/\1['${HOSTNAME}','127.0.0.1','::1']/
+1,\$s/\(^ALLOWED_HOSTS\s*=\s*\).*/\1['${VIRES_HOSTNAME_INTERNAL}','${HOSTNAME}','127.0.0.1','::1']/
 wq
 END
 
