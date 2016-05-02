@@ -499,6 +499,7 @@ SOCIALACCOUNT_PROVIDERS = {
 
 # allauth specific middleware classes
 MIDDLEWARE_CLASSES += (
+    'eoxs_allauth.middleware.InactiveUserLogoutMiddleware',
     'eoxs_allauth.middleware.AccessLoggingMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     # SessionAuthenticationMiddleware is only available in django 1.7
