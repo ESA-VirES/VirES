@@ -21,6 +21,7 @@ CONFIGURE_ALLAUTH=${CONFIGURE_ALLAUTH:-YES}
 # NOTE: Multiple EOxServer instances are not foreseen in VIRES.
 
 [ -z "$VIRES_HOSTNAME" ] && error "Missing the required VIRES_HOSTNAME variable!"
+[ -z "$VIRES_HOSTNAME_INTERNAL" ] && error "Missing the required VIRES_HOSTNAME_INTERNAL variable!"
 [ -z "$VIRES_SERVER_HOME" ] && error "Missing the required VIRES_SERVER_HOME variable!"
 [ -z "$VIRES_USER" ] && error "Missing the required VIRES_USER variable!"
 [ -z "$VIRES_GROUP" ] && error "Missing the required VIRES_GROUP variable!"
@@ -120,7 +121,10 @@ info "Mapping EOxServer instance '${INSTANCE}' to URL path '${INSTANCE}' ..."
 # locate proper configuration file (see also apache configuration)
 _PORT=443 # HTTPS only
 [ -z `locate_apache_conf $_PORT $HOSTNAME` ] && error "Failed to locate Apache virtual host $HOSTNAME:$_PORT configuration!"
-locate_apache_conf $_PORT $HOSTNAME | while read CONF
+{
+    locate_apache_conf $_PORT $HOSTNAME
+    locate_apache_conf $_PORT $VIRES_HOSTNAME_INTERNAL
+} | while read CONF
 do
     { ex "$CONF" || /bin/true ; } <<END
 /EOXS00_BEGIN/,/EOXS00_END/de
