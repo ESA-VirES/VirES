@@ -558,6 +558,7 @@ PROFILE_UPDATE_SUCCESS_URL = "/accounts/profile/"
 PROFILE_UPDATE_SUCCESS_MESSAGE = "Profile was updated successfully."
 PROFILE_UPDATE_TEMPLATE = "account/userprofile_update_form.html"
 WORKSPACE_TEMPLATE="vires/workspace.html"
+OWS11_EXCEPTION_XSL = join(STATIC_URL, "other/owserrorstyle.xsl")
 
 # ALLAUTH MIDDLEWARE_CLASSES - END - Do not edit or remove this line!
 .
