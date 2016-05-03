@@ -22,6 +22,7 @@ CONFIGURE_ALLAUTH=${CONFIGURE_ALLAUTH:-YES}
 
 [ -z "$VIRES_HOSTNAME" ] && error "Missing the required VIRES_HOSTNAME variable!"
 [ -z "$VIRES_HOSTNAME_INTERNAL" ] && error "Missing the required VIRES_HOSTNAME_INTERNAL variable!"
+[ -z "$VIRES_IP_ADDRESS" ] && error "Missing the required VIRES_IP_ADDRESS variable!"
 [ -z "$VIRES_SERVER_HOME" ] && error "Missing the required VIRES_SERVER_HOME variable!"
 [ -z "$VIRES_USER" ] && error "Missing the required VIRES_USER variable!"
 [ -z "$VIRES_GROUP" ] && error "Missing the required VIRES_GROUP variable!"
@@ -257,7 +258,7 @@ END
 # NOTE: Set the hostname manually if needed.
 #TODO add vires.services and env.host to ALLOWED_HOSTS
 ex "$SETTINGS" <<END
-1,\$s/\(^ALLOWED_HOSTS\s*=\s*\).*/\1['${VIRES_HOSTNAME_INTERNAL}','${HOSTNAME}','127.0.0.1','::1']/
+1,\$s/\(^ALLOWED_HOSTS\s*=\s*\).*/\1['${VIRES_HOSTNAME_INTERNAL}','${VIRES_IP_ADDRESS}','${HOSTNAME}','127.0.0.1','::1']/
 wq
 END
 
