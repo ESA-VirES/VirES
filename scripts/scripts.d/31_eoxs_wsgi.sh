@@ -36,7 +36,7 @@ END
 else
     ex "$CONF" <<END
 g/^[ 	]*WSGIDaemonProcess[ 	]*$EOXS_WSGI_PROCESS_GROUP/d
-g/^[ 	]*WSGIImportScript[ 	]*$EOXS_WSGI_IMPORT_SCRIPT[ 	]*process-group=$EOXS_WSGI_PROCESS_GROUP/d
+g/^[ 	]*WSGIImportScript.*process-group=$EOXS_WSGI_PROCESS_GROUP/d
 i
 $WSGI_DAEMON
 $WSGI_IMPORTSCRIPT
