@@ -18,8 +18,13 @@ info "Configuring WSGI daemon to be used by the EOxServer instances."
 EOXS_WSGI_NPROC=${EOXS_WSGI_NPROC:-4}
 # process group label
 EOXS_WSGI_PROCESS_GROUP=${EOXS_WSGI_PROCESS_GROUP:-eoxs_ows}
+# path to import script (http://modwsgi.readthedocs.io/en/develop/configuration-directives/WSGIImportScript.html)
+EOXS_WSGI_IMPORT_SCRIPT=${EOXS_WSGI_IMPORT_SCRIPT:-wsgi.py}
 
 WSGI_DAEMON="WSGIDaemonProcess $EOXS_WSGI_PROCESS_GROUP processes=$EOXS_WSGI_NPROC threads=1 user=$VIRES_USER group=$VIRES_GROUP maximum-requests=50000"
+WSGI_IMPORTSCRIPT="WSGIImportScript $EOXS_WSGI_IMPORT_SCRIPT process-group=$EOXS_WSGI_PROCESS_GROUP application-group=%{GLOBAL}"
+#TODO add: WSGIRestrictEmbedded On
+
 CONF="`locate_wsgi_daemon $EOXS_WSGI_PROCESS_GROUP`"
 if [ -z "$CONF" ]
 then
@@ -31,8 +36,10 @@ END
 else
     ex "$CONF" <<END
 g/^[ 	]*WSGIDaemonProcess[ 	]*$EOXS_WSGI_PROCESS_GROUP/d
+g/^[    ]*WSGIImportScript[     ]*$EOXS_WSGI_IMPORT_SCRIPT[    ]*process-group=$EOXS_WSGI_PROCESS_GROUP/d
 i
 $WSGI_DAEMON
+$WSGI_IMPORTSCRIPT
 .
 wq
 END
