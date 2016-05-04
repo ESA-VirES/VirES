@@ -19,7 +19,7 @@ EOXS_WSGI_NPROC=${EOXS_WSGI_NPROC:-4}
 # process group label
 EOXS_WSGI_PROCESS_GROUP=${EOXS_WSGI_PROCESS_GROUP:-eoxs_ows}
 
-WSGI_DAEMON="WSGIDaemonProcess $EOXS_WSGI_PROCESS_GROUP processes=$EOXS_WSGI_NPROC threads=1 user=$VIRES_USER group=$VIRES_GROUP"
+WSGI_DAEMON="WSGIDaemonProcess $EOXS_WSGI_PROCESS_GROUP processes=$EOXS_WSGI_NPROC threads=1 user=$VIRES_USER group=$VIRES_GROUP maximum-requests=50000"
 CONF="`locate_wsgi_daemon $EOXS_WSGI_PROCESS_GROUP`"
 if [ -z "$CONF" ]
 then
