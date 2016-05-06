@@ -32,10 +32,8 @@ fi
 # Client configuration.
 
 # locate original replaced URL
-#OLD_URL="`sudo -u "$VIRES_USER" jq -r '.mapConfig.products[].download.url | select(.)' "$CONFIG_JSON" | sed -ne '/^https\{0,1\}:\/\/localhost.*\/ows$/p' | head -n 1`"
-OLD_URL="//.*vires\.services/ows"
-
-sudo -u "$VIRES_USER" sed -i -e "s#\"${OLD_URL}#\"${VIRES_SERVER_URL}/ows#g" "$CONFIG_JSON"
+OLD_URL="`sudo -u "$VIRES_USER" jq -r '.mapConfig.products[].download.url | select(.)' "$CONFIG_JSON" | sort | uniq | grep '/ows$' | head -n 1`"
+[ -z "$OLD_URL" ] || sudo -u "$VIRES_USER" sed -i -e "s#\"${OLD_URL}#\"${VIRES_SERVER_URL}/ows#g" "$CONFIG_JSON"
 
 #-------------------------------------------------------------------------------
 # Integration with the Apache web server
@@ -60,7 +58,6 @@ wq
 END
 
     [ "$CONFIGURE_ALLAUTH" == "YES" ] || ex "$CONF" <<END
-/EOXC00_BEGIN/,/EOXC00_END/de
 /^[ 	]*<\/VirtualHost>/i
     # EOXC00_BEGIN - VirES Client - Do not edit or remove this line!
 
