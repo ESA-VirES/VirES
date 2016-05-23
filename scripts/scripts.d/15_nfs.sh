@@ -3,7 +3,7 @@
 #-------------------------------------------------------------------------------
 #
 # Project:          ViRES-DEMPO
-# Purpose:          postgres/postgis - installation/configuration script
+# Purpose:          NFS Server/Client - installation/configuration script
 # Authors:          Christian Schiller
 # Copyright(C):     2016 - EOX IT Services GmbH, Vienna, Austria
 # Email:            christian dot schiller at eox dot at
