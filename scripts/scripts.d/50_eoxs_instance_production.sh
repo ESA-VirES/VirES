@@ -347,10 +347,10 @@ _create_log_file "$ACCESSLOG"
 cat >"/etc/logrotate.d/vires_eoxserver_${INSTANCE}" <<END
 $EOXSLOG {
     copytruncate
-    daily
+    weekly
     minsize 1M
     compress
-    rotate 7
+    rotate 16
     missingok
 }
 $ACCESSLOG {
@@ -358,7 +358,7 @@ $ACCESSLOG {
     weekly
     minsize 1M
     compress
-    rotate 8
+    rotate 16
     missingok
 }
 END
