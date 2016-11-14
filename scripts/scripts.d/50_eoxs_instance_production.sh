@@ -254,6 +254,27 @@ maxsize = $EOXSMAXSIZE
 wq
 END
 
+# set secret key
+[ -z "$SECRET_KEY"] || ex "$SETTINGS" <<END
+/^SECRET_KEY\\s*=/d
+i
+SECRET_KEY = '$SECRET_KEY'
+.
+wq
+END
+
+# set admins
+_ADMINS="`echo $ADMINS | tr ';' '\n' | sed -s "s/^\s*\('[^']*'\)\s*,\s*\('[^']*'\)\s*$/    (\1, \2),/"`"
+ex "$SETTINGS" << END
+/^ADMINS\\s*=/,/^)/d
+i
+ADMINS = (
+$_ADMINS
+)
+.
+wq
+END
+
 # set the allowed hosts
 # NOTE: Set the hostname manually if needed.
 #TODO add vires.services and env.host to ALLOWED_HOSTS
@@ -637,6 +658,7 @@ EMAIL_USE_TLS = $_SMTP_USE_TLS
 EMAIL_HOST = '$SMTP_HOSTNAME'
 EMAIL_PORT = $SMTP_PORT
 DEFAULT_FROM_EMAIL = '$SMTP_DEFAULT_SENDER'
+SERVER_EMAIL = '$SERVER_EMAIL'
 # EMAIL_BACKEND - END - Do not edit or remove this line!
 .
 wq
