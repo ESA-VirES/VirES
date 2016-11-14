@@ -255,7 +255,7 @@ wq
 END
 
 # set secret key
-[ -z "$SECRET_KEY"] || ex "$SETTINGS" <<END
+[ -z "$SECRET_KEY" ] || ex "$SETTINGS" <<END
 /^SECRET_KEY\\s*=/d
 i
 SECRET_KEY = '$SECRET_KEY'
