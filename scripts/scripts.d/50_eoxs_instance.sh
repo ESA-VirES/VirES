@@ -343,7 +343,6 @@ $EOXSLOG {
     daily
     minsize 1M
     compress
-    rotate 7
     missingok
 }
 $ACCESSLOG {
@@ -351,7 +350,6 @@ $ACCESSLOG {
     weekly
     minsize 1M
     compress
-    rotate 8
     missingok
 }
 END
