@@ -67,6 +67,25 @@ export EOXS_WSGI_PROCESS_GROUP=${EOXS_WSGI_PROCESS_GROUP:-vires_eoxs_ows}
 # location of the VirES Client home directory
 export VIRES_CLIENT_HOME=${VIRES_CLIENT_HOME:-$VIRES_ROOT/eoxc}
 
+# WPS configuration - service name
+export VIRES_WPS_SERVICE_NAME=${VIRES_WPS_SERVICE_NAME:-eoxs_wps_async}
+# WPS configuration - permanent storage location
+export VIRES_WPS_ROOT_DIR=${VIRES_WPS_ROOT_DIR:-$VIRES_ROOT/wps}
+# WPS configuration - temporary workspace location
+export VIRES_WPS_TEMP_DIR=${VIRES_WPS_TEMP_DIR:-$VIRES_WPS_ROOT_DIR/workspace}
+# WPS configuration - permanent storage location
+export VIRES_WPS_PERM_DIR=${VIRES_WPS_PERM_DIR:-$VIRES_WPS_ROOT_DIR/public}
+# WPS configuration - persistent task storage
+export VIRES_WPS_TASK_DIR=${VIRES_WPS_TASK_DIR:-$VIRES_WPS_ROOT_DIR/tasks}
+# WPS configuration - permanent storage - public URL path
+export VIRES_WPS_URL_PATH=${VIRES_WPS_URL_PATH:-/wps}
+# WPS configuration - IPC socket file
+export VIRES_WPS_SOCKET=${VIRES_WPS_SOCKET:-$VIRES_WPS_ROOT_DIR/socket/socket}
+# WPS configuration - number of parallel workers
+export VIRES_WPS_NPROC=${VIRES_WPS_NPROC:-4}
+# WPS configuration - maximum number of queued jobs
+export VIRES_WPS_MAX_JOBS=${VIRES_WPS_MAX_JOBS:-128}
+
 # some apache configurations
 export SSL_CERTIFICATE_FILE=${SSL_CERTIFICATE_FILE:-/etc/pki/tls/certs/localhost.crt}
 export SSL_CERTIFICATE_KEYFILE=${SSL_CERTIFICATE_KEYFILE:-/etc/pki/tls/private/localhost.key}
