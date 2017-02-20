@@ -767,7 +767,23 @@ info "Initializing EOxServer instance '${INSTANCE}' ..."
 sudo -u "$VIRES_USER" python "$MNGCMD" collectstatic -l --noinput
 
 # setup new database
-sudo -u "$VIRES_USER" python "$MNGCMD" makemigrations
+#sudo -u "$VIRES_USER" python "$MNGCMD" makemigrations
+# NOTE: 1.8 'makemigrations' does not seem to properly initializei
+#       new migrations and the command has to be called for each
+#       app separately.
+#       See: http://stackoverflow.com/questions/29689365/auth-user-error-with-django-1-8-and-syncdb-migrate
+{
+python - << END
+import sys
+sys.path.append("$INSTROOT/$INSTANCE")
+import ${INSTANCE}.settings as settings
+for app in settings.INSTALLED_APPS:
+    print app.rpartition('.')[-1]
+END
+} | while read APP
+do
+    python "$MNGCMD" makemigrations "$APP"
+done
 sudo -u "$VIRES_USER" python "$MNGCMD" migrate
 
 #-------------------------------------------------------------------------------
