@@ -38,6 +38,10 @@ export ENABLE_FIREWALL=${ENABLE_FIREWALL:-NO}
 # NOTE: Critical parameter! Be sure you set it to the proper value.
 export VIRES_HOSTNAME=${VIRES_HOSTNAME}
 
+# URL root to be used by the WPS references
+# NOTE: Critical parameter! Be sure you set it to the proper value.
+export VIRES_URL_ROOT=${VIRES_URL_ROOT}
+
 # root directory of the VirES - by default set to '/srv/vires'
 export VIRES_ROOT=${VIRES_ROOT:-/var/www/vires}
 

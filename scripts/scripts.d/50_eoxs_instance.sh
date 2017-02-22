@@ -45,7 +45,7 @@ INSTSTAT_DIR="${INSTROOT}/${INSTANCE}/${INSTANCE}/static"
 WSGI="${INSTROOT}/${INSTANCE}/${INSTANCE}/wsgi.py"
 MNGCMD="${INSTROOT}/${INSTANCE}/manage.py"
 #BASE_URL_PATH="/${INSTANCE}" # DO NOT USE THE TRAILING SLASH!!!
-BASE_URL_PATH="/"
+BASE_URL_PATH=""
 STATIC_URL_PATH="/${INSTANCE}_static" # DO NOT USE THE TRAILING SLASH!!!
 
 DBENGINE="django.contrib.gis.db.backends.postgis"
@@ -60,7 +60,7 @@ PG_HBA="`sudo -u postgres psql -qA -d template_postgis -c "SHOW data_directory;"
 EOXSLOG="${VIRES_LOGDIR}/eoxserver/${INSTANCE}/eoxserver.log"
 ACCESSLOG="${VIRES_LOGDIR}/eoxserver/${INSTANCE}/access.log"
 EOXSCONF="${INSTROOT}/${INSTANCE}/${INSTANCE}/conf/eoxserver.conf"
-EOXSURL="${BASE_URL_PATH}/ows?"
+EOXSURL="${VIRES_URL_ROOT}${BASE_URL_PATH}/ows?"
 EOXSMAXSIZE="20480"
 EOXSMAXPAGE="200"
 
@@ -168,7 +168,7 @@ do
     </Directory>
 
     # WSGI service endpoint
-    WSGIScriptAlias "$BASE_URL_PATH" "${INSTROOT}/${INSTANCE}/${INSTANCE}/wsgi.py"
+    WSGIScriptAlias "${BASE_URL_PATH:-/}" "${INSTROOT}/${INSTANCE}/${INSTANCE}/wsgi.py"
     <Directory "${INSTROOT}/${INSTANCE}/${INSTANCE}">
         <Files "wsgi.py">
             WSGIProcessGroup $EOXS_WSGI_PROCESS_GROUP
@@ -530,7 +530,7 @@ AUTHENTICATION_BACKENDS = (
 # Django allauth
 SITE_ID = 1 # ID from django.contrib.sites
 LOGIN_URL = "/accounts/login/"
-LOGIN_REDIRECT_URL = "$BASE_URL_PATH"
+LOGIN_REDIRECT_URL = "${BASE_URL_PATH:-/}"
 ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
