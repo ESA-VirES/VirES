@@ -257,7 +257,7 @@ wq
 END
 
 # set the allowed hosts
-# NOTE: Set the exact hostname manually if needed.
+# NOTE: Set the hostname manually if needed.
 sudo -u "$VIRES_USER" ex "$SETTINGS" <<END
 1,\$s/\(^ALLOWED_HOSTS\s*=\s*\).*/\1['*','127.0.0.1','::1']/
 wq
@@ -520,6 +520,11 @@ MIDDLEWARE_CLASSES += (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
 
+# VirES Specific middleware classes
+MIDDLEWARE_CLASSES += (
+    'django.middleware.gzip.GZipMiddleware',
+)
+
 AUTHENTICATION_BACKENDS = (
     # Needed to login by username in Django admin, regardless of allauth
     'django.contrib.auth.backends.ModelBackend',
@@ -768,9 +773,8 @@ sudo -u "$VIRES_USER" python "$MNGCMD" collectstatic -l --noinput
 
 # setup new database
 #sudo -u "$VIRES_USER" python "$MNGCMD" makemigrations
-# NOTE: 1.8 'makemigrations' does not seem to properly initializei
-#       new migrations and the command has to be called for each
-#       app separately.
+# NOTE: Django 1.8 'makemigrations' does not seem to properly initialize
+#       new migrations and the command has to be called for each app separately.
 #       See: http://stackoverflow.com/questions/29689365/auth-user-error-with-django-1-8-and-syncdb-migrate
 {
 python - << END
