@@ -253,8 +253,6 @@ END
 ex "$EOXSCONF" <<END
 g/^[ 	#]*maxsize[ 	]/d
 /\[services\.ows\.wcs\]/a
-# maximum allowed output coverage size
-# (nether width nor height can exceed this limit)
 maxsize = $EOXSMAXSIZE
 .
 /^[	 ]*source_to_native_format_map[	 ]*=/s#\(^[	 ]*source_to_native_format_map[	 ]*=\).*#\1application/x-esa-envisat,application/x-esa-envisat#
@@ -780,7 +778,7 @@ Before=httpd.service
 [Service]
 Type=simple
 User=$VIRES_USER
-ExecStart=${ENABLE_VIRTUALENV:/usr}/bin/python -EsOm eoxs_wps_async.daemon ${INSTANCE}.settings $INSTROOT/$INSTANCE
+ExecStart=${ENABLE_VIRTUALENV:-/usr}/bin/python -EsOm eoxs_wps_async.daemon ${INSTANCE}.settings $INSTROOT/$INSTANCE
 
 [Install]
 WantedBy=multi-user.target
