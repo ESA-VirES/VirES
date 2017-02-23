@@ -598,7 +598,7 @@ wq
 END
 
 # Remove original url patterns
-{ sudo -u "$VIRES_USER" ex "$URLS" || /bin/true ; } <<END
+{ ex "$URLS" || /bin/true ; } <<END
 /^urlpatterns = patterns(/,/^)/s/^\\s/# /
 wq
 END
@@ -659,7 +659,7 @@ wq
 END
 
 # REQUESTLOGGER configuration
-sudo -u "$VIRES_USER" ex "$SETTINGS" <<END
+ex "$SETTINGS" <<END
 /^INSTALLED_APPS\s*=/
 /^)/
 a
