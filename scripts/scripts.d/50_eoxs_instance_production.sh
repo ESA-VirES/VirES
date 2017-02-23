@@ -739,6 +739,8 @@ LOGGING['loggers']['eoxs_wps_async'] = {
 wq
 END
 
+    [ -n "`grep -m 1 '\[services\.ows\.wps\]' "$EOXSCONF"`" ] || echo '[services.ows.wps]' >> "$EOXSCONF"
+
     # extending the EOxServer configuration
     ex "$EOXSCONF" <<END
 /\[services\.ows\.wps\]/a
