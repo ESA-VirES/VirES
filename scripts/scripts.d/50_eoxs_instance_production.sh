@@ -780,6 +780,7 @@ Before=httpd.service
 [Service]
 Type=simple
 User=$VIRES_USER
+ExecStartPre=/usr/bin/rm -fv $VIRES_WPS_SOCKET
 ExecStart=${ENABLE_VIRTUALENV:-/usr}/bin/python -EsOm eoxs_wps_async.daemon ${INSTANCE}.settings $INSTROOT/$INSTANCE
 
 [Install]
