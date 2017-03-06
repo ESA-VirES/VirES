@@ -37,10 +37,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   #config.vm.synced_folder "../../vires-dempo_ops", "/usr/local/vires-dempo_ops", owner: "root", group: "root"
   config.vm.synced_folder "../", "/home/vagrant/VirES", owner: "vagrant", group: "vagrant"
   # data directory (Change to your custom data directory if necessary.)
-  config.vm.synced_folder "/home/pacesm/EOX/data", "/mnt/data", owner: "root", group: "root"
-  config.vm.synced_folder "/home/pacesm", "/home/vagrant/home", owner: "vagrant", group: "vagrant"
-  config.vm.synced_folder "../../MagneticModel", "/home/vagrant/MagneticModel", owner: "vagrant", group: "vagrant"
-  config.vm.synced_folder "../../WPS-Backend", "/home/vagrant/WPS-Backend", owner: "vagrant", group: "vagrant"
+  config.vm.synced_folder "../data", "/mnt/data", owner: "root", group: "root"
 
   # Shell provisioning
   config.vm.provision :shell, :inline => "cd /home/vagrant/VirES/scripts/ ; /bin/sh ./install.sh -d"
