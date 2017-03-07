@@ -14,6 +14,7 @@ info "Configuring EOxServer instance ... "
 # Configuration switches - all default to YES
 CONFIGURE_VIRES=${CONFIGURE_VIRES:-YES}
 CONFIGURE_ALLAUTH=${CONFIGURE_ALLAUTH:-YES}
+CONFIGURE_WPSASYNC=${CONFIGURE_WPSASYNC:-YES}
 
 # NOTE: Multiple EOxServer instances are not foreseen in VIRES.
 
@@ -23,6 +24,14 @@ CONFIGURE_ALLAUTH=${CONFIGURE_ALLAUTH:-YES}
 [ -z "$VIRES_GROUP" ] && error "Missing the required VIRES_GROUP variable!"
 [ -z "$VIRES_LOGDIR" ] && error "Missing the required VIRES_LOGDIR variable!"
 [ -z "$VIRES_TMPDIR" ] && error "Missing the required VIRES_TMPDIR variable!"
+[ -z "$VIRES_WPS_SERVICE_NAME" ] && error "Missing the required VIRES_WPS_SERVICE_NAME variable!"
+[ -z "$VIRES_WPS_TEMP_DIR" ] && error "Missing the required VIRES_WPS_TEMP_DIR variable!"
+[ -z "$VIRES_WPS_PERM_DIR" ] && error "Missing the required VIRES_WPS_PERM_DIR variable!"
+[ -z "$VIRES_WPS_TASK_DIR" ] && error "Missing the required VIRES_WPS_TASK_DIR variable!"
+[ -z "$VIRES_WPS_URL_PATH" ] && error "Missing the required VIRES_WPS_URL_PATH variable!"
+[ -z "$VIRES_WPS_SOCKET" ] && error "Missing the required VIRES_WPS_SOCKET variable!"
+[ -z "$VIRES_WPS_NPROC" ] && error "Missing the required VIRES_WPS_NPROC variable!"
+[ -z "$VIRES_WPS_MAX_JOBS" ] && error "Missing the required VIRES_WPS_MAX_JOBS variable!"
 
 #HOSTNAME="$VIRES_HOSTNAME"
 INSTANCE="`basename "$VIRES_SERVER_HOME"`"
@@ -36,7 +45,7 @@ INSTSTAT_DIR="${INSTROOT}/${INSTANCE}/${INSTANCE}/static"
 WSGI="${INSTROOT}/${INSTANCE}/${INSTANCE}/wsgi.py"
 MNGCMD="${INSTROOT}/${INSTANCE}/manage.py"
 #BASE_URL_PATH="/${INSTANCE}" # DO NOT USE THE TRAILING SLASH!!!
-BASE_URL_PATH="/"
+BASE_URL_PATH=""
 STATIC_URL_PATH="/${INSTANCE}_static" # DO NOT USE THE TRAILING SLASH!!!
 
 DBENGINE="django.contrib.gis.db.backends.postgis"
@@ -51,7 +60,7 @@ PG_HBA="`sudo -u postgres psql -qA -d template_postgis -c "SHOW data_directory;"
 EOXSLOG="${VIRES_LOGDIR}/eoxserver/${INSTANCE}/eoxserver.log"
 ACCESSLOG="${VIRES_LOGDIR}/eoxserver/${INSTANCE}/access.log"
 EOXSCONF="${INSTROOT}/${INSTANCE}/${INSTANCE}/conf/eoxserver.conf"
-EOXSURL="${BASE_URL_PATH}/ows?"
+EOXSURL="${VIRES_URL_ROOT}${BASE_URL_PATH}/ows?"
 EOXSMAXSIZE="20480"
 EOXSMAXPAGE="200"
 
@@ -159,7 +168,7 @@ do
     </Directory>
 
     # WSGI service endpoint
-    WSGIScriptAlias "$BASE_URL_PATH" "${INSTROOT}/${INSTANCE}/${INSTANCE}/wsgi.py"
+    WSGIScriptAlias "${BASE_URL_PATH:-/}" "${INSTROOT}/${INSTANCE}/${INSTANCE}/wsgi.py"
     <Directory "${INSTROOT}/${INSTANCE}/${INSTANCE}">
         <Files "wsgi.py">
             WSGIProcessGroup $EOXS_WSGI_PROCESS_GROUP
@@ -248,7 +257,7 @@ wq
 END
 
 # set the allowed hosts
-# NOTE: Set the exact hostname manually if needed.
+# NOTE: Set the hostname manually if needed.
 sudo -u "$VIRES_USER" ex "$SETTINGS" <<END
 1,\$s/\(^ALLOWED_HOSTS\s*=\s*\).*/\1['*','127.0.0.1','::1']/
 wq
@@ -369,6 +378,8 @@ info "Application specific configuration ..."
 /^# VIRES APPS - BEGIN/,/^# VIRES APPS - END/d
 /^# VIRES COMPONENTS - BEGIN/,/^# VIRES COMPONENTS - END/d
 /^# VIRES LOGGING - BEGIN/,/^# VIRES LOGGING - END/d
+/^# WPSASYNC COMPONENTS - BEGIN/,/^# WPSASYNC COMPONENTS - END/d
+/^# WPSASYNC LOGGING - BEGIN/,/^# WPSASYNC LOGGING - END/d
 /^# ALLAUTH APPS - BEGIN/,/^# ALLAUTH APPS - END/d
 /^# ALLAUTH MIDDLEWARE_CLASSES - BEGIN/,/^# ALLAUTH MIDDLEWARE_CLASSES - END/d
 /^# ALLAUTH LOGGING - BEGIN/,/^# ALLAUTH LOGGING - END/d
@@ -379,6 +390,11 @@ END
 
 { sudo -u "$VIRES_USER" ex "$URLS" || /bin/true ; } <<END
 /^# ALLAUTH URLS - BEGIN/,/^# ALLAUTH URLS - END/d
+wq
+END
+
+{ sudo -u "$VIRES_USER" ex "$EOXSCONF" || /bin/true ; } <<END
+/^# WPSASYNC - BEGIN/,/^# WPSASYNC - END/d
 wq
 END
 
@@ -504,6 +520,11 @@ MIDDLEWARE_CLASSES += (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
 
+# VirES Specific middleware classes
+MIDDLEWARE_CLASSES += (
+    'django.middleware.gzip.GZipMiddleware',
+)
+
 AUTHENTICATION_BACKENDS = (
     # Needed to login by username in Django admin, regardless of allauth
     'django.contrib.auth.backends.ModelBackend',
@@ -514,7 +535,7 @@ AUTHENTICATION_BACKENDS = (
 # Django allauth
 SITE_ID = 1 # ID from django.contrib.sites
 LOGIN_URL = "/accounts/login/"
-LOGIN_REDIRECT_URL = "$BASE_URL_PATH"
+LOGIN_REDIRECT_URL = "${BASE_URL_PATH:-/}"
 ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
@@ -635,6 +656,117 @@ wq
 END
 # end of REQUESTLOGGER configuration
 
+
+# WPS-ASYNC CONFIGURATION
+if [ "$CONFIGURE_WPSASYNC" != "YES" ]
+then
+    warn "WPS async backend specific configuration is disabled."
+else
+    info "WPS async backend specific configuration ..."
+
+    # locate proper configuration file (see also apache configuration)
+    {
+        locate_apache_conf 80
+        locate_apache_conf 443
+    } | while read CONF
+    do
+        { ex "$CONF" || /bin/true ; } <<END
+/EOXS01_BEGIN/,/EOXS01_END/de
+/^[ 	]*<\/VirtualHost>/i
+    # EOXS01_BEGIN - EOxServer instance - Do not edit or remove this line!
+
+    # WPS static content
+    Alias "$VIRES_WPS_URL_PATH" "$VIRES_WPS_PERM_DIR"
+    <Directory "$VIRES_WPS_PERM_DIR">
+        EnableSendfile off
+        Options -MultiViews +FollowSymLinks
+        Header set Access-Control-Allow-Origin "*"
+    </Directory>
+
+    # EOXS01_END - EOxServer instance - Do not edit or remove this line!
+.
+wq
+END
+    done
+
+    # extending the EOxServer settings.py
+    sudo -u "$VIRES_USER" ex "$SETTINGS" <<END
+/^COMPONENTS\s*=/
+/^)/a
+# WPSASYNC COMPONENTS - BEGIN - Do not edit or remove this line!
+COMPONENTS += (
+    'eoxs_wps_async.backend',
+    'eoxs_wps_async.processes.**',
+)
+# WPSASYNC COMPONENTS - END - Do not edit or remove this line!
+.
+\$a
+# WPSASYNC LOGGING - BEGIN - Do not edit or remove this line!
+LOGGING['loggers']['eoxs_wps_async'] = {
+    'handlers': ['eoxserver_file'],
+    'level': 'DEBUG' if DEBUG else 'INFO',
+    'propagate': False,
+}
+# WPSASYNC LOGGING - END - Do not edit or remove this line!
+.
+wq
+END
+
+    [ -n "`grep -m 1 '\[services\.ows\.wps\]' "$EOXSCONF"`" ] || echo '[services.ows.wps]' >> "$EOXSCONF"
+
+    # extending the EOxServer configuration
+    sudo -u "$VIRES_USER" ex "$EOXSCONF" <<END
+/\[services\.ows\.wps\]/a
+# WPSASYNC - BEGIN - Do not edit or remove this line!
+path_temp=$VIRES_WPS_TEMP_DIR
+path_perm=$VIRES_WPS_PERM_DIR
+path_task=$VIRES_WPS_TASK_DIR
+url_base=$VIRES_URL_ROOT$VIRES_WPS_URL_PATH
+socket_file=$VIRES_WPS_SOCKET
+max_queued_jobs=$VIRES_WPS_MAX_JOBS
+num_workers=$VIRES_WPS_NPROC
+# WPSASYNC - END - Do not edit or remove this line!
+.
+wq
+END
+
+    # reset the required WPS directories
+    [ ! -d "$VIRES_WPS_TEMP_DIR" ] || rm -fRv "$VIRES_WPS_TEMP_DIR"
+    [ ! -d "$VIRES_WPS_PERM_DIR" ] || rm -fRv "$VIRES_WPS_PERM_DIR"
+    [ ! -d "$VIRES_WPS_TASK_DIR" ] || rm -fRv "$VIRES_WPS_TASK_DIR"
+
+    for D in "$VIRES_WPS_TEMP_DIR" "$VIRES_WPS_PERM_DIR" "$VIRES_WPS_TASK_DIR" "`dirname "$VIRES_WPS_SOCKET"`"
+    do
+        mkdir -p "$D"
+        chown -v "$VIRES_USER:$VIRES_GROUP" "$D"
+        chmod -v 0755 "$D"
+    done
+
+    info "WPS async backend ${VIRES_WPS_SERVICE_NAME}.service initialization ..."
+
+    cat > "/etc/systemd/system/${VIRES_WPS_SERVICE_NAME}.service" <<END
+[Unit]
+Description=Asynchronous EOxServer WPS Daemon
+After=network.target
+Before=httpd.service
+
+[Service]
+Type=simple
+User=$VIRES_USER
+ExecStartPre=/usr/bin/rm -fv $VIRES_WPS_SOCKET
+ExecStart=/usr/bin/python -EsOm eoxs_wps_async.daemon ${INSTANCE}.settings $INSTROOT/$INSTANCE
+
+[Install]
+WantedBy=multi-user.target
+END
+
+    systemctl daemon-reload
+    systemctl enable "${VIRES_WPS_SERVICE_NAME}.service"
+    systemctl restart "${VIRES_WPS_SERVICE_NAME}.service"
+    systemctl status "${VIRES_WPS_SERVICE_NAME}.service"
+
+fi # end of WPS-ASYNC configuration
+
 #-------------------------------------------------------------------------------
 # STEP 7: EOXSERVER INITIALISATION
 info "Initializing EOxServer instance '${INSTANCE}' ..."
@@ -643,7 +775,22 @@ info "Initializing EOxServer instance '${INSTANCE}' ..."
 sudo -u "$VIRES_USER" python "$MNGCMD" collectstatic -l --noinput
 
 # setup new database
-sudo -u "$VIRES_USER" python "$MNGCMD" makemigrations
+#sudo -u "$VIRES_USER" python "$MNGCMD" makemigrations
+# NOTE: Django 1.8 'makemigrations' does not seem to properly initialize
+#       new migrations and the command has to be called for each app separately.
+#       See: http://stackoverflow.com/questions/29689365/auth-user-error-with-django-1-8-and-syncdb-migrate
+{
+python - << END
+import sys
+sys.path.append("$INSTROOT/$INSTANCE")
+import ${INSTANCE}.settings as settings
+for app in settings.INSTALLED_APPS:
+    print app.rpartition('.')[-1]
+END
+} | while read APP
+do
+    python "$MNGCMD" makemigrations "$APP"
+done
 sudo -u "$VIRES_USER" python "$MNGCMD" migrate
 
 #-------------------------------------------------------------------------------
