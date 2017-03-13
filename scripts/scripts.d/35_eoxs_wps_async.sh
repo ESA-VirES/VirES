@@ -10,7 +10,7 @@
 
 info "Installing EOxServer asynchronous WPS backend."
 
-SOURCE_URL="https://github.com/DAMATS/WPS-Backend/archive/0.2.1.tar.gz"
+SOURCE_URL="https://github.com/DAMATS/WPS-Backend/archive/0.3.0.tar.gz"
 
 # set temporary directory removed after the installation
 TMP_DIR="`mktemp -d`"
