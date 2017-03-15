@@ -799,7 +799,7 @@ info "Initializing EOxServer instance '${INSTANCE}' ..."
 python "$MNGCMD" collectstatic -l --noinput
 
 # setup new database
-python "$MNGCMD" makemigrations
+# python "$MNGCMD" makemigrations
 python "$MNGCMD" migrate
 
 #-------------------------------------------------------------------------------
