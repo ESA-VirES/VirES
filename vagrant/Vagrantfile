@@ -41,6 +41,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   # Shell provisioning
   config.vm.provision :shell, :inline => "cd /home/vagrant/VirES/scripts/ ; /bin/sh ./install.sh -d"
+  config.vm.provision :shell, :inline => "sudo systemctl restart eoxs_wps_async.service" , run: "always"
+  config.vm.provision :shell, :inline => "sudo systemctl restart httpd.service" , run: "always"
 
   # Adjust Virtualbox configuration
   config.vm.provider "virtualbox" do |v|
@@ -50,7 +52,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
     # Increase memory and cpus
     v.customize ["modifyvm", :id, "--memory", 1024, "--cpus", 2]
-    # Increase performance i.e. don't use swap extensively
+    # Increase performance i.e. don't use swap extensively 
     v.customize ["modifyvm", :id, "--ioapic", "on", "--largepages", "off", "--vtxvpid", "off"]
 
     # Use GUI for debugging purposes
