@@ -478,6 +478,14 @@ for satellite, collections in VIRES_SAT2COL.items():
         (collection, satellite) for collection in collections
     )
 
+# relations between range-type satellite collections
+VIRES_TYPE2COL = {
+    "SWARM_MAG": {
+        "A": "SW_OPER_MAGA_LR_1B",
+        "C": "SW_OPER_MAGC_LR_1B",
+    },
+}
+
 # VIRES APPS - END - Do not edit or remove this line!
 .
 /^COMPONENTS\s*=/
