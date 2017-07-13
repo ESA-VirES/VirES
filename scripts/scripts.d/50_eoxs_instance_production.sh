@@ -437,7 +437,7 @@ VIRES_AUX_DB_IBIA = join(PROJECT_DIR, "aux_ibia.cdf")
 VIRES_ORBIT_COUNTER_DB = {
     'A': join(PROJECT_DIR, "SW_OPER_AUXAORBCNT.cdf"),
     'B': join(PROJECT_DIR, "SW_OPER_AUXBORBCNT.cdf"),
-    'C': join(PROJECT_DIR, "SW_OPER_AUXBORBCNT.cdf"),
+    'C': join(PROJECT_DIR, "SW_OPER_AUXCORBCNT.cdf"),
 }
 
 # TODO: Find a better way how to map a collection to the satellite!
