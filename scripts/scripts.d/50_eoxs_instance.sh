@@ -804,7 +804,7 @@ then
 
     # register models
     sudo -u "$VIRES_USER" python "$MNGCMD" vires_model_remove --all
-    sudo -u "$VIRES_USER" python "$MNGCMD" vires_model_add "SIFM" "IGRF12" "CHAOS-5-Combined"
+    sudo -u "$VIRES_USER" python "$MNGCMD" vires_model_add "SIFM" "IGRF12" "CHAOS-6-Combined"
 fi
 
 #-------------------------------------------------------------------------------
