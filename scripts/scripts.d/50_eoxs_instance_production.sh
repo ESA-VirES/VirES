@@ -330,6 +330,12 @@ LOGGING = {
             'formatter': 'default',
             'filters': [],
         },
+        'mail_admins': {
+            'level': 'WARNING',
+            'class': 'django.utils.log.AdminEmailHandler',
+            'formatter': 'default',
+            'filters': [],
+        },
     },
     'loggers': {
         'eoxserver': {
@@ -340,6 +346,11 @@ LOGGING = {
         'access': {
             'handlers': ['access_file'],
             'level': 'DEBUG' if DEBUG else 'INFO',
+            'propagate': False,
+        },
+        'django': {
+            'handlers': ['mail_admins'],
+            'level': 'WARNING',
             'propagate': False,
         },
         '': {
@@ -594,7 +605,7 @@ LOGGING['loggers'].update({
     'django.request': {
         'handlers': ['access_file'],
         'level': 'DEBUG' if DEBUG else 'INFO',
-        'propagate': False,
+        'propagate': True,
     },
 })
 # ALLAUTH LOGGING - END - Do not edit or remove this line!
@@ -682,6 +693,8 @@ INSTALLED_APPS += (
 # request logger specific middleware classes
 MIDDLEWARE_CLASSES += (
     'django_requestlogging.middleware.LogSetupMiddleware',
+    #Disable if too many 404 are reported
+    'django.middleware.common.BrokenLinkEmailsMiddleware',
 )
 # REQUESTLOGGING MIDDLEWARE_CLASSES - END - Do not edit or remove this line!
 .
