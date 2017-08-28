@@ -261,6 +261,27 @@ maxsize = $EOXSMAXSIZE
 wq
 END
 
+# set secret key
+[ -z "$SECRET_KEY" ] || ex "$SETTINGS" <<END
+/^SECRET_KEY\\s*=/d
+i
+SECRET_KEY = '$SECRET_KEY'
+.
+wq
+END
+
+# set admins
+_ADMINS="`echo $ADMINS | tr ';' '\n' | sed -s "s/^\s*\('[^']*'\)\s*,\s*\('[^']*'\)\s*$/    (\1, \2),/"`"
+ex "$SETTINGS" << END
+/^ADMINS\\s*=/,/^)/d
+i
+ADMINS = (
+$_ADMINS
+)
+.
+wq
+END
+
 # set the allowed hosts
 # NOTE: Set the hostname manually if needed.
 #TODO add vires.services and env.host to ALLOWED_HOSTS
@@ -316,6 +337,12 @@ LOGGING = {
             'formatter': 'default',
             'filters': [],
         },
+        'mail_admins': {
+            'level': 'WARNING',
+            'class': 'django.utils.log.AdminEmailHandler',
+            'formatter': 'default',
+            'filters': [],
+        },
     },
     'loggers': {
         'eoxserver': {
@@ -326,6 +353,11 @@ LOGGING = {
         'access': {
             'handlers': ['access_file'],
             'level': 'DEBUG' if DEBUG else 'INFO',
+            'propagate': False,
+        },
+        'django': {
+            'handlers': ['mail_admins'],
+            'level': 'WARNING',
             'propagate': False,
         },
         '': {
@@ -639,7 +671,7 @@ LOGGING['loggers'].update({
     'django.request': {
         'handlers': ['access_file'],
         'level': 'DEBUG' if DEBUG else 'INFO',
-        'propagate': False,
+        'propagate': True,
     },
 })
 # ALLAUTH LOGGING - END - Do not edit or remove this line!
@@ -703,6 +735,7 @@ EMAIL_USE_TLS = $_SMTP_USE_TLS
 EMAIL_HOST = '$SMTP_HOSTNAME'
 EMAIL_PORT = $SMTP_PORT
 DEFAULT_FROM_EMAIL = '$SMTP_DEFAULT_SENDER'
+SERVER_EMAIL = '$SERVER_EMAIL'
 # EMAIL_BACKEND - END - Do not edit or remove this line!
 .
 wq
@@ -726,6 +759,8 @@ INSTALLED_APPS += (
 # request logger specific middleware classes
 MIDDLEWARE_CLASSES += (
     'django_requestlogging.middleware.LogSetupMiddleware',
+    #Disable if too many 404 are reported
+    'django.middleware.common.BrokenLinkEmailsMiddleware',
 )
 # REQUESTLOGGING MIDDLEWARE_CLASSES - END - Do not edit or remove this line!
 .

@@ -16,4 +16,4 @@ info "Installing Django ..."
 # STEP 2:  PIP INSTALLERS
 # NOTE: Django 1.8 < 1.8.2 has a bug preventing PostgreSQL DB connections!
 #       Namely, do not install 'Django==1.8'.
-pip install 'Django>=1.8.2,<1.9'
+pip install 'Django>=1.8.2,<1.9a0'
