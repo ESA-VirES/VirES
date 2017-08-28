@@ -11,5 +11,5 @@
 info "Installing django-allauth ..."
 
 yum --assumeyes install python-openid python-requests-oauthlib
-pip install --upgrade --no-deps django-allauth==0.24.1
-pip install --upgrade django-countries
+pip install --upgrade --no-deps django-allauth==0.32.0
+pip install --upgrade django-countries==3.4.1
