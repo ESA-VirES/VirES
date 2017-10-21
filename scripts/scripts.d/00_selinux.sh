@@ -14,7 +14,7 @@ info "Configuring SELinux ..."
 [ `getenforce` != "Disabled" ] && setenforce "Permissive"
 
 # disable SELinux permanently
-sed -e 's/^[ 	]*SELINUX=/SELINUX=permissive/' -i /etc/selinux/config
+sed -e 's/^[ 	]*SELINUX=.*/SELINUX=permissive/' -i /etc/selinux/config
 
 # print status
 sestatus
