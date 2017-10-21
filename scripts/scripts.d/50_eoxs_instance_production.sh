@@ -388,6 +388,7 @@ $EOXSLOG {
     copytruncate
     weekly
     minsize 1M
+    rotate 560
     compress
     rotate 560
     missingok
@@ -396,6 +397,7 @@ $ACCESSLOG {
     copytruncate
     weekly
     minsize 1M
+    rotate 560
     compress
     rotate 560
     missingok
