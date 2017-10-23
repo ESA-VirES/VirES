@@ -338,7 +338,7 @@ LOGGING = {
             'filters': [],
         },
         'mail_admins': {
-            'level': 'WARNING',
+            'level': 'ERROR',
             'class': 'django.utils.log.AdminEmailHandler',
             'formatter': 'default',
             'filters': [],
@@ -357,7 +357,7 @@ LOGGING = {
         },
         'django': {
             'handlers': ['mail_admins'],
-            'level': 'WARNING',
+            'level': 'ERROR',
             'propagate': False,
         },
         '': {
@@ -758,7 +758,7 @@ INSTALLED_APPS += (
 MIDDLEWARE_CLASSES += (
     'django_requestlogging.middleware.LogSetupMiddleware',
     #Disable if too many 404 are reported
-    #Disabled on 20171022 'django.middleware.common.BrokenLinkEmailsMiddleware',
+    'django.middleware.common.BrokenLinkEmailsMiddleware',
 )
 # REQUESTLOGGING MIDDLEWARE_CLASSES - END - Do not edit or remove this line!
 .
