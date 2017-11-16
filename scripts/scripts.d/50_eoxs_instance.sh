@@ -167,6 +167,9 @@ do
         Header set Access-Control-Allow-Origin "*"
     </Directory>
 
+    # favicon redirect
+    Alias "/favicon.ico" "$INSTSTAT_DIR/other/favicon/favicon.ico"
+
     # WSGI service endpoint
     WSGIScriptAlias "${BASE_URL_PATH:-/}" "${INSTROOT}/${INSTANCE}/${INSTANCE}/wsgi.py"
     <Directory "${INSTROOT}/${INSTANCE}/${INSTANCE}">
