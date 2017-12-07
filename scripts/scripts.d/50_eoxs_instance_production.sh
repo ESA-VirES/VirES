@@ -150,6 +150,9 @@ do
         Header set Access-Control-Allow-Origin "*"
     </Directory>
 
+    # favicon redirect
+    Alias "/favicon.ico" "$INSTSTAT_DIR/other/favicon/favicon.ico"
+
     # WSGI service endpoint
     WSGIScriptAlias "${BASE_URL_PATH:-/}" "${INSTROOT}/${INSTANCE}/${INSTANCE}/wsgi.py"
     <Directory "${INSTROOT}/${INSTANCE}/${INSTANCE}">
@@ -316,6 +319,15 @@ LOGGING = {
             'formatter': 'default',
             'filters': [],
         },
+<<<<<<< HEAD
+=======
+        'mail_admins': {
+            'level': 'ERROR',
+            'class': 'django.utils.log.AdminEmailHandler',
+            'formatter': 'default',
+            'filters': [],
+        },
+>>>>>>> 4236bf87c072aad05e910627c4ac25aafe49c25b
     },
     'loggers': {
         'eoxserver': {
@@ -328,6 +340,14 @@ LOGGING = {
             'level': 'DEBUG' if DEBUG else 'INFO',
             'propagate': False,
         },
+<<<<<<< HEAD
+=======
+        'django': {
+            'handlers': ['mail_admins'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+>>>>>>> 4236bf87c072aad05e910627c4ac25aafe49c25b
         '': {
             'handlers': ['eoxserver_file'],
             'level': 'INFO' if DEBUG else 'WARNING',
@@ -356,6 +376,11 @@ $EOXSLOG {
     copytruncate
     weekly
     minsize 1M
+<<<<<<< HEAD
+=======
+    rotate 560
+    compress
+>>>>>>> 4236bf87c072aad05e910627c4ac25aafe49c25b
     rotate 560
     compress
     missingok
@@ -364,6 +389,11 @@ $ACCESSLOG {
     copytruncate
     weekly
     minsize 1M
+<<<<<<< HEAD
+=======
+    rotate 560
+    compress
+>>>>>>> 4236bf87c072aad05e910627c4ac25aafe49c25b
     rotate 560
     compress
     missingok

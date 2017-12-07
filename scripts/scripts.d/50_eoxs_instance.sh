@@ -167,6 +167,9 @@ do
         Header set Access-Control-Allow-Origin "*"
     </Directory>
 
+    # favicon redirect
+    Alias "/favicon.ico" "$INSTSTAT_DIR/other/favicon/favicon.ico"
+
     # WSGI service endpoint
     WSGIScriptAlias "${BASE_URL_PATH:-/}" "${INSTROOT}/${INSTANCE}/${INSTANCE}/wsgi.py"
     <Directory "${INSTROOT}/${INSTANCE}/${INSTANCE}">
@@ -349,18 +352,18 @@ _create_log_file "$ACCESSLOG"
 cat >"/etc/logrotate.d/vires_eoxserver_${INSTANCE}" <<END
 $EOXSLOG {
     copytruncate
-    daily
+    weekly
     minsize 1M
+    rotate 560
     compress
-    rotate 7
     missingok
 }
 $ACCESSLOG {
     copytruncate
     weekly
     minsize 1M
+    rotate 560
     compress
-    rotate 8
     missingok
 }
 END
