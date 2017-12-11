@@ -264,6 +264,27 @@ maxsize = $EOXSMAXSIZE
 wq
 END
 
+# set secret key
+[ -z "$SECRET_KEY" ] || ex "$SETTINGS" <<END
+/^SECRET_KEY\\s*=/d
+i
+SECRET_KEY = '$SECRET_KEY'
+.
+wq
+END
+
+# set admins
+_ADMINS="`echo $ADMINS | tr ';' '\n' | sed -s "s/^\s*\('[^']*'\)\s*,\s*\('[^']*'\)\s*$/    (\1, \2),/"`"
+ex "$SETTINGS" << END
+/^ADMINS\\s*=/,/^)/d
+i
+ADMINS = (
+$_ADMINS
+)
+.
+wq
+END
+
 # set the allowed hosts
 # NOTE: Set the hostname manually if needed.
 #TODO add vires.services and env.host to ALLOWED_HOSTS
@@ -319,15 +340,12 @@ LOGGING = {
             'formatter': 'default',
             'filters': [],
         },
-<<<<<<< HEAD
-=======
         'mail_admins': {
             'level': 'ERROR',
             'class': 'django.utils.log.AdminEmailHandler',
             'formatter': 'default',
             'filters': [],
         },
->>>>>>> 4236bf87c072aad05e910627c4ac25aafe49c25b
     },
     'loggers': {
         'eoxserver': {
@@ -340,14 +358,11 @@ LOGGING = {
             'level': 'DEBUG' if DEBUG else 'INFO',
             'propagate': False,
         },
-<<<<<<< HEAD
-=======
         'django': {
             'handlers': ['mail_admins'],
             'level': 'ERROR',
             'propagate': False,
         },
->>>>>>> 4236bf87c072aad05e910627c4ac25aafe49c25b
         '': {
             'handlers': ['eoxserver_file'],
             'level': 'INFO' if DEBUG else 'WARNING',
@@ -376,27 +391,15 @@ $EOXSLOG {
     copytruncate
     weekly
     minsize 1M
-<<<<<<< HEAD
-=======
     rotate 560
     compress
->>>>>>> 4236bf87c072aad05e910627c4ac25aafe49c25b
-    rotate 560
-    compress
-    missingok
 }
 $ACCESSLOG {
     copytruncate
     weekly
     minsize 1M
-<<<<<<< HEAD
-=======
     rotate 560
     compress
->>>>>>> 4236bf87c072aad05e910627c4ac25aafe49c25b
-    rotate 560
-    compress
-    missingok
 }
 END
 
@@ -464,6 +467,57 @@ INSTALLED_APPS += (
 VIRES_AUX_DB_DST = join(PROJECT_DIR, "aux_dst.cdf")
 VIRES_AUX_DB_KP = join(PROJECT_DIR, "aux_kp.cdf")
 VIRES_AUX_DB_IBIA = join(PROJECT_DIR, "aux_ibia.cdf")
+VIRES_ORBIT_COUNTER_DB = {
+    'A': join(PROJECT_DIR, "SW_OPER_AUXAORBCNT.cdf"),
+    'B': join(PROJECT_DIR, "SW_OPER_AUXBORBCNT.cdf"),
+    'C': join(PROJECT_DIR, "SW_OPER_AUXCORBCNT.cdf"),
+}
+
+# TODO: Find a better way how to map a collection to the satellite!
+#"SW_OPER_FAC_TMS_2F", ???
+
+# satellite to collection mapping
+VIRES_SAT2COL = {
+    'A': [
+        "SW_OPER_MAGA_LR_1B",
+        "SW_OPER_EFIA_PL_1B",
+        "SW_OPER_IBIATMS_2F",
+        "SW_OPER_TECATMS_2F",
+        "SW_OPER_FACATMS_2F",
+        "SW_OPER_EEFATMS_2F",
+    ],
+    'B': [
+        "SW_OPER_MAGB_LR_1B",
+        "SW_OPER_EFIB_PL_1B",
+        "SW_OPER_IBIBTMS_2F",
+        "SW_OPER_TECBTMS_2F",
+        "SW_OPER_FACBTMS_2F",
+        "SW_OPER_EEFBTMS_2F",
+    ],
+    'C': [
+        "SW_OPER_MAGC_LR_1B",
+        "SW_OPER_EFIC_PL_1B",
+        "SW_OPER_IBICTMS_2F",
+        "SW_OPER_TECCTMS_2F",
+        "SW_OPER_FACCTMS_2F",
+        "SW_OPER_EEFCTMS_2F",
+    ],
+}
+
+# collection to satellite mapping
+VIRES_COL2SAT = {}
+for satellite, collections in VIRES_SAT2COL.items():
+    VIRES_COL2SAT.update(
+        (collection, satellite) for collection in collections
+    )
+
+# relations between range-type satellite collections
+VIRES_TYPE2COL = {
+    "SWARM_MAG": {
+        "A": "SW_OPER_MAGA_LR_1B",
+        "C": "SW_OPER_MAGC_LR_1B",
+    },
+}
 
 # VIRES APPS - END - Do not edit or remove this line!
 .
@@ -589,6 +643,7 @@ SOCIALACCOUNT_EMAIL_REQUIRED = True
 SOCIALACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 SOCIALACCOUNT_QUERY_EMAIL = True
 ACCOUNT_SIGNUP_FORM_CLASS = 'eoxs_allauth.forms.ESASignupForm'
+ACCOUNT_SIGNUP_EMAIL_ENTER_TWICE = True
 
 TEMPLATE_CONTEXT_PROCESSORS = (
     # Required by allauth template tags
@@ -681,6 +736,7 @@ EMAIL_USE_TLS = $_SMTP_USE_TLS
 EMAIL_HOST = '$SMTP_HOSTNAME'
 EMAIL_PORT = $SMTP_PORT
 DEFAULT_FROM_EMAIL = '$SMTP_DEFAULT_SENDER'
+SERVER_EMAIL = '$SERVER_EMAIL'
 # EMAIL_BACKEND - END - Do not edit or remove this line!
 .
 wq
@@ -704,6 +760,8 @@ INSTALLED_APPS += (
 # request logger specific middleware classes
 MIDDLEWARE_CLASSES += (
     'django_requestlogging.middleware.LogSetupMiddleware',
+    #Disable if too many 404 are reported
+    'django.middleware.common.BrokenLinkEmailsMiddleware',
 )
 # REQUESTLOGGING MIDDLEWARE_CLASSES - END - Do not edit or remove this line!
 .
@@ -848,7 +906,7 @@ then
 
     # register models
     python "$MNGCMD" vires_model_remove --all
-    python "$MNGCMD" vires_model_add "SIFM" "IGRF12" "CHAOS-5-Combined"
+    python "$MNGCMD" vires_model_add "SIFM" "IGRF12" "CHAOS-6-Combined"
 fi
 
 #-------------------------------------------------------------------------------
