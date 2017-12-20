@@ -150,6 +150,9 @@ do
         Header set Access-Control-Allow-Origin "*"
     </Directory>
 
+    # favicon redirect
+    Alias "/favicon.ico" "$INSTSTAT_DIR/other/favicon/favicon.ico"
+
     # WSGI service endpoint
     WSGIScriptAlias "${BASE_URL_PATH:-/}" "${INSTROOT}/${INSTANCE}/${INSTANCE}/wsgi.py"
     <Directory "${INSTROOT}/${INSTANCE}/${INSTANCE}">
@@ -669,7 +672,7 @@ LOGGING['loggers'].update({
     'django.request': {
         'handlers': ['access_file'],
         'level': 'DEBUG' if DEBUG else 'INFO',
-        'propagate': True,
+        'propagate': False,
     },
 })
 # ALLAUTH LOGGING - END - Do not edit or remove this line!
@@ -885,10 +888,16 @@ python "$MNGCMD" collectstatic -l --noinput
 
 # setup new database
 # python "$MNGCMD" makemigrations
+##  setup this procedure to ensure that migration run in the right order 
+python "$MNGCMD" migrate sites
+python "$MNGCMD" migrate contenttypes
+python "$MNGCMD" migrate admin
+python "$MNGCMD" migrate auth
 python "$MNGCMD" migrate
 
 #-------------------------------------------------------------------------------
 # STEP 8: APP-SPECIFIC INITIALISATION
+info "APP specific initialisatins (ragetypes, models, etc.) ..."
 
 if [ "$CONFIGURE_VIRES" == "YES" ]
 then
