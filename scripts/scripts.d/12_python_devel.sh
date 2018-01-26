@@ -1,16 +1,13 @@
 #!/bin/sh
 #-------------------------------------------------------------------------------
 #
-# Purpose: django-requestlogging installation
+# Purpose: Install Python development files.
 # Author(s): Martin Paces <martin.paces@eox.at>
 #-------------------------------------------------------------------------------
-# Copyright (C) 2016 EOX IT Services GmbH
+# Copyright (C) 2015 EOX IT Services GmbH
 
 . `dirname $0`/../lib_logging.sh
-. `dirname $0`/../lib_virtualenv.sh
 
-info "Installing django-requestlogging ..."
+info "Installing Python development files ..."
 
-activate_virtualenv
-
-pip install --upgrade --no-deps django-requestlogging
+yum --assumeyes install install python-devel gcc-gfortran gcc-c++

@@ -7,41 +7,40 @@
 # Copyright (C) 2015 EOX IT Services GmbH
 
 . `dirname $0`/../lib_logging.sh
+. `dirname $0`/../lib_util.sh
 
 info "Adding VirES client to static files..."
 
 [ -z "$VIRES_SERVER_HOME" ] && error "Missing the required VIRES_SERVER_HOME variable!"
 [ -z "$CONTRIB_DIR" ] && error "Missing the required CONTRIB_DIR variable!"
-[ -z "$VIRES_USER" ] && error "Missing the required VIRES_USER variable!"
-[ -z "$VIRES_GROUP" ] && error "Missing the required VIRES_GROUP variable!"
+[ -z "$VIRES_INSTALL_USER" ] && error "Missing the required VIRES_INSTALL_USER variable!"
+[ -z "$VIRES_INSTALL_GROUP" ] && error "Missing the required VIRES_INSTALL_GROUP variable!"
 
-TMPDIR='/tmp/eoxc'
 INSTROOT="`dirname "$VIRES_SERVER_HOME"`"
 INSTANCE="`basename "$VIRES_SERVER_HOME"`"
-WORKSPACE="${INSTROOT}/${INSTANCE}/${INSTANCE}/static/workspace/"
+INSTALL_DIR="${INSTROOT}/${INSTANCE}/${INSTANCE}/static/workspace/"
 
 
-# locate lates TGZ package
-FNAME="`ls "$CONTRIB_DIR"/{WebClient-Framework,VirES-Client}*.tar.gz 2>/dev/null | sort | tail -n 1`"
+# locate the installation package
+FNAME="`lookup_package "$CONTRIB_DIR/"{WebClient-Framework,VirES-Client}"*.tar.gz"`"
+[ -n "$FNAME" ] || {
+    warn "Failed to locate the client installation package."
+    warn "The client installation is skipped."
+    exit 0
+}
 
-[ -n "$FNAME" -a -f "$FNAME" ] || { error "Failed to locate the installation package." ; exit 1 ; }
-
-# installing the ODA-Client
-
-# clean-up the previous installation if needed
-[ -d "$WORKSPACE" ] && rm -fR "$WORKSPACE"
-[ -d "$TMPDIR" ] && rm -fR "$TMPDIR"
-
-# init
-mkdir -p "$TMPDIR"
-
-# unpack
 info "Installation package located in: $FNAME"
-tar -xzf "$FNAME" --directory="$TMPDIR"
 
-# move to destination
-ROOT="`find "$TMPDIR" -mindepth 1 -maxdepth 1 -type d \( -name 'VirES-Client*' -o -name 'WebClient-Framework*' \) | head -n 1`"
-mv -f "$ROOT" "$WORKSPACE"
-chown -R "$VIRES_USER:$VIRES_GROUP" "$WORKSPACE"
+# remove the previous installation
+[ -d "$INSTALL_DIR" ] && rm -fR "$INSTALL_DIR"
 
-info "VirES Client added to: $WORKSPACE"
+# extract archive to a temporary directory
+create_and_enter_tmp_dir
+tar -xzf "$FNAME"
+
+# move the extracted directory to the final destination
+ROOT="`find "$PWD" -mindepth 1 -maxdepth 1 -type d \( -name 'VirES-Client*' -o -name 'WebClient-Framework*' \) | head -n 1`"
+chown -R "$VIRES_INSTALL_USER:$VIRES_INSTALL_GROUP" "$ROOT"
+mv -f "$ROOT" "$INSTALL_DIR"
+
+info "VirES Client installed to: $INSTALL_DIR"

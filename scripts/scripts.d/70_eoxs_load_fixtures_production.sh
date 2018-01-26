@@ -8,13 +8,16 @@
 
 
 . `dirname $0`/../lib_logging.sh
+. `dirname $0`/../lib_virtualenv.sh
 
 info "Loading available EOxServer fixtures ... "
 
+activate_virtualenv
+
 [ -z "$CONTRIB_DIR" ] && error "Missing the required CONTRIB_DIR variable!"
 [ -z "$VIRES_SERVER_HOME" ] && error "Missing the required VIRES_SERVER_HOME variable!"
-[ -z "$VIRES_USER" ] && error "Missing the required VIRES_USER variable!"
-[ -z "$VIRES_GROUP" ] && error "Missing the required VIRES_GROUP variable!"
+[ -z "$VIRES_INSTALL_USER" ] && error "Missing the required VIRES_INSTALL_USER variable!"
+[ -z "$VIRES_INSTALL_GROUP" ] && error "Missing the required VIRES_INSTALL_GROUP variable!"
 
 INSTANCE="`basename "$VIRES_SERVER_HOME"`"
 INSTROOT="`dirname "$VIRES_SERVER_HOME"`"
@@ -22,12 +25,12 @@ FIXTURES_DIR_SRC="${FIXTURES_DIR_SRC:-$CONTRIB_DIR/fixtures}"
 FIXTURES_DIR_DST="${INSTROOT}/${INSTANCE}/${INSTANCE}/data/fixtures"
 MNGCMD="${INSTROOT}/${INSTANCE}/manage.py"
 
-{ ls "$FIXTURES_DIR_SRC/"*.json 2>/dev/null || true ; } | while read SRC
+{ ls "$FIXTURES_DIR_SRC/"*.json 2>/dev/null || true ; } | while read SRC_FILE
 do
-    FNAME="`basename "$SRC" .json`"
-    info "Loading fixture '$FNAME' ..."
-    DST="${FIXTURES_DIR_DST}/${FNAME}.json"
-    cp "$SRC" "$DST"
-    [ -n "$VIRES_ENVIRONMENT" ] && sed -e 's|<environment>|%s|g' -i "$DST"
-    python "$MNGCMD" loaddata "$FNAME"
+    FIXTURE_NAME="`basename "$SRC_FILE" .json`"
+    info "Loading fixture '$FIXTURE_NAME' ..."
+    DST_FILE="${FIXTURES_DIR_DST}/${FIXTURE_NAME}.json"
+    cp "$SRC_FILE" "$DST_FILE"
+    [ -n "$VIRES_ENVIRONMENT" ] && sed -e 's|<environment>|%s|g' -i "$DST_FILE"
+    python "$MNGCMD" loaddata "$FIXTURE_NAME"
 done

@@ -20,7 +20,7 @@ TMPDIR='/tmp/eoxc'
 # locate lates TGZ package
 FNAME="`ls "$CONTRIB_DIR"/{WebClient-Framework,VirES-Client}*.tar.gz 2>/dev/null | sort | tail -n 1`"
 
-[ -n "$FNAME" -a -f "$FNAME" ] || { error "Failed to locate the installation package." ; exit 1 ; }
+[ -n "$FNAME" -a -f "$FNAME" ] || error "Failed to locate the installation package."
 
 # installing the ODA-Client
 

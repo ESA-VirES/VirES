@@ -36,7 +36,7 @@ then
     fi
 fi
 
-# STEP 3: ENABLE ANS START THE SERVICE
+# STEP 3: ENABLE SERVICE
 systemctl enable httpd.service
-systemctl start httpd.service
-systemctl status httpd.service
+#systemctl start httpd.service
+#systemctl status httpd.service

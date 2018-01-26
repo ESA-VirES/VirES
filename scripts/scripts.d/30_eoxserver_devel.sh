@@ -7,19 +7,20 @@
 # Copyright (C) 2015 EOX IT Services GmbH
 
 . `dirname $0`/../lib_logging.sh
+. `dirname $0`/../lib_virtualenv.sh
 
 info "Installing EOxServer in the development mode."
 
-# Path to the EOxServer development directory tree:
-EOXS_DEV_PATH="${EOXS_DEV_PATH:-/usr/local/eoxserver}"
-
+activate_virtualenv
 
 # STEP 1: INSTALL DEPENDENCIES
-yum --assumeyes install python-dateutil python-lxml proj-epsg python-setuptools
+yum --assumeyes install proj-epsg
+pip install lxml
+pip install python-dateutil
+pip install psycopg2
 
 # STEP 2: INSTALL EOXSERVER
-# Install EOxServer in the development mode.
 pushd .
-cd $EOXS_DEV_PATH
+cd "${EOXS_DEV_PATH:-/usr/local/eoxserver}"
 python ./setup.py develop
 popd

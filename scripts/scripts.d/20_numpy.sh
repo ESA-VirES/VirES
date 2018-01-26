@@ -1,16 +1,16 @@
 #!/bin/sh
 #-------------------------------------------------------------------------------
 #
-# Purpose: django-requestlogging installation
+# Purpose: numpy installation.
 # Author(s): Martin Paces <martin.paces@eox.at>
 #-------------------------------------------------------------------------------
-# Copyright (C) 2016 EOX IT Services GmbH
+# Copyright (C) 2018 EOX IT Services GmbH
 
 . `dirname $0`/../lib_logging.sh
 . `dirname $0`/../lib_virtualenv.sh
 
-info "Installing django-requestlogging ..."
+info "Installing numpy ..."
 
 activate_virtualenv
 
-pip install --upgrade --no-deps django-requestlogging
+pip install --upgrade 'numpy>=1.14.0,<1.15a0'

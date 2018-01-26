@@ -29,6 +29,7 @@ set -o pipefail
 #-------------------------------------------------------------------------------
 
 INSTALL_LOG="./install.log"
+SYSTEM_NAME="VirES"
 
 #NOTE: The optional 'user.conf' is used the custom user's configuration options
 #      overiding the defaults in 'lib_common.sh'.
@@ -37,10 +38,11 @@ INSTALL_LOG="./install.log"
 [ -f "`dirname $0`/user.conf" ] && . `dirname $0`/user.conf
 . `dirname $0`/lib_common.sh
 . `dirname $0`/lib_logging.sh
+. `dirname $0`/lib_virtualenv.sh
 
 {
     info "#"
-    info "#  --= VirES installer =-- "
+    info "#  --= $SYSTEM_NAME installer =-- "
     info "#"
     info "#   version: $VIRES_INSTALLER_VERSION"
     info "# "
@@ -72,17 +74,25 @@ INSTALL_LOG="./install.log"
     id -u "$VIRES_USER" >/dev/null 2>&1 || \
     {
         info "Creating system user: $VIRES_USER"
-        useradd -r -M -g "$VIRES_GROUP" -d "$VIRES_ROOT" -s /sbin/nologin -c "VirES system user" "$VIRES_USER"
+        useradd -r -M -g "$VIRES_GROUP" -d "$VIRES_USER_HOME" -s /sbin/nologin -c "VirES system user" "$VIRES_USER"
         usermod -L "$VIRES_USER"
     }
 
-    # just in case the ODA-OS directories do not exists create them
+    # just in case the required directories do not exists create them
     # and set the right permissions
 
-    _mkdir "$VIRES_USER:$VIRES_GROUP" 0755 "$VIRES_ROOT" "subsytem's root directory"
-    _mkdir "$VIRES_USER:$VIRES_GROUP" 0775 "$VIRES_LOGDIR" "subsytem's logging directory"
-    _mkdir "$VIRES_USER:$VIRES_GROUP" 0775 "$VIRES_DATADIR" "subsytem's long-term data storage directory"
-    _mkdir "$VIRES_USER:$VIRES_GROUP" 0775 "$VIRES_TMPDIR" "subsytem's short-term data storage directory"
+    _mkdir "$VIRES_INSTALL_USER:$VIRES_INSTALL_GROUP" 0755 "$VIRES_ROOT" "$SYSTEM_NAME root directory"
+    _mkdir "$VIRES_USER:$VIRES_GROUP" 0775 "$VIRES_USER_HOME" "'$VIRES_USER' user home directory"
+    _mkdir "$VIRES_USER:$VIRES_GROUP" 0775 "$VIRES_LOGDIR" "$SYSTEM_NAME logging directory"
+    _mkdir "$VIRES_USER:$VIRES_GROUP" 0775 "$VIRES_DATADIR" "$SYSTEM_NAME long-term data storage directory"
+    _mkdir "$VIRES_USER:$VIRES_GROUP" 0775 "$VIRES_TMPDIR" "$SYSTEM_NAME temporary storage directory"
+    _mkdir "$VIRES_USER:$VIRES_GROUP" 0775 "$VIRES_CACHE_DIR" "$SYSTEM_NAME data cache directory"
+
+    if is_virtualenv_enabled
+    then
+        is_virtualenv_root_set || exit 1
+        _mkdir "$VIRES_INSTALL_USER:$VIRES_INSTALL_GROUP" 0755 "$VIRTUALENV_ROOT" "$SYSTEM_NAME python virtualenv directory"
+    fi
 
     #-------------------------------------------------------------------------------
     # execute specific installation scripts

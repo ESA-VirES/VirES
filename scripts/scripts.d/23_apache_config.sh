@@ -1,7 +1,7 @@
 #!/bin/sh
 #-------------------------------------------------------------------------------
 #
-# Purpose: Apache web server installation.
+# Purpose: Apache web server configuration on the development machine.
 # Author(s): Martin Paces <martin.paces@eox.at>
 #-------------------------------------------------------------------------------
 # Copyright (C) 2015 EOX IT Services GmbH
@@ -144,6 +144,6 @@ cat << EOF >> /etc/udev/rules.d/50-vagrant-mount.rules
 SUBSYSTEM=="bdi",ACTION=="add",RUN+="/usr/bin/screen -m -d bash -c 'sleep 5; /bin/systemctl restart httpd.service'"
 EOF
 
-# STEP 4: RESTART THE SERVICE
-systemctl restart httpd.service
-systemctl status httpd.service
+# STEP 3: RESTART THE SERVICE
+#systemctl restart httpd.service
+#systemctl status httpd.service

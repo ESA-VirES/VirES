@@ -13,7 +13,6 @@ info "Configuring VirES client ..."
 
 [ -z "$VIRES_SERVER_HOME" ] && error "Missing the required VIRES_SERVER_HOME variable!"
 [ -z "$VIRES_CLIENT_HOME" ] && error "Missing the required VIRES_CLIENT_HOME variable!"
-[ -z "$VIRES_USER" ] && error "Missing the required VIRES_USER variable!"
 
 CONFIGURE_ALLAUTH="${CONFIGURE_ALLAUTH:-YES}"
 BASIC_AUTH_PASSWD_FILE="/etc/httpd/authn/damats-passwords"
@@ -32,8 +31,8 @@ fi
 # Client configuration.
 
 # locate original replaced URL
-OLD_URL="`sudo -u "$VIRES_USER" jq -r '.mapConfig.products[].download.url | select(.)' "$CONFIG_JSON" | sort | uniq | grep '/ows$' | head -n 1`"
-[ -z "$OLD_URL" ] || sudo -u "$VIRES_USER" sed -i -e "s#\"${OLD_URL}#\"${VIRES_SERVER_URL}/ows#g" "$CONFIG_JSON"
+OLD_URL="`jq -r '.mapConfig.products[].download.url | select(.)' "$CONFIG_JSON" | sort | uniq | grep '/ows$' | head -n 1`"
+[ -z "$OLD_URL" ] || sed -i -e "s#\"${OLD_URL}#\"${VIRES_SERVER_URL}/ows#g" "$CONFIG_JSON"
 
 #-------------------------------------------------------------------------------
 # Integration with the Apache web server
@@ -77,6 +76,5 @@ done
 
 #-------------------------------------------------------------------------------
 # Restart Apache web server.
-
-systemctl restart httpd.service
-systemctl status httpd.service
+#systemctl restart httpd.service
+#systemctl status httpd.service
