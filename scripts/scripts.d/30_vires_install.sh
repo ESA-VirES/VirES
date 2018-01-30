@@ -7,36 +7,35 @@
 # Copyright (C) 2015 EOX IT Services GmbH
 
 . `dirname $0`/../lib_logging.sh
+. `dirname $0`/../lib_virtualenv.sh
 
-info "Installing VirES-Server packages."
+info "Installing VirES-Server packages from sources ..."
+
+activate_virtualenv
 
 # Path to the VirES-Server development directory tree:
 VIRES_DEV_PATH="${VIRES_DEV_PATH:-/usr/local/vires}"
 
 # STEP 1: INSTALL DEPENDENCIES
-yum --assumeyes install python-matplotlib python-setuptools
+#pip install matplotlib
 
 # STEP 2: INSTALL VIRES
-# setup.py install keeps messy leftovers!
-# Uninstall previously installed package.
-PACKAGE=VirES-Server
-[ -z "`pip freeze | grep "$PACKAGE" `" ] || pip uninstall -y "$PACKAGE"
+
 # Install VirES EOxServer extension
 pushd .
 cd "$VIRES_DEV_PATH/vires"
-[ ! -d build/ ] || rm -fvR build/
-[ ! -d dist/ ] || rm -fvR dist/
-python ./setup.py install
+[ ! -d build/ ] || rm -fR build/
+[ ! -d dist/ ] || rm -fR dist/
+python setup.py bdist_wheel
+pip install ./dist/VirES_Server-*.whl
+rm -fR build/ dist/
 popd
 
 # STEP 3: INSTALL EOxServer django-allauth integration
-# setup.py install keeps messy leftovers!
-# Uninstall previously installed package.
-PACKAGE=EOxServer-allauth
-[ -z "`pip freeze | grep "$PACKAGE" `" ] || pip uninstall -y "$PACKAGE"
-pushd .
 cd "$VIRES_DEV_PATH/eoxs_allauth"
-[ ! -d build/ ] || rm -fvR build/
-[ ! -d dist/ ] || rm -fvR dist/
-python ./setup.py install
+[ ! -d build/ ] || rm -fR build/
+[ ! -d dist/ ] || rm -fR dist/
+python setup.py bdist_wheel
+pip install ./dist/EOxServer_allauth-*.whl
+rm -fR build/ dist/
 popd
