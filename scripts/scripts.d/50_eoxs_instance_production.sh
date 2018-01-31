@@ -916,7 +916,7 @@ then
 
     # register models
     python "$MNGCMD" vires_model_remove --all
-    python "$MNGCMD" vires_model_add "SIFM" "IGRF12" "CHAOS-6-Combined"
+    python "$MNGCMD" vires_model_add "SIFM" "IGRF12" "CHAOS-6-Combined" "CHAOS-6-Core" "CHAOS-6-Static"
 fi
 
 #-------------------------------------------------------------------------------
