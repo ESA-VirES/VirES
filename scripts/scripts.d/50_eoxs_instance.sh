@@ -660,6 +660,7 @@ from django.views.generic import TemplateView
 urlpatterns += patterns('',
     url(r'^/?$', eoxs_allauth.views.workspace),
     url(r'^ows$', eoxs_allauth.views.wrapped_ows),
+    url(r'^openows$', eoxs_allauth.views.open_ows),
     url(r'^accounts/', include('eoxs_allauth.urls')),
     url(
         r'^accounts/faq$',
