@@ -13,4 +13,4 @@ info "Installing django-requestlogging ..."
 
 activate_virtualenv
 
-pip install --upgrade --no-deps django-requestlogging
+pip install $PIP_OPTIONS django-requestlogging

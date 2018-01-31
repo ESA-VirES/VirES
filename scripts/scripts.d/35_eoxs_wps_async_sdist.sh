@@ -15,4 +15,4 @@ info "Installing EOxServer asynchronous WPS backend."
 
 activate_virtualenv
 
-pip install "$SOURCE_URL"
+pip install $PIP_OPTIONS "$SOURCE_URL"

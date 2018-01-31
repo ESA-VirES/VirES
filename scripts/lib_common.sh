@@ -141,3 +141,5 @@ export CONF_HTTPS_TEMPLATE
 # configuration switches
 export CONFIGURE_HTTP
 export CONFIGURE_HTTPS
+
+export PIP_OPTIONS="--upgrade --upgrade-strategy=only-if-needed"

@@ -1,4 +1,4 @@
-#!/bin/sh -e
+#!/bin/sh
 set -o pipefail
 #-------------------------------------------------------------------------------
 #
@@ -129,7 +129,7 @@ SYSTEM_NAME="VirES"
     do
         info "Executing installation script: $SCRIPT"
         sh -e $SCRIPT
-        [ 0 -ne "$?" ] && warn "Installation script ended with an error: $SCRIPT"
+        [ 0 -ne "$?" ] && error "Installation script ended with an error: $SCRIPT"
     done
 
     info "Installation has been completed."

@@ -914,16 +914,3 @@ fi
 
 info "Changing ownership of $INSTROOT/$INSTANCE to $VIRES_INSTALL_USER"
 chown -R "$VIRES_INSTALL_USER:$VIRES_INSTALL_GROUP" "$INSTROOT/$INSTANCE"
-
-#-------------------------------------------------------------------------------
-# STEP 10: FINAL SERVICE RESTART
-
-if [ "$CONFIGURE_WPSASYNC" = "YES" ]
-then
-    systemctl restart "${VIRES_WPS_SERVICE_NAME}.service"
-    systemctl status "${VIRES_WPS_SERVICE_NAME}.service"
-fi
-
-#Disabled in order to restart apache only after deployment is fully configured
-#systemctl restart httpd.service
-#systemctl status httpd.service

@@ -13,7 +13,7 @@ info "Installing django-allauth ..."
 
 activate_virtualenv
 
-pip install --upgrade python-openid
-pip install --upgrade requests-oauthlib
-pip install --upgrade --no-deps django-allauth==0.32.0
-pip install --upgrade django-countries==3.4.1
+pip install $PIP_OPTIONS python-openid
+pip install $PIP_OPTIONS requests-oauthlib
+pip install $PIP_OPTIONS "django-allauth==0.32.0"
+pip install $PIP_OPTIONS "django-countries==3.4.1"

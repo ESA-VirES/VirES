@@ -13,15 +13,6 @@ info "Installing EOxServer in the development mode ..."
 
 activate_virtualenv
 
-# Path to the EOxServer development directory tree:
-EOXS_DEV_PATH="${EOXS_DEV_PATH:-/usr/local/eoxserver}"
+pip install $PIP_OPTIONS lxml
 
-# STEP 1: INSTALL DEPENDENCIES
-yum --assumeyes install proj-epsg
-pip install lxml
-pip install python-dateutil
-pip install psycopg2
-
-# STEP 2: INSTALL EOXSERVER
-cd $EOXS_DEV_PATH
-python ./setup.py develop
+pip install -e "${EOXSERVER_SOURCE_PATH:-/usr/local/eoxserver}"

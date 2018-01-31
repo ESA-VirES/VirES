@@ -73,8 +73,3 @@ END
 wq
 END
 done
-
-#-------------------------------------------------------------------------------
-# Restart Apache web server.
-#systemctl restart httpd.service
-#systemctl status httpd.service

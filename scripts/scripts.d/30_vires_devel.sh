@@ -13,22 +13,4 @@ info "Installing VirES for Swarm server packages in the development mode ..."
 
 activate_virtualenv
 
-# Path to the VirES-Server development directory tree:
-VIRES_DEV_PATH="${VIRES_DEV_PATH:-/usr/local/vires}"
-
-# STEP 1: INSTALL DEPENDENCIES
-pip install matplotlib
-
-# STEP 2: INSTALL VIRES
-
-# Install VirES EOxServer extension
-pushd .
-cd "$VIRES_DEV_PATH/vires"
-python ./setup.py develop
-popd
-
-# Install EOxServer django-allauth integration
-pushd .
-cd "$VIRES_DEV_PATH/eoxs_allauth"
-python ./setup.py develop
-popd
+pip install -e "${VIRES_SOURCE_PATH:-/usr/local/vires/vires}"

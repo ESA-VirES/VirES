@@ -20,5 +20,5 @@ then
     [ -z "$CONTRIB_DIR" ] && error "Missing the required CONTRIB_DIR variable!"
     PACKAGE="`lookup_package "$CONTRIB_DIR/GDAL-*.tar.gz"`"
     [ -n "$PACKAGE" ] || error "Source distribution package not found!"
-    pip install "$PACKAGE"
+    pip install $PIP_OPTIONS "$PACKAGE"
 fi

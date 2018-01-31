@@ -1,16 +1,16 @@
 #!/bin/sh
 #-------------------------------------------------------------------------------
 #
-# Purpose: numpy installation.
+# Purpose: EOxServer WPS asynchronous back-end installation.
 # Author(s): Martin Paces <martin.paces@eox.at>
 #-------------------------------------------------------------------------------
-# Copyright (C) 2018 EOX IT Services GmbH
+# Copyright (C) 2017 EOX IT Services GmbH
 
 . `dirname $0`/../lib_logging.sh
 . `dirname $0`/../lib_virtualenv.sh
 
-info "Installing numpy ..."
+info "Installing EOxServer asynchronous WPS backend in development mode."
 
 activate_virtualenv
 
-pip install $PIP_OPTIONS 'numpy>=1.14.0,<1.15a0'
+pip install -e "${EOXS_WPS_ASYNC_SOURCE_PATH:-/usr/local/eoxs_wps_async}"

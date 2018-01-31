@@ -10,4 +10,7 @@
 
 info "Installing Python virtualend package ..."
 
-pip install virtualenv
+# NOTE: The vritualenv is installed by the system default pip
+#       which is likely outdated and some of the CLI options
+#       may not be supported.
+pip install --upgrade virtualenv

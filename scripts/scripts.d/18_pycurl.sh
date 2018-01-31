@@ -32,9 +32,9 @@
 # THE SOFTWARE.
 #-------------------------------------------------------------------------------
 
-
 . `dirname $0`/../lib_logging.sh
 
 info "Installing pyCURL ..."
 
+# Should we activate virtualenv?
 pip install pycurl

@@ -13,4 +13,4 @@ info "Installing scipy ..."
 
 activate_virtualenv
 
-pip install --upgrade 'scipy>=1.0.0,<1.1a0'
+pip install $PIP_OPTIONS 'scipy>=1.0.0,<1.1a0'

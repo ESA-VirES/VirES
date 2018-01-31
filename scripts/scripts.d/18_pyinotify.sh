@@ -32,9 +32,9 @@
 # THE SOFTWARE.
 #-------------------------------------------------------------------------------
 
-
 . `dirname $0`/../lib_logging.sh
 
 info "Installing pyinotify ..."
 
+# Should we activate virtualenv?
 pip install pyinotify

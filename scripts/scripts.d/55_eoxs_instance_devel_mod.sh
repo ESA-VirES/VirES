@@ -26,8 +26,3 @@ g/^DEBUG\s*=/s#\(^DEBUG\s*=\s*\).*#\1True#
 .
 wq
 END
-
-#-------------------------------------------------------------------------------
-# FINAL WEB SERVER RESTART
-#systemctl restart httpd.service
-#systemctl status httpd.service

@@ -13,6 +13,6 @@ info "Installing SpacePy package and its dependencies ..."
 
 activate_virtualenv
 
-# install the package and its dependencies
 yum --assumeyes install cdf
-pip install --upgrade SpacePy
+
+pip install $PIP_OPTIONS SpacePy

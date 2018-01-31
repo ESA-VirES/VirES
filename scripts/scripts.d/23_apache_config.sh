@@ -136,14 +136,3 @@ END
 else
         info "HTTPS configuration skipped."
 fi
-
-# STEP 2: Configure restart after mount of vagrant shares
-
-cat << EOF >> /etc/udev/rules.d/50-vagrant-mount.rules
-# Restart httpd when a vagrant share is mounted
-SUBSYSTEM=="bdi",ACTION=="add",RUN+="/usr/bin/screen -m -d bash -c 'sleep 5; /bin/systemctl restart httpd.service'"
-EOF
-
-# STEP 3: RESTART THE SERVICE
-#systemctl restart httpd.service
-#systemctl status httpd.service
