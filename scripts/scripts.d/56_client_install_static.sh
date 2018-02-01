@@ -8,18 +8,13 @@
 
 . `dirname $0`/../lib_logging.sh
 . `dirname $0`/../lib_util.sh
+. `dirname $0`/../lib_eoxserver.sh
 
 info "Adding VirES client to static files..."
 
-[ -z "$VIRES_SERVER_HOME" ] && error "Missing the required VIRES_SERVER_HOME variable!"
-[ -z "$CONTRIB_DIR" ] && error "Missing the required CONTRIB_DIR variable!"
-[ -z "$VIRES_INSTALL_USER" ] && error "Missing the required VIRES_INSTALL_USER variable!"
-[ -z "$VIRES_INSTALL_GROUP" ] && error "Missing the required VIRES_INSTALL_GROUP variable!"
+set_instance_variables
 
-INSTROOT="`dirname "$VIRES_SERVER_HOME"`"
-INSTANCE="`basename "$VIRES_SERVER_HOME"`"
-INSTALL_DIR="${INSTROOT}/${INSTANCE}/${INSTANCE}/static/workspace/"
-
+required_variables STATIC_DIR CONTRIB_DIR VIRES_INSTALL_USER VIRES_INSTALL_GROUP
 
 # locate the installation package
 FNAME="`lookup_package "$CONTRIB_DIR/"{WebClient-Framework,VirES-Client}"*.tar.gz"`"
@@ -31,10 +26,12 @@ FNAME="`lookup_package "$CONTRIB_DIR/"{WebClient-Framework,VirES-Client}"*.tar.g
 
 info "Installation package located in: $FNAME"
 
+INSTALL_DIR="${STATIC_DIR}/workspace/"
+
 # remove the previous installation
 [ -d "$INSTALL_DIR" ] && rm -fR "$INSTALL_DIR"
 
-# extract archive to a temporary directory
+# extract archive in a temporary directory
 create_and_enter_tmp_dir
 tar -xzf "$FNAME"
 

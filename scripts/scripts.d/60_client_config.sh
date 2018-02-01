@@ -8,21 +8,20 @@
 
 . `dirname $0`/../lib_logging.sh
 . `dirname $0`/../lib_apache.sh
+. `dirname $0`/../lib_eoxserver.sh
+
+CONFIGURE_ALLAUTH="${CONFIGURE_ALLAUTH:-YES}"
 
 info "Configuring VirES client ..."
 
-[ -z "$VIRES_SERVER_HOME" ] && error "Missing the required VIRES_SERVER_HOME variable!"
-[ -z "$VIRES_CLIENT_HOME" ] && error "Missing the required VIRES_CLIENT_HOME variable!"
+set_instance_variables
+required_variables VIRES_CLIENT_HOME STATIC_DIR OWS_URL
 
-CONFIGURE_ALLAUTH="${CONFIGURE_ALLAUTH:-YES}"
-BASIC_AUTH_PASSWD_FILE="/etc/httpd/authn/damats-passwords"
-#VIRES_SERVER_URL="/`basename "$VIRES_SERVER_HOME"`"
-VIRES_SERVER_URL=""
 VIRES_CLIENT_URL="/`basename "$VIRES_CLIENT_HOME"`"
+
 if [ "$CONFIGURE_ALLAUTH" == "YES" ]
 then
-    INSTANCE="`basename "$VIRES_SERVER_HOME"`"
-    CONFIG_JSON="${VIRES_SERVER_HOME}/${INSTANCE}/static/workspace/scripts/config.json"
+    CONFIG_JSON="${STATIC_DIR}/workspace/scripts/config.json"
 else
     CONFIG_JSON="${VIRES_CLIENT_HOME}/scripts/config.json"
 fi
@@ -32,7 +31,7 @@ fi
 
 # locate original replaced URL
 OLD_URL="`jq -r '.mapConfig.products[].download.url | select(.)' "$CONFIG_JSON" | sort | uniq | grep '/ows$' | head -n 1`"
-[ -z "$OLD_URL" ] || sed -i -e "s#\"${OLD_URL}#\"${VIRES_SERVER_URL}/ows#g" "$CONFIG_JSON"
+[ -z "$OLD_URL" ] || sed -i -e "s#\"${OLD_URL}#\"${OWS_ULR}#g" "$CONFIG_JSON"
 
 #-------------------------------------------------------------------------------
 # Integration with the Apache web server

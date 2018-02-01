@@ -9,6 +9,7 @@
 . `dirname $0`/../lib_logging.sh
 . `dirname $0`/../lib_apache.sh
 . `dirname $0`/../lib_virtualenv.sh
+. `dirname $0`/../lib_eoxserver.sh
 
 info "Configuring EOxServer instance ... "
 
@@ -19,74 +20,36 @@ CONFIGURE_VIRES=${CONFIGURE_VIRES:-YES}
 CONFIGURE_ALLAUTH=${CONFIGURE_ALLAUTH:-YES}
 CONFIGURE_WPSASYNC=${CONFIGURE_WPSASYNC:-YES}
 
-# NOTE: Multiple EOxServer instances are not foreseen in VIRES.
+required_variables VIRES_HOSTNAME VIRES_HOSTNAME_INTERNAL VIRES_IP_ADDRESS
+required_variables VIRES_SERVER_HOME
+required_variables VIRES_USER VIRES_GROUP VIRES_INSTALL_USER VIRES_INSTALL_GROUP
+required_variables VIRES_LOGDIR VIRES_TMPDIR VIRES_CACHE_DIR
+required_variables VIRES_WPS_SERVICE_NAME VIRES_WPS_URL_PATH
+required_variables VIRES_WPS_TEMP_DIR VIRES_WPS_PERM_DIR VIRES_WPS_TASK_DIR
+required_variables VIRES_WPS_SOCKET VIRES_WPS_NPROC VIRES_WPS_MAX_JOBS
 
-[ -z "$VIRES_HOSTNAME" ] && error "Missing the required VIRES_HOSTNAME variable!"
-[ -z "$VIRES_HOSTNAME_INTERNAL" ] && error "Missing the required VIRES_HOSTNAME_INTERNAL variable!"
-[ -z "$VIRES_IP_ADDRESS" ] && error "Missing the required VIRES_IP_ADDRESS variable!"
-[ -z "$VIRES_SERVER_HOME" ] && error "Missing the required VIRES_SERVER_HOME variable!"
-[ -z "$VIRES_USER" ] && error "Missing the required VIRES_USER variable!"
-[ -z "$VIRES_GROUP" ] && error "Missing the required VIRES_GROUP variable!"
-[ -z "$VIRES_INSTALL_USER" ] && error "Missing the required VIRES_INSTALL_USER variable!"
-[ -z "$VIRES_INSTALL_GROUP" ] && error "Missing the required VIRES_INSTALL_GROUP variable!"
-[ -z "$VIRES_LOGDIR" ] && error "Missing the required VIRES_LOGDIR variable!"
-[ -z "$VIRES_TMPDIR" ] && error "Missing the required VIRES_TMPDIR variable!"
-[ -z "$VIRES_CACHE_DIR" ] && error "Missing the required VIRES_CACHE_DIR variable!"
-[ -z "$VIRES_WPS_SERVICE_NAME" ] && error "Missing the required VIRES_WPS_SERVICE_NAME variable!"
-[ -z "$VIRES_WPS_TEMP_DIR" ] && error "Missing the required VIRES_WPS_TEMP_DIR variable!"
-[ -z "$VIRES_WPS_PERM_DIR" ] && error "Missing the required VIRES_WPS_PERM_DIR variable!"
-[ -z "$VIRES_WPS_TASK_DIR" ] && error "Missing the required VIRES_WPS_TASK_DIR variable!"
-[ -z "$VIRES_WPS_URL_PATH" ] && error "Missing the required VIRES_WPS_URL_PATH variable!"
-[ -z "$VIRES_WPS_SOCKET" ] && error "Missing the required VIRES_WPS_SOCKET variable!"
-[ -z "$VIRES_WPS_NPROC" ] && error "Missing the required VIRES_WPS_NPROC variable!"
-[ -z "$VIRES_WPS_MAX_JOBS" ] && error "Missing the required VIRES_WPS_MAX_JOBS variable!"
-[ -z "$DBNAME" ] && error "Missing the required DBNAME variable!"
-[ -z "$DBUSER" ] && error "Missing the required DBUSER variable!"
-[ -z "$DBPASSWD" ] && error "Missing the required DBPASSWD variable!"
-[ -z "$DBHOST" ] && error "Missing the required DBHOST variable!"
-[ -z "$DBPORT" ] && error "Missing the required DBPORT variable!"
-[ -z "$SMTP_HOSTNAME" ] && error "Missing the required SMTP_HOSTNAME variable!"
-[ -z "$SMTP_DEFAULT_SENDER" ] && error "Missing the required SMTP_DEFAULT_SENDER variable!"
+set_instance_variables
 
-HOSTNAME="$VIRES_HOSTNAME"
-INSTANCE="`basename "$VIRES_SERVER_HOME"`"
-INSTROOT="`dirname "$VIRES_SERVER_HOME"`"
+required_variables HOSTNAME
+required_variables INSTANCE INSTROOT
+required_variables FIXTURES_DIR STATIC_DIR
+required_variables SETTINGS WSGI_FILE URLS WSGI MNGCMD EOXSCONF
+required_variables STATIC_URL_PATH OWS_URL
+required_variables EOXSLOG ACCESSLOG
+required_variables EOXSMAXSIZE EOXSMAXPAGE
 
-SETTINGS="${INSTROOT}/${INSTANCE}/${INSTANCE}/settings.py"
-WSGI_FILE="${INSTROOT}/${INSTANCE}/${INSTANCE}/wsgi.py"
-URLS="${INSTROOT}/${INSTANCE}/${INSTANCE}/urls.py"
-FIXTURES_DIR="${INSTROOT}/${INSTANCE}/${INSTANCE}/data/fixtures"
-INSTSTAT_DIR="${INSTROOT}/${INSTANCE}/${INSTANCE}/static"
-WSGI="${INSTROOT}/${INSTANCE}/${INSTANCE}/wsgi.py"
-MNGCMD="${INSTROOT}/${INSTANCE}/manage.py"
-#BASE_URL_PATH="/${INSTANCE}" # DO NOT USE THE TRAILING SLASH!!!
-BASE_URL_PATH=""
-STATIC_URL_PATH="/${INSTANCE}_static" # DO NOT USE THE TRAILING SLASH!!!
+if [ -z "$DBENGINE" -o -z "$DBNAME" ]
+then
+    load_db_conf `dirname $0`/../db.conf
+fi
+required_variables DBENGINE DBNAME
 
-DBENGINE="django.contrib.gis.db.backends.postgis"
-DBNAME=$DBNAME
-DBUSER=$DBUSER
-DBPASSWD=$DBPASSWD
-DBHOST=$DBHOST
-DBPORT=$DBPORT
-
+required_variables SMTP_HOSTNAME SMTP_DEFAULT_SENDER
 SMTP_USE_TLS=${SMTP_USE_TLS:-YES}
-SMTP_HOSTNAME="$SMTP_HOSTNAME"
 SMTP_PORT=${SMTP_PORT:-25}
-SMTP_DEFAULT_SENDER="$SMTP_DEFAULT_SENDER"
-
-EOXSLOG="${VIRES_LOGDIR}/eoxserver/${INSTANCE}/eoxserver.log"
-ACCESSLOG="${VIRES_LOGDIR}/eoxserver/${INSTANCE}/access.log"
-EOXSCONF="${INSTROOT}/${INSTANCE}/${INSTANCE}/conf/eoxserver.conf"
-EOXSURL="${VIRES_URL_ROOT}${BASE_URL_PATH}/ows?"
-EOXSMAXSIZE="20480"
-EOXSMAXPAGE="200"
-
-# process group label
-EOXS_WSGI_PROCESS_GROUP=${EOXS_WSGI_PROCESS_GROUP:-eoxs_ows}
 
 #-------------------------------------------------------------------------------
-# STEP 1: CREATE INSTANCE if not already present
+# STEP 1: CREATE INSTANCE (if not already present)
 
 info "Creating EOxServer instance '${INSTANCE}' in '$INSTROOT/$INSTANCE' ..."
 
@@ -104,12 +67,7 @@ then
 fi
 
 #-------------------------------------------------------------------------------
-# STEP 2: CREATE POSTGRES DATABASE
-
-# not applied in production
-
-#-------------------------------------------------------------------------------
-# STEP 3: SETUP DJANGO DB BACKEND
+# STEP 2: SETUP DJANGO DB BACKEND
 
 ex "$SETTINGS" <<END
 1,\$s/\('ENGINE'[	 ]*:[	 ]*\).*\(,\)/\1'$DBENGINE',/
@@ -143,8 +101,8 @@ do
     # EOxServer instance configured by the automatic installation script
 
     # static content
-    Alias "$STATIC_URL_PATH" "$INSTSTAT_DIR"
-    <Directory "$INSTSTAT_DIR">
+    Alias "$STATIC_URL_PATH" "$STATIC_DIR"
+    <Directory "$STATIC_DIR">
         Options -MultiViews +FollowSymLinks
         Header set Access-Control-Allow-Origin "*"
     </Directory>
@@ -203,7 +161,7 @@ END
 
 # set the new configuration
 ex "$EOXSCONF" <<END
-/^[	 ]*http_service_url[	 ]*=/s;\(^[	 ]*http_service_url[	 ]*=\).*;\1${EOXSURL};
+/^[	 ]*http_service_url[	 ]*=/s;\(^[	 ]*http_service_url[	 ]*=\).*;\1${OWS_URL};
 g/^#.*supported_crs/,/^$/d
 /\[services\.ows\.wms\]/a
 # WMS_SUPPORTED_CRS - BEGIN - Do not edit or remove this line!
@@ -843,11 +801,6 @@ num_workers=$VIRES_WPS_NPROC
 .
 wq
 END
-
-    # reset the required WPS directories
-    #[ ! -d "$VIRES_WPS_TEMP_DIR" ] || rm -fRv "$VIRES_WPS_TEMP_DIR"
-    #[ ! -d "$VIRES_WPS_PERM_DIR" ] || rm -fRv "$VIRES_WPS_PERM_DIR"
-    #[ ! -d "$VIRES_WPS_TASK_DIR" ] || rm -fRv "$VIRES_WPS_TASK_DIR"
 
     for D in "$VIRES_WPS_TEMP_DIR" "$VIRES_WPS_PERM_DIR" "$VIRES_WPS_TASK_DIR" "`dirname "$VIRES_WPS_SOCKET"`"
     do

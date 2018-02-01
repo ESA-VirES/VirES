@@ -9,6 +9,7 @@
 . `dirname $0`/../lib_logging.sh
 . `dirname $0`/../lib_apache.sh
 . `dirname $0`/../lib_virtualenv.sh
+. `dirname $0`/../lib_eoxserver.sh
 
 info "Configuring EOxServer instance ... "
 
@@ -19,70 +20,35 @@ CONFIGURE_VIRES=${CONFIGURE_VIRES:-YES}
 CONFIGURE_ALLAUTH=${CONFIGURE_ALLAUTH:-YES}
 CONFIGURE_WPSASYNC=${CONFIGURE_WPSASYNC:-YES}
 
-# NOTE: Multiple EOxServer instances are not foreseen in VIRES.
+required_variables VIRES_SERVER_HOME
+required_variables VIRES_USER VIRES_GROUP VIRES_INSTALL_USER VIRES_INSTALL_GROUP
+required_variables VIRES_LOGDIR VIRES_TMPDIR VIRES_CACHE_DIR
+required_variables VIRES_WPS_SERVICE_NAME VIRES_WPS_URL_PATH
+required_variables VIRES_WPS_TEMP_DIR VIRES_WPS_PERM_DIR VIRES_WPS_TASK_DIR
+required_variables VIRES_WPS_SOCKET VIRES_WPS_NPROC VIRES_WPS_MAX_JOBS
 
-#[ -z "$VIRES_HOSTNAME" ] && error "Missing the required VIRES_HOSTNAME variable!"
-[ -z "$VIRES_SERVER_HOME" ] && error "Missing the required VIRES_SERVER_HOME variable!"
-[ -z "$VIRES_USER" ] && error "Missing the required VIRES_USER variable!"
-[ -z "$VIRES_GROUP" ] && error "Missing the required VIRES_GROUP variable!"
-[ -z "$VIRES_INSTALL_USER" ] && error "Missing the required VIRES_INSTALL_USER variable!"
-[ -z "$VIRES_INSTALL_GROUP" ] && error "Missing the required VIRES_INSTALL_GROUP variable!"
-[ -z "$VIRES_LOGDIR" ] && error "Missing the required VIRES_LOGDIR variable!"
-[ -z "$VIRES_TMPDIR" ] && error "Missing the required VIRES_TMPDIR variable!"
-[ -z "$VIRES_CACHE_DIR" ] && error "Missing the required VIRES_CACHE_DIR variable!"
-[ -z "$VIRES_WPS_SERVICE_NAME" ] && error "Missing the required VIRES_WPS_SERVICE_NAME variable!"
-[ -z "$VIRES_WPS_TEMP_DIR" ] && error "Missing the required VIRES_WPS_TEMP_DIR variable!"
-[ -z "$VIRES_WPS_PERM_DIR" ] && error "Missing the required VIRES_WPS_PERM_DIR variable!"
-[ -z "$VIRES_WPS_TASK_DIR" ] && error "Missing the required VIRES_WPS_TASK_DIR variable!"
-[ -z "$VIRES_WPS_URL_PATH" ] && error "Missing the required VIRES_WPS_URL_PATH variable!"
-[ -z "$VIRES_WPS_SOCKET" ] && error "Missing the required VIRES_WPS_SOCKET variable!"
-[ -z "$VIRES_WPS_NPROC" ] && error "Missing the required VIRES_WPS_NPROC variable!"
-[ -z "$VIRES_WPS_MAX_JOBS" ] && error "Missing the required VIRES_WPS_MAX_JOBS variable!"
+set_instance_variables
 
-#HOSTNAME="$VIRES_HOSTNAME"
-INSTANCE="`basename "$VIRES_SERVER_HOME"`"
-INSTROOT="`dirname "$VIRES_SERVER_HOME"`"
+#required_variables HOSTNAME
+required_variables INSTANCE INSTROOT
+required_variables FIXTURES_DIR STATIC_DIR
+required_variables SETTINGS WSGI_FILE URLS WSGI MNGCMD EOXSCONF
+required_variables STATIC_URL_PATH OWS_URL
+required_variables EOXSLOG ACCESSLOG
+required_variables EOXSMAXSIZE EOXSMAXPAGE
 
-SETTINGS="${INSTROOT}/${INSTANCE}/${INSTANCE}/settings.py"
-WSGI_FILE="${INSTROOT}/${INSTANCE}/${INSTANCE}/wsgi.py"
-URLS="${INSTROOT}/${INSTANCE}/${INSTANCE}/urls.py"
-FIXTURES_DIR="${INSTROOT}/${INSTANCE}/${INSTANCE}/data/fixtures"
-INSTSTAT_DIR="${INSTROOT}/${INSTANCE}/${INSTANCE}/static"
-WSGI="${INSTROOT}/${INSTANCE}/${INSTANCE}/wsgi.py"
-MNGCMD="${INSTROOT}/${INSTANCE}/manage.py"
-#BASE_URL_PATH="/${INSTANCE}" # DO NOT USE THE TRAILING SLASH!!!
-BASE_URL_PATH=""
-STATIC_URL_PATH="/${INSTANCE}_static" # DO NOT USE THE TRAILING SLASH!!!
+if [ -z "$DBENGINE" -o -z "$DBNAME" ]
+then
+    load_db_conf `dirname $0`/../db.conf
+fi
+required_variables DBENGINE DBNAME
 
-DBENGINE="django.contrib.gis.db.backends.postgis"
-DBNAME="eoxs_${INSTANCE}"
-DBUSER="eoxs_admin_${INSTANCE}"
-DBPASSWD="${INSTANCE}_admin_eoxs_`head -c 24 < /dev/urandom | base64 | tr '/' '_'`"
-DBHOST=""
-DBPORT=""
 
-PG_HBA="`sudo -u postgres psql -qA -d template_postgis -c "SHOW data_directory;" | grep -m 1 "^/"`/pg_hba.conf"
-
-EOXSLOG="${VIRES_LOGDIR}/eoxserver/${INSTANCE}/eoxserver.log"
-ACCESSLOG="${VIRES_LOGDIR}/eoxserver/${INSTANCE}/access.log"
-EOXSCONF="${INSTROOT}/${INSTANCE}/${INSTANCE}/conf/eoxserver.conf"
-EOXSURL="${VIRES_URL_ROOT}${BASE_URL_PATH}/ows?"
-EOXSMAXSIZE="20480"
-EOXSMAXPAGE="200"
-
-# process group label
-EOXS_WSGI_PROCESS_GROUP=${EOXS_WSGI_PROCESS_GROUP:-eoxs_ows}
 
 #-------------------------------------------------------------------------------
-# STEP 1: CREATE INSTANCE
+# STEP 1: CREATE INSTANCE (if not already present)
 
 info "Creating EOxServer instance '${INSTANCE}' in '$INSTROOT/$INSTANCE' ..."
-
-if [ -d "$INSTROOT/$INSTANCE" ]
-then
-    info " The instance seems to already exist. All files will be removed!"
-    rm -fvR "$INSTROOT/$INSTANCE"
-fi
 
 # check availability of the EOxServer
 #HINT: Does python complain that the apparently installed EOxServer
@@ -91,55 +57,22 @@ fi
 #      the development setup is used.)
 python -c 'import eoxserver' || error "EOxServer does not seem to be installed!"
 
-mkdir -p "$INSTROOT/$INSTANCE"
-eoxserver-instance.py "$INSTANCE" "$INSTROOT/$INSTANCE"
-
-#-------------------------------------------------------------------------------
-# STEP 2: CREATE POSTGRES DATABASE
-
-info "Creating EOxServer instance's Postgres database '$DBNAME' ..."
-
-# deleting any previously existing database
-sudo -u postgres psql -q -c "DROP DATABASE $DBNAME ;" 2>/dev/null \
-  && warn " The already existing database '$DBNAME' was removed." || /bin/true
-
-# deleting any previously existing user
-TMP=`sudo -u postgres psql -tAc "SELECT 1 FROM pg_roles WHERE rolname='$DBUSER' ;"`
-if [ 1 == "$TMP" ]
+if [ ! -d "$INSTROOT/$INSTANCE" ]
 then
-    sudo -u postgres psql -q -c "DROP USER $DBUSER ;"
-    warn " The alredy existing database user '$DBUSER' was removed"
+    mkdir -p "$INSTROOT/$INSTANCE"
+    eoxserver-instance.py "$INSTANCE" "$INSTROOT/$INSTANCE"
 fi
 
-# create new users
-sudo -u postgres psql -q -c "CREATE USER $DBUSER WITH ENCRYPTED PASSWORD '$DBPASSWD' NOSUPERUSER NOCREATEDB NOCREATEROLE ;"
-sudo -u postgres psql -q -c "CREATE DATABASE $DBNAME WITH OWNER $DBUSER TEMPLATE template_postgis ENCODING 'UTF-8' ;"
-
-# prepend to the beginning of the acess list
-{ sudo -u postgres ex "$PG_HBA" || /bin/true ; } <<END
-g/# EOxServer instance:.*\/$INSTANCE/d
-g/^\s*local\s*$DBNAME/d
-/#\s*TYPE\s*DATABASE\s*USER\s*.*ADDRESS\s*METHOD/a
-# EOxServer instance: $INSTROOT/$INSTANCE
-local	$DBNAME	$DBUSER	md5
-local	$DBNAME	all	reject
-.
-wq
-END
-
-systemctl restart postgresql.service
-systemctl status postgresql.service
-
 #-------------------------------------------------------------------------------
-# STEP 3: SETUP DJANGO DB BACKEND
+# STEP 2: SETUP DJANGO DB BACKEND
 
 ex "$SETTINGS" <<END
 1,\$s/\('ENGINE'[	 ]*:[	 ]*\).*\(,\)/\1'$DBENGINE',/
 1,\$s/\('NAME'[	 ]*:[	 ]*\).*\(,\)/\1'$DBNAME',/
 1,\$s/\('USER'[	 ]*:[	 ]*\).*\(,\)/\1'$DBUSER',/
 1,\$s/\('PASSWORD'[	 ]*:[	 ]*\).*\(,\)/\1'$DBPASSWD',/
-1,\$s/\('HOST'[	 ]*:[	 ]*\).*\(,\)/#\1'$DBHOST',/
-1,\$s/\('PORT'[	 ]*:[	 ]*\).*\(,\)/#\1'$DBPORT',/
+1,\$s/\('HOST'[	 ]*:[	 ]*\).*\(,\)/\1'$DBHOST',/
+1,\$s/\('PORT'[	 ]*:[	 ]*\).*\(,\)/\1'$DBPORT',/
 1,\$s:\(STATIC_URL[	 ]*=[	 ]*\).*:\1'$STATIC_URL_PATH/':
 wq
 END
@@ -163,8 +96,8 @@ do
     # EOxServer instance configured by the automatic installation script
 
     # static content
-    Alias "$STATIC_URL_PATH" "$INSTSTAT_DIR"
-    <Directory "$INSTSTAT_DIR">
+    Alias "$STATIC_URL_PATH" "$STATIC_DIR"
+    <Directory "$STATIC_DIR">
         Options -MultiViews +FollowSymLinks
         Header set Access-Control-Allow-Origin "*"
     </Directory>
@@ -223,7 +156,7 @@ END
 
 # set the new configuration
 ex "$EOXSCONF" <<END
-/^[	 ]*http_service_url[	 ]*=/s;\(^[	 ]*http_service_url[	 ]*=\).*;\1${EOXSURL};
+/^[	 ]*http_service_url[	 ]*=/s;\(^[	 ]*http_service_url[	 ]*=\).*;\1${OWS_URL};
 g/^#.*supported_crs/,/^$/d
 /\[services\.ows\.wms\]/a
 # WMS_SUPPORTED_CRS - BEGIN - Do not edit or remove this line!
@@ -272,8 +205,6 @@ END
 ex "$EOXSCONF" <<END
 g/^[ 	#]*maxsize[ 	]/d
 /\[services\.ows\.wcs\]/a
-# maximum allowed output coverage size
-# (nether width nor height can exceed this limit)
 maxsize = $EOXSMAXSIZE
 .
 /^[	 ]*source_to_native_format_map[	 ]*=/s#\(^[	 ]*source_to_native_format_map[	 ]*=\).*#\1application/x-esa-envisat,application/x-esa-envisat#
@@ -362,7 +293,6 @@ END
 
 # touch the logfile and set the right permissions
 _create_log_file() {
-    [ ! -f "$1" ] || rm -fv "$1"
     [ -d "`dirname "$1"`" ] || mkdir -p "`dirname "$1"`"
     touch "$1"
     chown "$VIRES_USER:$VIRES_GROUP" "$1"
@@ -411,6 +341,7 @@ info "Application specific configuration ..."
 /^# ALLAUTH LOGGING - BEGIN/,/^# ALLAUTH LOGGING - END/d
 /^# REQUESTLOGGING APPS - BEGIN/,/^# REQUESTLOGGING APPS - END/d
 /^# REQUESTLOGGING MIDDLEWARE_CLASSES - BEGIN/,/^# REQUESTLOGGING MIDDLEWARE_CLASSES - END/d
+/^# EMAIL_BACKEND - BEGIN/,/^# EMAIL_BACKEND - END/d
 wq
 END
 
@@ -809,11 +740,6 @@ num_workers=$VIRES_WPS_NPROC
 wq
 END
 
-    # reset the required WPS directories
-    [ ! -d "$VIRES_WPS_TEMP_DIR" ] || rm -fRv "$VIRES_WPS_TEMP_DIR"
-    [ ! -d "$VIRES_WPS_PERM_DIR" ] || rm -fRv "$VIRES_WPS_PERM_DIR"
-    [ ! -d "$VIRES_WPS_TASK_DIR" ] || rm -fRv "$VIRES_WPS_TASK_DIR"
-
     for D in "$VIRES_WPS_TEMP_DIR" "$VIRES_WPS_PERM_DIR" "$VIRES_WPS_TASK_DIR" "`dirname "$VIRES_WPS_SOCKET"`"
     do
         mkdir -p "$D"
@@ -859,21 +785,6 @@ info "Initializing EOxServer instance '${INSTANCE}' ..."
 python "$MNGCMD" collectstatic -l --noinput
 
 # setup new database
-# NOTE: Django 1.8 'makemigrations' does not seem to properly initialize
-#       new migrations and the command has to be called for each app separately.
-#       See: http://stackoverflow.com/questions/29689365/auth-user-error-with-django-1-8-and-syncdb-migrate
-#{
-#python - << END
-#import sys
-#sys.path.append("$INSTROOT/$INSTANCE")
-#import ${INSTANCE}.settings as settings
-#for app in settings.INSTALLED_APPS:
-#    print app.rpartition('.')[-1]
-#END
-#} | while read APP
-#do
-#    python "$MNGCMD" makemigrations "$APP"
-#done
 python "$MNGCMD" migrate
 
 #-------------------------------------------------------------------------------

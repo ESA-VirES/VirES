@@ -6,15 +6,11 @@
 # Copyright (C) 2015 EOX IT Services GmbH
 
 . `dirname $0`/../lib_logging.sh
+. `dirname $0`/../lib_eoxserver.sh
 
-info "Enabling EOxServer instance debugging ... "
+info "Enabling EOxServer instance debugging mode ... "
 
-[ -z "$VIRES_SERVER_HOME" ] && error "Missing the required VIRES_SERVER_HOME variable!"
-
-INSTANCE="`basename "$VIRES_SERVER_HOME"`"
-INSTROOT="`dirname "$VIRES_SERVER_HOME"`"
-
-SETTINGS="${INSTROOT}/${INSTANCE}/${INSTANCE}/settings.py"
+set_instance_variables
 
 ex "$SETTINGS" <<END
 g/^DEBUG\s*=/s#\(^DEBUG\s*=\s*\).*#\1True#
