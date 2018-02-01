@@ -33,6 +33,7 @@ do
     info "Loading fixture '$FIXTURE_NAME' ..."
     DST_FILE="${FIXTURES_DIR_DST}/${FIXTURE_NAME}.json"
     cp "$SRC_FILE" "$DST_FILE"
+    [ -n "$VIRES_ENVIRONMENT" ] && sed -e 's|<environment>|%s|g' -i "$DST_FILE"
     chown "$VIRES_INSTALL_USER:$VIRES_INSTALL_GROUP" "$DST_FILE"
     python "$MNGCMD" loaddata "$FIXTURE_NAME"
 done
