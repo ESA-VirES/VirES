@@ -60,7 +60,7 @@ is_virtualenv_root_set() {
 is_virtualenv_enabled_with_info() {
     if is_virtualenv_enabled
     then
-        info "virtualenv is enabled"
+        #info "virtualenv is enabled"
         info "virtualenv directory: $VIRTUALENV_ROOT"
         return 0
     else
