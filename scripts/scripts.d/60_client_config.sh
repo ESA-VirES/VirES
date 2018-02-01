@@ -15,23 +15,33 @@ CONFIGURE_ALLAUTH="${CONFIGURE_ALLAUTH:-YES}"
 info "Configuring VirES client ..."
 
 set_instance_variables
-required_variables VIRES_CLIENT_HOME STATIC_DIR OWS_URL
+required_variables VIRES_CLIENT_HOME STATIC_DIR
 
 VIRES_CLIENT_URL="/`basename "$VIRES_CLIENT_HOME"`"
+#VIRES_SERVER_URL="${VIRES_SERVER_URL:-}"
 
 if [ "$CONFIGURE_ALLAUTH" == "YES" ]
 then
-    CONFIG_JSON="${STATIC_DIR}/workspace/scripts/config.json"
+    INSTALL_DIR="${STATIC_DIR}/workspace"
 else
-    CONFIG_JSON="${VIRES_CLIENT_HOME}/scripts/config.json"
+    INSTALL_DIR="${VIRES_CLIENT_HOME}"
 fi
+
+[ -d "$VIRES_CLIENT_HOME" ] || {
+    warn "The client does not seem to be installed."
+    warn "The client configuration is skipped."
+    exit 0
+}
 
 #-------------------------------------------------------------------------------
 # Client configuration.
 
-# locate original replaced URL
+CONFIG_JSON="${INSTALL_DIR}/scripts/config.json"
+[ -f "$CONFIG_JSON" ] || error "Client configuration file $CONFIG_JSON not found!"
+
+# replace OWS URLs
 OLD_URL="`jq -r '.mapConfig.products[].download.url | select(.)' "$CONFIG_JSON" | sort | uniq | grep '/ows$' | head -n 1`"
-[ -z "$OLD_URL" ] || sed -i -e "s#\"${OLD_URL}#\"${OWS_ULR}#g" "$CONFIG_JSON"
+[ -z "$OLD_URL" ] || sed -i -e "s#\"${OLD_URL}#\"${VIRES_SERVER_URL}/ows#g" "$CONFIG_JSON"
 
 #-------------------------------------------------------------------------------
 # Integration with the Apache web server

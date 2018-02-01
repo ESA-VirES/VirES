@@ -10,11 +10,22 @@
 . `dirname $0`/../lib_util.sh
 . `dirname $0`/../lib_eoxserver.sh
 
-info "Adding VirES client to static files..."
+CONFIGURE_ALLAUTH="${CONFIGURE_ALLAUTH:-YES}"
 
-set_instance_variables
+info "VirES client installation ..."
 
-required_variables STATIC_DIR CONTRIB_DIR VIRES_INSTALL_USER VIRES_INSTALL_GROUP
+required_variables CONTRIB_DIR VIRES_INSTALL_USER VIRES_INSTALL_GROUP
+
+if [ "$CONFIGURE_ALLAUTH" == "YES" ]
+then
+    info "Adding VirES client to EoxServer instance static files ..."
+    set_instance_variables
+    required_variables STATIC_DIR
+    INSTALL_DIR="${STATIC_DIR}/workspace/"
+else
+    required_variables VIRES_CLIENT_HOME
+    INSTALL_DIR="$VIRES_CLIENT_HOME"
+fi
 
 # locate the installation package
 FNAME="`lookup_package "$CONTRIB_DIR/"{WebClient-Framework,VirES-Client}"*.tar.gz"`"
@@ -25,8 +36,6 @@ FNAME="`lookup_package "$CONTRIB_DIR/"{WebClient-Framework,VirES-Client}"*.tar.g
 }
 
 info "Installation package located in: $FNAME"
-
-INSTALL_DIR="${STATIC_DIR}/workspace/"
 
 # remove the previous installation
 [ -d "$INSTALL_DIR" ] && rm -fR "$INSTALL_DIR"
