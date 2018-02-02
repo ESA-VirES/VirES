@@ -14,7 +14,7 @@ activate_virtualenv
 
 PYAMPS_SOURCE_PATH="${PYAMPS_SOURCE_PATH:-/usr/local/pyAMPS}"
 
-if [ -d "${PYAMPS_SOURCE_PATH}" ]
+if [ -d "${PYAMPS_SOURCE_PATH}" -o -f "${PYAMPS_SOURCE_PATH}" ]
 then
     pip install dask
     pip install toolz
