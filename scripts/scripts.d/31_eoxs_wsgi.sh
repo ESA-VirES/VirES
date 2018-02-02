@@ -44,7 +44,3 @@ $WSGI_IMPORTSCRIPT
 wq
 END
 fi
-
-#Disabled in order to restart apache only after deployment is fully configured
-#systemctl restart httpd.service
-#systemctl status httpd.service

@@ -10,4 +10,5 @@
 
 info "Installing PIP Python package manager ..."
 
-yum --assumeyes install python-pip
+# NOTE: pip requires git when installing packages from local git repositories
+yum --assumeyes install python-pip git

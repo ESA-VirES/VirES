@@ -1,0 +1,1 @@
+../scripts.d/21_scipy.sh

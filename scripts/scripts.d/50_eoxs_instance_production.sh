@@ -8,95 +8,57 @@
 
 . `dirname $0`/../lib_logging.sh
 . `dirname $0`/../lib_apache.sh
+. `dirname $0`/../lib_virtualenv.sh
+. `dirname $0`/../lib_eoxserver.sh
 
 info "Configuring EOxServer instance ... "
 
-# NOTE: Don't use commands starting with 'sudo -u "$VIRES_USER"' as they
-#       don't play nice with fabric and virtualenv.
+activate_virtualenv
 
 # Configuration switches - all default to YES
 CONFIGURE_VIRES=${CONFIGURE_VIRES:-YES}
 CONFIGURE_ALLAUTH=${CONFIGURE_ALLAUTH:-YES}
 CONFIGURE_WPSASYNC=${CONFIGURE_WPSASYNC:-YES}
 
-# NOTE: Multiple EOxServer instances are not foreseen in VIRES.
+required_variables VIRES_HOSTNAME VIRES_HOSTNAME_INTERNAL VIRES_IP_ADDRESS
+required_variables VIRES_SERVER_HOME
+required_variables VIRES_USER VIRES_GROUP VIRES_INSTALL_USER VIRES_INSTALL_GROUP
+required_variables VIRES_LOGDIR VIRES_TMPDIR VIRES_CACHE_DIR
+required_variables VIRES_WPS_SERVICE_NAME VIRES_WPS_URL_PATH
+required_variables VIRES_WPS_TEMP_DIR VIRES_WPS_PERM_DIR VIRES_WPS_TASK_DIR
+required_variables VIRES_WPS_SOCKET VIRES_WPS_NPROC VIRES_WPS_MAX_JOBS
 
-[ -z "$VIRES_HOSTNAME" ] && error "Missing the required VIRES_HOSTNAME variable!"
-[ -z "$VIRES_HOSTNAME_INTERNAL" ] && error "Missing the required VIRES_HOSTNAME_INTERNAL variable!"
-[ -z "$VIRES_IP_ADDRESS" ] && error "Missing the required VIRES_IP_ADDRESS variable!"
-[ -z "$VIRES_SERVER_HOME" ] && error "Missing the required VIRES_SERVER_HOME variable!"
-[ -z "$VIRES_USER" ] && error "Missing the required VIRES_USER variable!"
-[ -z "$VIRES_GROUP" ] && error "Missing the required VIRES_GROUP variable!"
-[ -z "$VIRES_LOGDIR" ] && error "Missing the required VIRES_LOGDIR variable!"
-[ -z "$VIRES_TMPDIR" ] && error "Missing the required VIRES_TMPDIR variable!"
-[ -z "$VIRES_WPS_SERVICE_NAME" ] && error "Missing the required VIRES_WPS_SERVICE_NAME variable!"
-[ -z "$VIRES_WPS_TEMP_DIR" ] && error "Missing the required VIRES_WPS_TEMP_DIR variable!"
-[ -z "$VIRES_WPS_PERM_DIR" ] && error "Missing the required VIRES_WPS_PERM_DIR variable!"
-[ -z "$VIRES_WPS_TASK_DIR" ] && error "Missing the required VIRES_WPS_TASK_DIR variable!"
-[ -z "$VIRES_WPS_URL_PATH" ] && error "Missing the required VIRES_WPS_URL_PATH variable!"
-[ -z "$VIRES_WPS_SOCKET" ] && error "Missing the required VIRES_WPS_SOCKET variable!"
-[ -z "$VIRES_WPS_NPROC" ] && error "Missing the required VIRES_WPS_NPROC variable!"
-[ -z "$VIRES_WPS_MAX_JOBS" ] && error "Missing the required VIRES_WPS_MAX_JOBS variable!"
-[ -z "$DBNAME" ] && error "Missing the required DBNAME variable!"
-[ -z "$DBUSER" ] && error "Missing the required DBUSER variable!"
-[ -z "$DBPASSWD" ] && error "Missing the required DBPASSWD variable!"
-[ -z "$DBHOST" ] && error "Missing the required DBHOST variable!"
-[ -z "$DBPORT" ] && error "Missing the required DBPORT variable!"
-[ -z "$SMTP_HOSTNAME" ] && error "Missing the required SMTP_HOSTNAME variable!"
-[ -z "$SMTP_DEFAULT_SENDER" ] && error "Missing the required SMTP_DEFAULT_SENDER variable!"
+set_instance_variables
 
-HOSTNAME="$VIRES_HOSTNAME"
-INSTANCE="`basename "$VIRES_SERVER_HOME"`"
-INSTROOT="`dirname "$VIRES_SERVER_HOME"`"
+required_variables HOSTNAME
+required_variables INSTANCE INSTROOT
+required_variables FIXTURES_DIR STATIC_DIR
+required_variables SETTINGS WSGI_FILE URLS WSGI MNGCMD EOXSCONF
+required_variables STATIC_URL_PATH OWS_URL
+required_variables EOXSLOG ACCESSLOG
+required_variables EOXSMAXSIZE EOXSMAXPAGE
 
-SETTINGS="${INSTROOT}/${INSTANCE}/${INSTANCE}/settings.py"
-WSGI_FILE="${INSTROOT}/${INSTANCE}/${INSTANCE}/wsgi.py"
-URLS="${INSTROOT}/${INSTANCE}/${INSTANCE}/urls.py"
-FIXTURES_DIR="${INSTROOT}/${INSTANCE}/${INSTANCE}/data/fixtures"
-INSTSTAT_DIR="${INSTROOT}/${INSTANCE}/${INSTANCE}/static"
-WSGI="${INSTROOT}/${INSTANCE}/${INSTANCE}/wsgi.py"
-MNGCMD="${INSTROOT}/${INSTANCE}/manage.py"
-#BASE_URL_PATH="/${INSTANCE}" # DO NOT USE THE TRAILING SLASH!!!
-BASE_URL_PATH=""
-STATIC_URL_PATH="/${INSTANCE}_static" # DO NOT USE THE TRAILING SLASH!!!
+if [ -z "$DBENGINE" -o -z "$DBNAME" ]
+then
+    load_db_conf `dirname $0`/../db.conf
+fi
+required_variables DBENGINE DBNAME
 
-DBENGINE="django.contrib.gis.db.backends.postgis"
-DBNAME=$DBNAME
-DBUSER=$DBUSER
-DBPASSWD=$DBPASSWD
-DBHOST=$DBHOST
-DBPORT=$DBPORT
-
+required_variables SMTP_HOSTNAME SMTP_DEFAULT_SENDER
 SMTP_USE_TLS=${SMTP_USE_TLS:-YES}
-SMTP_HOSTNAME="$SMTP_HOSTNAME"
 SMTP_PORT=${SMTP_PORT:-25}
-SMTP_DEFAULT_SENDER="$SMTP_DEFAULT_SENDER"
-
-EOXSLOG="${VIRES_LOGDIR}/eoxserver/${INSTANCE}/eoxserver.log"
-ACCESSLOG="${VIRES_LOGDIR}/eoxserver/${INSTANCE}/access.log"
-EOXSCONF="${INSTROOT}/${INSTANCE}/${INSTANCE}/conf/eoxserver.conf"
-EOXSURL="${VIRES_URL_ROOT}${BASE_URL_PATH}/ows?"
-EOXSMAXSIZE="20480"
-EOXSMAXPAGE="200"
-
-# process group label
-EOXS_WSGI_PROCESS_GROUP=${EOXS_WSGI_PROCESS_GROUP:-eoxs_ows}
 
 #-------------------------------------------------------------------------------
-# STEP 1: CREATE INSTANCE if not already present
+# STEP 1: CREATE INSTANCE (if not already present)
 
 info "Creating EOxServer instance '${INSTANCE}' in '$INSTROOT/$INSTANCE' ..."
-
 
 # check availability of the EOxServer
 #HINT: Does python complain that the apparently installed EOxServer
 #      package is not available? First check that the 'eoxserver' tree is
 #      readable by anyone. (E.g. in case of read protected home directory when
 #      the development setup is used.)
-python -c 'import eoxserver' || {
-    error "EOxServer does not seem to be installed!"
-    exit 1
-}
+python -c 'import eoxserver' || error "EOxServer does not seem to be installed!"
 
 if [ ! -d "$INSTROOT/$INSTANCE" ]
 then
@@ -105,12 +67,7 @@ then
 fi
 
 #-------------------------------------------------------------------------------
-# STEP 2: CREATE POSTGRES DATABASE
-
-#Removed for production
-
-#-------------------------------------------------------------------------------
-# STEP 3: SETUP DJANGO DB BACKEND
+# STEP 2: SETUP DJANGO DB BACKEND
 
 ex "$SETTINGS" <<END
 1,\$s/\('ENGINE'[	 ]*:[	 ]*\).*\(,\)/\1'$DBENGINE',/
@@ -144,8 +101,8 @@ do
     # EOxServer instance configured by the automatic installation script
 
     # static content
-    Alias "$STATIC_URL_PATH" "$INSTSTAT_DIR"
-    <Directory "$INSTSTAT_DIR">
+    Alias "$STATIC_URL_PATH" "$STATIC_DIR"
+    <Directory "$STATIC_DIR">
         Options -MultiViews +FollowSymLinks
         Header set Access-Control-Allow-Origin "*"
     </Directory>
@@ -169,7 +126,7 @@ END
 done
 
 # enable virtualenv in wsgi.py if necessary
-if [ -n "$ENABLE_VIRTUALENV" ]
+if is_virtualenv_enabled
 then
     info "Enabling virtualenv ..."
     { ex "$WSGI_FILE" || /bin/true ; } <<END
@@ -178,13 +135,13 @@ then
 # Start load virtualenv
 import site
 # Add the site-packages of the chosen virtualenv to work with
-site.addsitedir("${ENABLE_VIRTUALENV}/local/lib/python2.7/site-packages")
+site.addsitedir("${VIRTUALENV_ROOT}/local/lib/python2.7/site-packages")
 # End load virtualenv
 .
 /^# Start activate virtualenv$/,/^# End activate virtualenv$/d
 /^os.environ/a
 # Start activate virtualenv
-activate_env=os.path.expanduser("${ENABLE_VIRTUALENV}/bin/activate_this.py")
+activate_env=os.path.expanduser("${VIRTUALENV_ROOT}/bin/activate_this.py")
 execfile(activate_env, dict(__file__=activate_env))
 # End activate virtualenv
 .
@@ -204,7 +161,7 @@ END
 
 # set the new configuration
 ex "$EOXSCONF" <<END
-/^[	 ]*http_service_url[	 ]*=/s;\(^[	 ]*http_service_url[	 ]*=\).*;\1${EOXSURL};
+/^[	 ]*http_service_url[	 ]*=/s;\(^[	 ]*http_service_url[	 ]*=\).*;\1${OWS_URL};
 g/^#.*supported_crs/,/^$/d
 /\[services\.ows\.wms\]/a
 # WMS_SUPPORTED_CRS - BEGIN - Do not edit or remove this line!
@@ -463,14 +420,14 @@ INSTALLED_APPS += (
     'vires',
 )
 
-VIRES_AUX_DB_DST = join(PROJECT_DIR, "aux_dst.cdf")
-VIRES_AUX_DB_KP = join(PROJECT_DIR, "aux_kp.cdf")
-VIRES_AUX_DB_IBIA = join(PROJECT_DIR, "aux_ibia.cdf")
+VIRES_AUX_DB_DST = "$VIRES_CACHE_DIR/aux_dst.cdf"
+VIRES_AUX_DB_KP = "$VIRES_CACHE_DIR/aux_kp.cdf"
+VIRES_AUX_DB_IBIA = "$VIRES_CACHE_DIR/aux_ibia.cdf"
 VIRES_AUX_IMF_2__COLLECTION = "SW_OPER_AUX_IMF_2_"
 VIRES_ORBIT_COUNTER_DB = {
-    'A': join(PROJECT_DIR, "SW_OPER_AUXAORBCNT.cdf"),
-    'B': join(PROJECT_DIR, "SW_OPER_AUXBORBCNT.cdf"),
-    'C': join(PROJECT_DIR, "SW_OPER_AUXCORBCNT.cdf"),
+    'A': "$VIRES_CACHE_DIR/SW_OPER_AUXAORBCNT.cdf",
+    'B': "$VIRES_CACHE_DIR/SW_OPER_AUXBORBCNT.cdf",
+    'C': "$VIRES_CACHE_DIR/SW_OPER_AUXCORBCNT.cdf",
 }
 
 # TODO: Find a better way how to map a collection to the satellite!
@@ -695,8 +652,8 @@ LOGGING['loggers'].update({
 wq
 END
 
-# Remove original url patterns
-{ ex "$URLS" || /bin/true ; } <<END
+    # Remove original url patterns
+    { ex "$URLS" || /bin/true ; } <<END
 /^urlpatterns = patterns(/,/^)/s/^\\s/# /
 wq
 END
@@ -861,11 +818,6 @@ num_workers=$VIRES_WPS_NPROC
 wq
 END
 
-    # reset the required WPS directories
-    #[ ! -d "$VIRES_WPS_TEMP_DIR" ] || rm -fRv "$VIRES_WPS_TEMP_DIR"
-    #[ ! -d "$VIRES_WPS_PERM_DIR" ] || rm -fRv "$VIRES_WPS_PERM_DIR"
-    #[ ! -d "$VIRES_WPS_TASK_DIR" ] || rm -fRv "$VIRES_WPS_TASK_DIR"
-
     for D in "$VIRES_WPS_TEMP_DIR" "$VIRES_WPS_PERM_DIR" "$VIRES_WPS_TASK_DIR" "`dirname "$VIRES_WPS_SOCKET"`"
     do
         mkdir -p "$D"
@@ -874,6 +826,13 @@ END
     done
 
     info "WPS async backend ${VIRES_WPS_SERVICE_NAME}.service initialization ..."
+
+    if is_virtualenv_enabled
+    then
+        PREFIX="$VIRTUALENV_ROOT"
+    else
+        PREFIX="/usr"
+    fi
 
     cat > "/etc/systemd/system/${VIRES_WPS_SERVICE_NAME}.service" <<END
 [Unit]
@@ -885,13 +844,14 @@ Before=httpd.service
 Type=simple
 User=$VIRES_USER
 ExecStartPre=/usr/bin/rm -fv $VIRES_WPS_SOCKET
-ExecStart=${ENABLE_VIRTUALENV:-/usr}/bin/python -EsOm eoxs_wps_async.daemon ${INSTANCE}.settings $INSTROOT/$INSTANCE
+ExecStart=${PREFIX}/bin/python -EsOm eoxs_wps_async.daemon ${INSTANCE}.settings $INSTROOT/$INSTANCE
 
 [Install]
 WantedBy=multi-user.target
 END
 
     systemctl daemon-reload
+    systemctl enable "${VIRES_WPS_SERVICE_NAME}.service"
 
 fi # end of WPS-ASYNC configuration
 
@@ -903,7 +863,6 @@ info "Initializing EOxServer instance '${INSTANCE}' ..."
 python "$MNGCMD" collectstatic -l --noinput
 
 # setup new database
-# python "$MNGCMD" makemigrations
 python "$MNGCMD" migrate
 
 #-------------------------------------------------------------------------------
@@ -922,16 +881,5 @@ fi
 #-------------------------------------------------------------------------------
 # STEP 9: CHANGE OWNERSHIP OF THE CONFIGURATION FILES
 
-info "Changing ownership of $INSTROOT/$INSTANCE to $VIRES_USER"
-chown -vR "$VIRES_USER:$VIRES_GROUP" "$INSTROOT/$INSTANCE"
-
-#-------------------------------------------------------------------------------
-# STEP 10: FINAL SERVICE RESTART
-
-systemctl enable "${VIRES_WPS_SERVICE_NAME}.service"
-systemctl restart "${VIRES_WPS_SERVICE_NAME}.service"
-systemctl status "${VIRES_WPS_SERVICE_NAME}.service"
-
-#Disabled in order to restart apache only after deployment is fully configured
-#systemctl restart httpd.service
-#systemctl status httpd.service
+info "Changing ownership of $INSTROOT/$INSTANCE to $VIRES_INSTALL_USER"
+chown -R "$VIRES_INSTALL_USER:$VIRES_INSTALL_GROUP" "$INSTROOT/$INSTANCE"
