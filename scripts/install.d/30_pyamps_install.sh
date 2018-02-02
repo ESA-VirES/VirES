@@ -1,0 +1,1 @@
+../scripts.d/30_pyamps_install.sh
