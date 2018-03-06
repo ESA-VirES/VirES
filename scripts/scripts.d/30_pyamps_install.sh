@@ -8,21 +8,6 @@
 . `dirname $0`/../lib_logging.sh
 . `dirname $0`/../lib_virtualenv.sh
 
-info "Installing pyAMPS from sources"
-
+info "Installing pyAMPS from PyPI"
 activate_virtualenv
-
-PYAMPS_SOURCE_PATH="${PYAMPS_SOURCE_PATH:-/usr/local/pyAMPS}"
-
-if [ -d "${PYAMPS_SOURCE_PATH}" -o -f "${PYAMPS_SOURCE_PATH}" ]
-then
-    pip install dask
-    pip install toolz
-    pip install future
-    pip install apexpy
-    pip install pandas
-    pip install $PIP_OPTIONS "$PYAMPS_SOURCE_PATH"
-else
-    warn "pyAMPS source path $PYAMPS_SOURCE_PATH not found."
-    warn "The pAMPS installation is skipped."
-fi
+pip install pyamps
