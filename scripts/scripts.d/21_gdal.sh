@@ -16,6 +16,7 @@ yum --assumeyes install gdal gdal-libs gdal-python proj-epsg gdal-devel
 
 if is_virtualenv_enabled
 then
+    # NOTE: gdal-python virenv installation requires numpy installed!!!
     activate_virtualenv
     [ -z "$CONTRIB_DIR" ] && error "Missing the required CONTRIB_DIR variable!"
     PACKAGE="`lookup_package "$CONTRIB_DIR/GDAL-*.tar.gz"`"

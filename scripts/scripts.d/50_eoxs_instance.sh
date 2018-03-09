@@ -472,7 +472,7 @@ then
     warn "ALLAUTH specific configuration is disabled."
 
     # extending the EOxServer urls.py
-    sudo -u "$VIRES_USER" ex "$URLS" <<END
+    ex "$URLS" <<END
 $ a
 # ALLAUTH URLS - BEGIN - Do not edit or remove this line!
 # added for compatibility with AllAuth enabled configuration
