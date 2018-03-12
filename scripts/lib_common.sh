@@ -42,24 +42,34 @@ export VIRES_HOSTNAME=${VIRES_HOSTNAME}
 # NOTE: Critical parameter! Be sure you set it to the proper value.
 export VIRES_URL_ROOT=${VIRES_URL_ROOT}
 
-# root directory of the VirES - by default set to '/srv/vires'
+# root directory of the VirES
 export VIRES_ROOT=${VIRES_ROOT:-/var/www/vires}
 
-# directory where the log files shall be placed - by default set to '/var/log/vires'
+# directory where the log files shall be placed
 export VIRES_LOGDIR=${VIRES_LOGDIR:-/var/log/vires}
 
-# directory of the short-term data storage - by default set to '/tmp/vires'
+# directory of the short-term data storage
 export VIRES_TMPDIR=${VIRES_TMPDIR:-/tmp/vires}
+
+# location of the data cache directory
+export VIRES_CACHE_DIR=${VIRES_CACHE_DIR:-$VIRES_ROOT/cache}
 
 # directory where the PosgreSQL DB stores the files
 export VIRES_PGDATA_DIR=${VIRES_PGDATA_DIR:-/var/lib/pgsql/data}
 
-# directory of the long-term data storage - by default set to '/srv/eodata'
+# directory of the long-term data storage
 export VIRES_DATADIR=${VIRES_DATADIR:-/mnt/data}
 
-# names of the ODA-OS user and group - by default set to 'vires:vires'
+# names of the user and group
 export VIRES_GROUP=${VIRES_GROUP:-vires}
 export VIRES_USER=${VIRES_USER:-vires}
+
+# location of the VirES user home directory
+export VIRES_USER_HOME=${VIRES_USER_HOME:-$VIRES_ROOT/home}
+
+# names of the user and group used to install SW and configuration
+export VIRES_INSTALL_GROUP=${VIRES_INSTALL_GROUP:-root}
+export VIRES_INSTALL_USER=${VIRES_INSTALL_USER:-root}
 
 # location of the VirES Server home directory
 export VIRES_SERVER_HOME=${VIRES_SERVER_HOME:-$VIRES_ROOT/eoxs}
@@ -105,7 +115,10 @@ export DBHOST=${DBHOST:-}
 export DBPORT=${DBPORT:-}
 
 # are we using virtualenv
-export ENABLE_VIRTUALENV=${ENABLE_VIRTUALENV:-}
+export ENABLE_VIRTUALENV=${ENABLE_VIRTUALENV:-YES}
+
+# pyhton virtualenv root
+export VIRTUALENV_ROOT=${VIRTUALENV_ROOT:-$VIRES_ROOT/virtualenv}
 
 # Switch controlling wether the AllAuth gets configured or not.
 export CONFIGURE_ALLAUTH=${CONFIGURE_ALLAUTH:-NO}
@@ -128,3 +141,5 @@ export CONF_HTTPS_TEMPLATE
 # configuration switches
 export CONFIGURE_HTTP
 export CONFIGURE_HTTPS
+
+export PIP_OPTIONS="--upgrade --upgrade-strategy=only-if-needed"

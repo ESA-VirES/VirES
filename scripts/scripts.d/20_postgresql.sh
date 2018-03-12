@@ -12,22 +12,35 @@ info "Installing PosgreSQL RDBMS ... "
 
 PG_DATA_DIR_DEFAULT="/var/lib/pgsql/data"
 PG_DATA_DIR="${VIRES_PGDATA_DIR:-$PG_DATA_DIR_DEFAULT}"
-#======================================================================
 
-# STEP 1: INSTALL RPM PACKAGES
-yum --assumeyes install postgresql postgresql-server postgis python-psycopg2
+# Install RPM packages
+yum --assumeyes install postgresql postgresql-server postgis
 
-# STEP 2: Shut-down the postgress if already installed and running.
+# Shut-down the postgress if already installed and running.
 if [ -n "`systemctl | grep postgresql.service`" ]
 then
     info "Stopping running PostgreSQL server ..."
     systemctl stop postgresql.service
 fi
 
-# STEP 3: CONFIGURE THE STORAGE DIRECTORY
+# Check if the database location changed since the last run.
+CONF_FILE="$HOME/.pg_data_dir"
+[ -f "$CONF_FILE" ] && PG_DATA_DIR_LAST="`head -n 1 "$CONF_FILE"`"
+
+if [ "$PG_DATA_DIR" == "$PG_DATA_DIR_LAST" ]
+then
+    info "PostgreSQL data location already set to $PG_DATA_DIR"
+
+    systemctl start postgresql.service
+    systemctl status postgresql.service
+    exit 0
+fi
+
 info "Removing the existing PosgreSQL DB cluster ..."
-[ ! -d "$PG_DATA_DIR_DEFAULT" ] || rm -fR "$PG_DATA_DIR_DEFAULT"
-[ ! -d "$PG_DATA_DIR" ] || rm -fR "$PG_DATA_DIR"
+rm -fR "$PG_DATA_DIR_DEFAULT"
+rm -fR "$PG_DATA_DIR"
+rm -fR "$PG_DATA_DIR_LAST"
+rm -f "`dirname $0`/../db.conf"
 
 info "Setting the PostgreSQL data location to: $PG_DATA_DIR"
 cat >/etc/systemd/system/postgresql.service <<END
@@ -37,16 +50,14 @@ Environment=PGDATA=$PG_DATA_DIR
 END
 systemctl daemon-reload
 
-# STEP 4: INIT THE DB AND START THE SERVICE
 info "New database initialisation ... "
-
 postgresql-setup initdb
 systemctl disable postgresql.service # DO NOT REMOVE!
 systemctl enable postgresql.service
 systemctl start postgresql.service
 systemctl status postgresql.service
 
-# STEP 5: SETUP POSTGIS DATABASE TEMPLATE
+# Setup postgis database template.
 if [ -z "`sudo -u postgres psql --list | grep template_postgis`" ]
 then
     sudo -u postgres createdb template_postgis
@@ -61,3 +72,6 @@ then
     sudo -u postgres psql -q -d template_postgis -c "GRANT ALL ON geography_columns TO PUBLIC;"
     sudo -u postgres psql -q -d template_postgis -c "GRANT ALL ON spatial_ref_sys TO PUBLIC;"
 fi
+
+# Store current data location.
+echo "$PG_DATA_DIR" > "$CONF_FILE"
