@@ -7,8 +7,12 @@
 # Copyright (C) 2015 EOX IT Services GmbH
 
 . `dirname $0`/../lib_logging.sh
+. `dirname $0`/../lib_virtualenv.sh
 
 info "Installing SpacePy package and its dependencies ..."
 
-# install the package and its dependencies
-yum --assumeyes install python-spacepy
+activate_virtualenv
+
+yum --assumeyes install cdf
+
+pip install $PIP_OPTIONS SpacePy

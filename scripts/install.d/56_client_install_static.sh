@@ -1,1 +1,0 @@
-../scripts.d/56_client_install_static.sh

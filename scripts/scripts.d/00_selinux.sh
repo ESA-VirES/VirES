@@ -13,7 +13,7 @@ info "Configuring SELinux ..."
 # change to permissive mode in the current session
 [ `getenforce` != "Disabled" ] && setenforce "Permissive"
 
-# disable SELinux permanently
+# set SELinux permanently
 sed -e 's/^[ 	]*SELINUX=.*/SELINUX=permissive/' -i /etc/selinux/config
 
 # print status

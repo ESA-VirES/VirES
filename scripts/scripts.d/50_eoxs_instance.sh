@@ -8,135 +8,71 @@
 
 . `dirname $0`/../lib_logging.sh
 . `dirname $0`/../lib_apache.sh
+. `dirname $0`/../lib_virtualenv.sh
+. `dirname $0`/../lib_eoxserver.sh
 
 info "Configuring EOxServer instance ... "
+
+activate_virtualenv
 
 # Configuration switches - all default to YES
 CONFIGURE_VIRES=${CONFIGURE_VIRES:-YES}
 CONFIGURE_ALLAUTH=${CONFIGURE_ALLAUTH:-YES}
 CONFIGURE_WPSASYNC=${CONFIGURE_WPSASYNC:-YES}
 
-# NOTE: Multiple EOxServer instances are not foreseen in VIRES.
+required_variables VIRES_SERVER_HOME
+required_variables VIRES_USER VIRES_GROUP VIRES_INSTALL_USER VIRES_INSTALL_GROUP
+required_variables VIRES_LOGDIR VIRES_TMPDIR VIRES_CACHE_DIR
+required_variables VIRES_WPS_SERVICE_NAME VIRES_WPS_URL_PATH
+required_variables VIRES_WPS_TEMP_DIR VIRES_WPS_PERM_DIR VIRES_WPS_TASK_DIR
+required_variables VIRES_WPS_SOCKET VIRES_WPS_NPROC VIRES_WPS_MAX_JOBS
 
-#[ -z "$VIRES_HOSTNAME" ] && error "Missing the required VIRES_HOSTNAME variable!"
-[ -z "$VIRES_SERVER_HOME" ] && error "Missing the required VIRES_SERVER_HOME variable!"
-[ -z "$VIRES_USER" ] && error "Missing the required VIRES_USER variable!"
-[ -z "$VIRES_GROUP" ] && error "Missing the required VIRES_GROUP variable!"
-[ -z "$VIRES_LOGDIR" ] && error "Missing the required VIRES_LOGDIR variable!"
-[ -z "$VIRES_TMPDIR" ] && error "Missing the required VIRES_TMPDIR variable!"
-[ -z "$VIRES_WPS_SERVICE_NAME" ] && error "Missing the required VIRES_WPS_SERVICE_NAME variable!"
-[ -z "$VIRES_WPS_TEMP_DIR" ] && error "Missing the required VIRES_WPS_TEMP_DIR variable!"
-[ -z "$VIRES_WPS_PERM_DIR" ] && error "Missing the required VIRES_WPS_PERM_DIR variable!"
-[ -z "$VIRES_WPS_TASK_DIR" ] && error "Missing the required VIRES_WPS_TASK_DIR variable!"
-[ -z "$VIRES_WPS_URL_PATH" ] && error "Missing the required VIRES_WPS_URL_PATH variable!"
-[ -z "$VIRES_WPS_SOCKET" ] && error "Missing the required VIRES_WPS_SOCKET variable!"
-[ -z "$VIRES_WPS_NPROC" ] && error "Missing the required VIRES_WPS_NPROC variable!"
-[ -z "$VIRES_WPS_MAX_JOBS" ] && error "Missing the required VIRES_WPS_MAX_JOBS variable!"
+set_instance_variables
 
-#HOSTNAME="$VIRES_HOSTNAME"
-INSTANCE="`basename "$VIRES_SERVER_HOME"`"
-INSTROOT="`dirname "$VIRES_SERVER_HOME"`"
+#required_variables HOSTNAME
+required_variables INSTANCE INSTROOT
+required_variables FIXTURES_DIR STATIC_DIR
+required_variables SETTINGS WSGI_FILE URLS WSGI MNGCMD EOXSCONF
+required_variables STATIC_URL_PATH OWS_URL
+required_variables EOXSLOG ACCESSLOG
+required_variables EOXSMAXSIZE EOXSMAXPAGE
 
-SETTINGS="${INSTROOT}/${INSTANCE}/${INSTANCE}/settings.py"
-WSGI_FILE="${INSTROOT}/${INSTANCE}/${INSTANCE}/wsgi.py"
-URLS="${INSTROOT}/${INSTANCE}/${INSTANCE}/urls.py"
-FIXTURES_DIR="${INSTROOT}/${INSTANCE}/${INSTANCE}/data/fixtures"
-INSTSTAT_DIR="${INSTROOT}/${INSTANCE}/${INSTANCE}/static"
-WSGI="${INSTROOT}/${INSTANCE}/${INSTANCE}/wsgi.py"
-MNGCMD="${INSTROOT}/${INSTANCE}/manage.py"
-#BASE_URL_PATH="/${INSTANCE}" # DO NOT USE THE TRAILING SLASH!!!
-BASE_URL_PATH=""
-STATIC_URL_PATH="/${INSTANCE}_static" # DO NOT USE THE TRAILING SLASH!!!
+if [ -z "$DBENGINE" -o -z "$DBNAME" ]
+then
+    load_db_conf `dirname $0`/../db.conf
+fi
+required_variables DBENGINE DBNAME
 
-DBENGINE="django.contrib.gis.db.backends.postgis"
-DBNAME="eoxs_${INSTANCE}"
-DBUSER="eoxs_admin_${INSTANCE}"
-DBPASSWD="${INSTANCE}_admin_eoxs_`head -c 24 < /dev/urandom | base64 | tr '/' '_'`"
-DBHOST=""
-DBPORT=""
 
-PG_HBA="`sudo -u postgres psql -qA -d template_postgis -c "SHOW data_directory;" | grep -m 1 "^/"`/pg_hba.conf"
-
-EOXSLOG="${VIRES_LOGDIR}/eoxserver/${INSTANCE}/eoxserver.log"
-ACCESSLOG="${VIRES_LOGDIR}/eoxserver/${INSTANCE}/access.log"
-EOXSCONF="${INSTROOT}/${INSTANCE}/${INSTANCE}/conf/eoxserver.conf"
-EOXSURL="${VIRES_URL_ROOT}${BASE_URL_PATH}/ows?"
-EOXSMAXSIZE="20480"
-EOXSMAXPAGE="200"
-
-# process group label
-EOXS_WSGI_PROCESS_GROUP=${EOXS_WSGI_PROCESS_GROUP:-eoxs_ows}
 
 #-------------------------------------------------------------------------------
-# STEP 1: CREATE INSTANCE
+# STEP 1: CREATE INSTANCE (if not already present)
 
 info "Creating EOxServer instance '${INSTANCE}' in '$INSTROOT/$INSTANCE' ..."
-
-if [ -d "$INSTROOT/$INSTANCE" ]
-then
-    info " The instance seems to already exist. All files will be removed!"
-    rm -fvR "$INSTROOT/$INSTANCE"
-fi
 
 # check availability of the EOxServer
 #HINT: Does python complain that the apparently installed EOxServer
 #      package is not available? First check that the 'eoxserver' tree is
 #      readable by anyone. (E.g. in case of read protected home directory when
 #      the development setup is used.)
-sudo -u "$VIRES_USER" python -c 'import eoxserver' || {
-    error "EOxServer does not seem to be installed!"
-    exit 1
-}
+python -c 'import eoxserver' || error "EOxServer does not seem to be installed!"
 
-sudo -u "$VIRES_USER" mkdir -p "$INSTROOT/$INSTANCE"
-sudo -u "$VIRES_USER" eoxserver-instance.py "$INSTANCE" "$INSTROOT/$INSTANCE"
-
-#-------------------------------------------------------------------------------
-# STEP 2: CREATE POSTGRES DATABASE
-
-info "Creating EOxServer instance's Postgres database '$DBNAME' ..."
-
-# deleting any previously existing database
-sudo -u postgres psql -q -c "DROP DATABASE $DBNAME ;" 2>/dev/null \
-  && warn " The already existing database '$DBNAME' was removed." || /bin/true
-
-# deleting any previously existing user
-TMP=`sudo -u postgres psql -tAc "SELECT 1 FROM pg_roles WHERE rolname='$DBUSER' ;"`
-if [ 1 == "$TMP" ]
+if [ ! -d "$INSTROOT/$INSTANCE" ]
 then
-    sudo -u postgres psql -q -c "DROP USER $DBUSER ;"
-    warn " The alredy existing database user '$DBUSER' was removed"
+    mkdir -p "$INSTROOT/$INSTANCE"
+    eoxserver-instance.py "$INSTANCE" "$INSTROOT/$INSTANCE"
 fi
 
-# create new users
-sudo -u postgres psql -q -c "CREATE USER $DBUSER WITH ENCRYPTED PASSWORD '$DBPASSWD' NOSUPERUSER NOCREATEDB NOCREATEROLE ;"
-sudo -u postgres psql -q -c "CREATE DATABASE $DBNAME WITH OWNER $DBUSER TEMPLATE template_postgis ENCODING 'UTF-8' ;"
-
-# prepend to the beginning of the acess list
-{ sudo -u postgres ex "$PG_HBA" || /bin/true ; } <<END
-g/# EOxServer instance:.*\/$INSTANCE/d
-g/^\s*local\s*$DBNAME/d
-/#\s*TYPE\s*DATABASE\s*USER\s*.*ADDRESS\s*METHOD/a
-# EOxServer instance: $INSTROOT/$INSTANCE
-local	$DBNAME	$DBUSER	md5
-local	$DBNAME	all	reject
-.
-wq
-END
-
-systemctl restart postgresql.service
-systemctl status postgresql.service
-
 #-------------------------------------------------------------------------------
-# STEP 3: SETUP DJANGO DB BACKEND
+# STEP 2: SETUP DJANGO DB BACKEND
 
-sudo -u "$VIRES_USER" ex "$SETTINGS" <<END
+ex "$SETTINGS" <<END
 1,\$s/\('ENGINE'[	 ]*:[	 ]*\).*\(,\)/\1'$DBENGINE',/
 1,\$s/\('NAME'[	 ]*:[	 ]*\).*\(,\)/\1'$DBNAME',/
 1,\$s/\('USER'[	 ]*:[	 ]*\).*\(,\)/\1'$DBUSER',/
 1,\$s/\('PASSWORD'[	 ]*:[	 ]*\).*\(,\)/\1'$DBPASSWD',/
-1,\$s/\('HOST'[	 ]*:[	 ]*\).*\(,\)/#\1'$DBHOST',/
-1,\$s/\('PORT'[	 ]*:[	 ]*\).*\(,\)/#\1'$DBPORT',/
+1,\$s/\('HOST'[	 ]*:[	 ]*\).*\(,\)/\1'$DBHOST',/
+1,\$s/\('PORT'[	 ]*:[	 ]*\).*\(,\)/\1'$DBPORT',/
 1,\$s:\(STATIC_URL[	 ]*=[	 ]*\).*:\1'$STATIC_URL_PATH/':
 wq
 END
@@ -160,9 +96,8 @@ do
     # EOxServer instance configured by the automatic installation script
 
     # static content
-    Alias "$STATIC_URL_PATH" "$INSTSTAT_DIR"
-    <Directory "$INSTSTAT_DIR">
-        EnableSendfile off
+    Alias "$STATIC_URL_PATH" "$STATIC_DIR"
+    <Directory "$STATIC_DIR">
         Options -MultiViews +FollowSymLinks
         Header set Access-Control-Allow-Origin "*"
     </Directory>
@@ -188,19 +123,43 @@ wq
 END
 done
 
+# enable virtualenv in wsgi.py if necessary
+if is_virtualenv_enabled
+then
+    info "Enabling virtualenv ..."
+    { ex "$WSGI_FILE" || /bin/true ; } <<END
+/^# Start load virtualenv$/,/^# End load virtualenv$/d
+/^import sys/a
+# Start load virtualenv
+import site
+# Add the site-packages of the chosen virtualenv to work with
+site.addsitedir("${VIRTUALENV_ROOT}/local/lib/python2.7/site-packages")
+# End load virtualenv
+.
+/^# Start activate virtualenv$/,/^# End activate virtualenv$/d
+/^os.environ/a
+# Start activate virtualenv
+activate_env=os.path.expanduser("${VIRTUALENV_ROOT}/bin/activate_this.py")
+execfile(activate_env, dict(__file__=activate_env))
+# End activate virtualenv
+.
+wq
+END
+fi
+
 #-------------------------------------------------------------------------------
 # STEP 5: EOXSERVER CONFIGURATION
 
 # remove any previous configuration blocks
-{ sudo -u "$VIRES_USER" ex "$EOXSCONF" || /bin/true ; } <<END
+{ ex "$EOXSCONF" || /bin/true ; } <<END
 /^# WMS_SUPPORTED_CRS - BEGIN/,/^# WMS_SUPPORTED_CRS - END/d
 /^# WCS_SUPPORTED_CRS - BEGIN/,/^# WCS_SUPPORTED_CRS - END/d
 wq
 END
 
 # set the new configuration
-sudo -u "$VIRES_USER" ex "$EOXSCONF" <<END
-/^[	 ]*http_service_url[	 ]*=/s;\(^[	 ]*http_service_url[	 ]*=\).*;\1${EOXSURL};
+ex "$EOXSCONF" <<END
+/^[	 ]*http_service_url[	 ]*=/s;\(^[	 ]*http_service_url[	 ]*=\).*;\1${OWS_URL};
 g/^#.*supported_crs/,/^$/d
 /\[services\.ows\.wms\]/a
 # WMS_SUPPORTED_CRS - BEGIN - Do not edit or remove this line!
@@ -246,11 +205,9 @@ wq
 END
 
 #set the limits
-sudo -u "$VIRES_USER" ex "$EOXSCONF" <<END
+ex "$EOXSCONF" <<END
 g/^[ 	#]*maxsize[ 	]/d
 /\[services\.ows\.wcs\]/a
-# maximum allowed output coverage size
-# (nether width nor height can exceed this limit)
 maxsize = $EOXSMAXSIZE
 .
 /^[	 ]*source_to_native_format_map[	 ]*=/s#\(^[	 ]*source_to_native_format_map[	 ]*=\).*#\1application/x-esa-envisat,application/x-esa-envisat#
@@ -261,13 +218,13 @@ END
 
 # set the allowed hosts
 # NOTE: Set the hostname manually if needed.
-sudo -u "$VIRES_USER" ex "$SETTINGS" <<END
+ex "$SETTINGS" <<END
 1,\$s/\(^ALLOWED_HOSTS\s*=\s*\).*/\1['*','127.0.0.1','::1']/
 wq
 END
 
 # set-up logging
-sudo -u "$VIRES_USER" ex "$SETTINGS" <<END
+ex "$SETTINGS" <<END
 g/^DEBUG\s*=/s#\(^DEBUG\s*=\s*\).*#\1False#
 g/^LOGGING\s*=/,/^}/d
 i
@@ -339,7 +296,6 @@ END
 
 # touch the logfile and set the right permissions
 _create_log_file() {
-    [ ! -f "$1" ] || rm -fv "$1"
     [ -d "`dirname "$1"`" ] || mkdir -p "`dirname "$1"`"
     touch "$1"
     chown "$VIRES_USER:$VIRES_GROUP" "$1"
@@ -369,7 +325,7 @@ $ACCESSLOG {
 END
 
 # create fixtures directory
-sudo -u "$VIRES_USER" mkdir -p "$FIXTURES_DIR"
+mkdir -p "$FIXTURES_DIR"
 
 #-------------------------------------------------------------------------------
 # STEP 6: APPLICATION SPECIFIC SETTINGS
@@ -377,7 +333,7 @@ sudo -u "$VIRES_USER" mkdir -p "$FIXTURES_DIR"
 info "Application specific configuration ..."
 
 # remove any previous configuration blocks
-{ sudo -u "$VIRES_USER" ex "$SETTINGS" || /bin/true ; } <<END
+{ ex "$SETTINGS" || /bin/true ; } <<END
 /^# VIRES APPS - BEGIN/,/^# VIRES APPS - END/d
 /^# VIRES COMPONENTS - BEGIN/,/^# VIRES COMPONENTS - END/d
 /^# VIRES LOGGING - BEGIN/,/^# VIRES LOGGING - END/d
@@ -388,15 +344,16 @@ info "Application specific configuration ..."
 /^# ALLAUTH LOGGING - BEGIN/,/^# ALLAUTH LOGGING - END/d
 /^# REQUESTLOGGING APPS - BEGIN/,/^# REQUESTLOGGING APPS - END/d
 /^# REQUESTLOGGING MIDDLEWARE_CLASSES - BEGIN/,/^# REQUESTLOGGING MIDDLEWARE_CLASSES - END/d
+/^# EMAIL_BACKEND - BEGIN/,/^# EMAIL_BACKEND - END/d
 wq
 END
 
-{ sudo -u "$VIRES_USER" ex "$URLS" || /bin/true ; } <<END
+{ ex "$URLS" || /bin/true ; } <<END
 /^# ALLAUTH URLS - BEGIN/,/^# ALLAUTH URLS - END/d
 wq
 END
 
-{ sudo -u "$VIRES_USER" ex "$EOXSCONF" || /bin/true ; } <<END
+{ ex "$EOXSCONF" || /bin/true ; } <<END
 /^# WPSASYNC - BEGIN/,/^# WPSASYNC - END/d
 wq
 END
@@ -410,7 +367,7 @@ else
     info "VIRES specific configuration ..."
 
     # remove unnecessary or conflicting component paths
-    { sudo -u "$VIRES_USER" ex "$SETTINGS" || /bin/true ; } <<END
+    { ex "$SETTINGS" || /bin/true ; } <<END
 g/^COMPONENTS\s*=\s*(/,/^)/s/'eoxserver\.services\.ows\.wcs\.\*\*'/#&/
 g/^COMPONENTS\s*=\s*(/,/^)/s/'eoxserver\.services\.native\.\*\*'/#&/
 g/^COMPONENTS\s*=\s*(/,/^)/s/'eoxserver\.services\.gdal\.\*\*'/#&/
@@ -419,7 +376,7 @@ wq
 END
 
     # extending the EOxServer settings.py
-    sudo -u "$VIRES_USER" ex "$SETTINGS" <<END
+    ex "$SETTINGS" <<END
 /^INSTALLED_APPS\s*=/
 /^)/
 a
@@ -428,14 +385,14 @@ INSTALLED_APPS += (
     'vires',
 )
 
-VIRES_AUX_DB_DST = join(PROJECT_DIR, "aux_dst.cdf")
-VIRES_AUX_DB_KP = join(PROJECT_DIR, "aux_kp.cdf")
-VIRES_AUX_DB_IBIA = join(PROJECT_DIR, "aux_ibia.cdf")
+VIRES_AUX_DB_DST = "$VIRES_CACHE_DIR/aux_dst.cdf"
+VIRES_AUX_DB_KP = "$VIRES_CACHE_DIR/aux_kp.cdf"
+VIRES_AUX_DB_IBIA = "$VIRES_CACHE_DIR/aux_ibia.cdf"
 VIRES_AUX_IMF_2__COLLECTION = "SW_OPER_AUX_IMF_2_"
 VIRES_ORBIT_COUNTER_DB = {
-    'A': join(PROJECT_DIR, "SW_OPER_AUXAORBCNT.cdf"),
-    'B': join(PROJECT_DIR, "SW_OPER_AUXBORBCNT.cdf"),
-    'C': join(PROJECT_DIR, "SW_OPER_AUXCORBCNT.cdf"),
+    'A': "$VIRES_CACHE_DIR/SW_OPER_AUXAORBCNT.cdf",
+    'B': "$VIRES_CACHE_DIR/SW_OPER_AUXBORBCNT.cdf",
+    'C': "$VIRES_CACHE_DIR/SW_OPER_AUXCORBCNT.cdf",
 }
 
 # TODO: Find a better way how to map a collection to the satellite!
@@ -520,7 +477,7 @@ else
     info "ALLAUTH specific configuration ..."
 
     # extending the EOxServer settings.py
-    sudo -u "$VIRES_USER" ex "$SETTINGS" <<END
+    ex "$SETTINGS" <<END
 /^INSTALLED_APPS\s*=/
 /^)/
 a
@@ -639,7 +596,7 @@ LOGGING['loggers'].update({
     'django.request': {
         'handlers': ['access_file'],
         'level': 'DEBUG' if DEBUG else 'INFO',
-        'propagate': False,
+        'propagate': True,
     },
 })
 # ALLAUTH LOGGING - END - Do not edit or remove this line!
@@ -647,14 +604,14 @@ LOGGING['loggers'].update({
 wq
 END
 
-# Remove original url patterns
-{ sudo -u "$VIRES_USER" ex "$URLS" || /bin/true ; } <<END
+    # Remove original url patterns
+    { ex "$URLS" || /bin/true ; } <<END
 /^urlpatterns = patterns(/,/^)/s/^\\s/# /
 wq
 END
 
-    # extending the EOxServer settings.py
-    sudo -u "$VIRES_USER" ex "$URLS" <<END
+    # extending the EOxServer urls.py
+    ex "$URLS" <<END
 $ a
 # ALLAUTH URLS - BEGIN - Do not edit or remove this line!
 import eoxs_allauth.views
@@ -688,7 +645,7 @@ END
 fi # end of ALLAUTH configuration
 
 # REQUESTLOGGER configuration
-sudo -u "$VIRES_USER" ex "$SETTINGS" <<END
+ex "$SETTINGS" <<END
 /^INSTALLED_APPS\s*=/
 /^)/
 a
@@ -746,7 +703,7 @@ END
     done
 
     # extending the EOxServer settings.py
-    sudo -u "$VIRES_USER" ex "$SETTINGS" <<END
+    ex "$SETTINGS" <<END
 /^COMPONENTS\s*=/
 /^)/a
 # WPSASYNC COMPONENTS - BEGIN - Do not edit or remove this line!
@@ -771,7 +728,7 @@ END
     [ -n "`grep -m 1 '\[services\.ows\.wps\]' "$EOXSCONF"`" ] || echo '[services.ows.wps]' >> "$EOXSCONF"
 
     # extending the EOxServer configuration
-    sudo -u "$VIRES_USER" ex "$EOXSCONF" <<END
+    ex "$EOXSCONF" <<END
 /\[services\.ows\.wps\]/a
 # WPSASYNC - BEGIN - Do not edit or remove this line!
 path_temp=$VIRES_WPS_TEMP_DIR
@@ -786,11 +743,6 @@ num_workers=$VIRES_WPS_NPROC
 wq
 END
 
-    # reset the required WPS directories
-    [ ! -d "$VIRES_WPS_TEMP_DIR" ] || rm -fRv "$VIRES_WPS_TEMP_DIR"
-    [ ! -d "$VIRES_WPS_PERM_DIR" ] || rm -fRv "$VIRES_WPS_PERM_DIR"
-    [ ! -d "$VIRES_WPS_TASK_DIR" ] || rm -fRv "$VIRES_WPS_TASK_DIR"
-
     for D in "$VIRES_WPS_TEMP_DIR" "$VIRES_WPS_PERM_DIR" "$VIRES_WPS_TASK_DIR" "`dirname "$VIRES_WPS_SOCKET"`"
     do
         mkdir -p "$D"
@@ -799,6 +751,13 @@ END
     done
 
     info "WPS async backend ${VIRES_WPS_SERVICE_NAME}.service initialization ..."
+
+    if is_virtualenv_enabled
+    then
+        PREFIX="$VIRTUALENV_ROOT"
+    else
+        PREFIX="/usr"
+    fi
 
     cat > "/etc/systemd/system/${VIRES_WPS_SERVICE_NAME}.service" <<END
 [Unit]
@@ -810,7 +769,7 @@ Before=httpd.service
 Type=simple
 User=$VIRES_USER
 ExecStartPre=/usr/bin/rm -fv $VIRES_WPS_SOCKET
-ExecStart=/usr/bin/python -EsOm eoxs_wps_async.daemon ${INSTANCE}.settings $INSTROOT/$INSTANCE
+ExecStart=${PREFIX}/bin/python -EsOm eoxs_wps_async.daemon ${INSTANCE}.settings $INSTROOT/$INSTANCE
 
 [Install]
 WantedBy=multi-user.target
@@ -818,8 +777,6 @@ END
 
     systemctl daemon-reload
     systemctl enable "${VIRES_WPS_SERVICE_NAME}.service"
-    systemctl restart "${VIRES_WPS_SERVICE_NAME}.service"
-    systemctl status "${VIRES_WPS_SERVICE_NAME}.service"
 
 fi # end of WPS-ASYNC configuration
 
@@ -828,26 +785,10 @@ fi # end of WPS-ASYNC configuration
 info "Initializing EOxServer instance '${INSTANCE}' ..."
 
 # collect static files
-sudo -u "$VIRES_USER" python "$MNGCMD" collectstatic -l --noinput
+python "$MNGCMD" collectstatic -l --noinput
 
 # setup new database
-#sudo -u "$VIRES_USER" python "$MNGCMD" makemigrations
-# NOTE: Django 1.8 'makemigrations' does not seem to properly initialize
-#       new migrations and the command has to be called for each app separately.
-#       See: http://stackoverflow.com/questions/29689365/auth-user-error-with-django-1-8-and-syncdb-migrate
-{
-python - << END
-import sys
-sys.path.append("$INSTROOT/$INSTANCE")
-import ${INSTANCE}.settings as settings
-for app in settings.INSTALLED_APPS:
-    print app.rpartition('.')[-1]
-END
-} | while read APP
-do
-    python "$MNGCMD" makemigrations "$APP"
-done
-sudo -u "$VIRES_USER" python "$MNGCMD" migrate
+python "$MNGCMD" migrate
 
 #-------------------------------------------------------------------------------
 # STEP 8: APP-SPECIFIC INITIALISATION
@@ -855,14 +796,15 @@ sudo -u "$VIRES_USER" python "$MNGCMD" migrate
 if [ "$CONFIGURE_VIRES" == "YES" ]
 then
     # load rangetypes
-    sudo -u "$VIRES_USER" python "$MNGCMD" vires_rangetype_load || true
+    python "$MNGCMD" vires_rangetype_load || true
 
     # register models
-    sudo -u "$VIRES_USER" python "$MNGCMD" vires_model_remove --all
-    sudo -u "$VIRES_USER" python "$MNGCMD" vires_model_add "SIFM" "IGRF12" "CHAOS-6-Combined"
+    python "$MNGCMD" vires_model_remove --all
+    python "$MNGCMD" vires_model_add "SIFM" "IGRF12" "CHAOS-6-Combined" "CHAOS-6-Core" "CHAOS-6-Static"
 fi
 
 #-------------------------------------------------------------------------------
-# STEP 9: FINAL WEB SERVER RESTART
-systemctl restart httpd.service
-systemctl status httpd.service
+# STEP 9: CHANGE OWNERSHIP OF THE CONFIGURATION FILES
+
+info "Changing ownership of $INSTROOT/$INSTANCE to $VIRES_INSTALL_USER"
+chown -R "$VIRES_INSTALL_USER:$VIRES_INSTALL_GROUP" "$INSTROOT/$INSTANCE"

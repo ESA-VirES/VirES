@@ -32,10 +32,7 @@
 # THE SOFTWARE.
 #-------------------------------------------------------------------------------
 
-
-
 source `dirname $0`/../lib_logging.sh
-
 
 info 'Installing and configuring NFS-Utils, NFS-Server, and NFS-Client ...'
 
@@ -52,7 +49,6 @@ if [ "$INSTALL_NFSSERVER" = "YES" ] || [ "$INSTALL_NFSCLIENT" = "YES" ]
 then
     yum install -y nfs-utils
 fi
-
 
 
 if [ "$INSTALL_NFSSERVER" = "YES" ]
