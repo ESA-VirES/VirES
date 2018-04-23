@@ -803,6 +803,7 @@ python "$MNGCMD" migrate
 
 #-------------------------------------------------------------------------------
 # STEP 8: APP-SPECIFIC INITIALISATION
+info "APP specific initialisatins (ragetypes, models, etc.) ..."
 
 if [ "$CONFIGURE_VIRES" == "YES" ]
 then
@@ -811,7 +812,12 @@ then
 
     # register models
     python "$MNGCMD" vires_model_remove --all
-    python "$MNGCMD" vires_model_add "SIFM" "IGRF12" "CHAOS-6-Combined" "CHAOS-6-Core" "CHAOS-6-Static"
+    python "$MNGCMD" vires_model_add \
+        "SIFM" "IGRF12" "CHAOS-6-Combined" "CHAOS-6-Core" "CHAOS-6-Static" \
+        "MCO_SHA_2C" "MCO_SHA_2D" "MCO_SHA_2F" "MLI_SHA_2C" "MLI_SHA_2D" \
+        "MMA_SHA_2C-Primary" "MMA_SHA_2C-Secondary" \
+        "MIO_SHA_2C-Primary" "MIO_SHA_2C-Secondary" \
+        "MIO_SHA_2D-Primary" "MIO_SHA_2D-Secondary"
 fi
 
 #-------------------------------------------------------------------------------
