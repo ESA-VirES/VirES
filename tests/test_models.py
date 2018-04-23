@@ -339,6 +339,38 @@ class MagneticModelTestMixIn(object):
     def variables(self):
         return ["F_%s"%self.model_name, "B_NEC_%s"%self.model_name]
 
+    @property
+    def residual_variables(self):
+        return ["F_res_%s"%self.model_name, "B_NEC_res_%s"%self.model_name]
+
+    @property
+    def measurements_variables(self):
+        return ["F", "B_NEC"]
+
+    def test_model_residuals(self):
+        request = self.get_request(
+            begin_time=self.begin_time,
+            end_time=self.end_time,
+            model_ids=[self.model_name],
+            variables=(
+                self.measurements_variables +
+                self.residual_variables +
+                self.variables
+            ),
+            collection_ids={"Alpha": ["SW_OPER_MAGA_LR_1B"]},
+        )
+        response = self.get_parsed_response(request)
+
+        real_f = array(response["F"])
+        real_b = array(response["B_NEC"])
+        model_f = array(response["F_%s" % self.model_name])
+        model_b = array(response["B_NEC_%s" % self.model_name])
+        diff_f = array(response["F_res_%s" % self.model_name])
+        diff_b = array(response["B_NEC_res_%s" % self.model_name])
+
+        assert_allclose(diff_f, real_f - model_f, atol=2e-4)
+        assert_allclose(diff_b, real_b - model_b, atol=2e-4)
+
     def test_model(self):
         request = self.get_request(
             begin_time=self.begin_time,
