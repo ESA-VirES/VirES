@@ -20,4 +20,4 @@ yum --assumeyes install wmm2015-lib wmm2015-devel qdipole  qdipole-devel
 # get rid of the previous build
 [ -d "$EOXMAGMOD_SOURCE_PATH/build" ] && rm -fvR "$EOXMAGMOD_SOURCE_PATH/build"
 [ -d "$EOXMAGMOD_SOURCE_PATH/dist" ] && rm -fvR "$EOXMAGMOD_SOURCE_PATH/dist"
-pip install -e "$EOXMAGMOD_SOURCE_PATH"
+pip install $PIP_OPTIONS --force-reinstall "$SOURCE_URL"
