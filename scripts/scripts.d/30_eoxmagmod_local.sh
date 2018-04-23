@@ -1,7 +1,7 @@
 #!/bin/sh
 #-------------------------------------------------------------------------------
 #
-# Purpose: EOX magnetic model library installation - development mode
+# Purpose: EOX magnetic model library installation - local installation
 # Author(s): Martin Paces <martin.paces@eox.at>
 #-------------------------------------------------------------------------------
 # Copyright (C) 2015 EOX IT Services GmbH
@@ -11,11 +11,11 @@
 
 EOXMAGMOD_SOURCE_PATH="${EOXMAGMOD_SOURCE_PATH:-/usr/local/eoxmagmod}"
 
-info "Installing EOxMagMod in development mode ..."
+info "Installing EOxMagMod in from a local source directory ..."
 
 activate_virtualenv
 
-yum --assumeyes install wmm2015-lib qdipole wmm2015-devel qdipole-devel
+yum --assumeyes install wmm2015-lib wmm2015-devel qdipole  qdipole-devel
 
 # get rid of the previous build
 [ -d "$EOXMAGMOD_SOURCE_PATH/build" ] && rm -fvR "$EOXMAGMOD_SOURCE_PATH/build"
