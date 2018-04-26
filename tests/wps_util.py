@@ -114,7 +114,20 @@ class WpsException(Exception):
         )
 
 
-class WpsPostRequestMixIn(object):
+class HttpMixIn(object):
+    url = SERVICE_URL
+
+    @staticmethod
+    def retrieve(request, parser):
+        try:
+            with closing(urlopen(request)) as file_in:
+                return parser(file_in)
+        except HTTPError as error:
+            print(error.read())
+            raise
+
+
+class WpsPostRequestMixIn(HttpMixIn):
     url = SERVICE_URL
     headers = {"Content-Type": "application/xml"}
     template_source = None
@@ -134,15 +147,6 @@ class WpsPostRequestMixIn(object):
 
     def get_response(self, parser, request):
         return self.retrieve(Request(self.url, request, self.headers), parser)
-
-    @staticmethod
-    def retrieve(request, parser):
-        try:
-            with closing(urlopen(request)) as file_in:
-                return parser(file_in)
-        except HTTPError as error:
-            print(error.read())
-            raise
 
 
 class WpsAsyncPostRequestMixIn(WpsPostRequestMixIn):
