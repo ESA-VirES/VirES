@@ -406,6 +406,41 @@ class MagneticModelTestMixIn(object):
         response = self.get_parsed_response(request)
         self.assertEqual(len(response["Timestamp"]), 0)
 
+
+class MagneticModelMIOTestMixIn(MagneticModelTestMixIn):
+
+    @property
+    def f107_variables(self):
+        return ["F10_INDEX"]
+
+    def test_model(self):
+        request = self.get_request(
+            begin_time=self.begin_time,
+            end_time=self.end_time,
+            model_ids=[self.model_name],
+            variables=(self.variables + self.f107_variables),
+            collection_ids={"Alpha": ["SW_OPER_MAGA_LR_1B"]},
+        )
+        response = self.get_parsed_response(request)
+
+        time = array(response["Timestamp"])
+        coords = stack((
+            array(response["Latitude"]),
+            array(response["Longitude"]),
+            array(response["Radius"])*1e-3,
+        ), axis=1)
+        mag_field = array(response["B_NEC_%s" % self.model_name])
+        mag_intensity = array(response["F_%s" % self.model_name])
+        f107 = array(response["F10_INDEX"])
+
+        assert_allclose(mag_intensity, vnorm(mag_field))
+        assert_allclose(
+            mag_field,
+            self.model.eval(time, coords, f107=f107, scale=[1, 1, -1]),
+            atol=2e-4,
+        )
+
+
 #-------------------------------------------------------------------------------
 
 class TestFetchDataModelEMM2010(TestCase, MagneticModelTestMixIn, FetchDataMixIn):
@@ -775,62 +810,62 @@ class TestAsyncFetchFilteredDataModelMMA2CSecondary(TestCase, MagneticModelTestM
 
 #-------------------------------------------------------------------------------
 
-class TestFetchDataModelMIO2CPrimary(TestCase, MagneticModelTestMixIn, FetchDataMixIn):
+class TestFetchDataModelMIO2CPrimary(TestCase, MagneticModelMIOTestMixIn, FetchDataMixIn):
     model_name = "MIO_SHA_2C-Primary"
     model = load_model_swarm_mio_external(MIO_SHA_2C)
 
 
-class TestFetchFilteredDataModelMIO2CPrimary(TestCase, MagneticModelTestMixIn, FetchFilteredDataMixIn):
+class TestFetchFilteredDataModelMIO2CPrimary(TestCase, MagneticModelMIOTestMixIn, FetchFilteredDataMixIn):
     model_name = "MIO_SHA_2C-Primary"
     model = load_model_swarm_mio_external(MIO_SHA_2C)
 
 
-class TestAsyncFetchFilteredDataModelMIO2CPrimary(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataMixIn):
+class TestAsyncFetchFilteredDataModelMIO2CPrimary(TestCase, MagneticModelMIOTestMixIn, AsyncFetchFilteredDataMixIn):
     model_name = "MIO_SHA_2C-Primary"
     model = load_model_swarm_mio_external(MIO_SHA_2C)
 
 
-class TestFetchDataModelMIO2CSecondary(TestCase, MagneticModelTestMixIn, FetchDataMixIn):
+class TestFetchDataModelMIO2CSecondary(TestCase, MagneticModelMIOTestMixIn, FetchDataMixIn):
     model_name = "MIO_SHA_2C-Secondary"
     model = load_model_swarm_mio_internal(MIO_SHA_2C)
 
 
-class TestFetchFilteredDataModelMIO2CSecondary(TestCase, MagneticModelTestMixIn, FetchFilteredDataMixIn):
+class TestFetchFilteredDataModelMIO2CSecondary(TestCase, MagneticModelMIOTestMixIn, FetchFilteredDataMixIn):
     model_name = "MIO_SHA_2C-Secondary"
     model = load_model_swarm_mio_internal(MIO_SHA_2C)
 
 
-class TestAsyncFetchFilteredDataModelMIO2CSecondary(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataMixIn):
+class TestAsyncFetchFilteredDataModelMIO2CSecondary(TestCase, MagneticModelMIOTestMixIn, AsyncFetchFilteredDataMixIn):
     model_name = "MIO_SHA_2C-Secondary"
     model = load_model_swarm_mio_internal(MIO_SHA_2C)
 
 
-class TestFetchDataModelMIO2DPrimary(TestCase, MagneticModelTestMixIn, FetchDataMixIn):
+class TestFetchDataModelMIO2DPrimary(TestCase, MagneticModelMIOTestMixIn, FetchDataMixIn):
     model_name = "MIO_SHA_2D-Primary"
     model = load_model_swarm_mio_external(MIO_SHA_2D)
 
 
-class TestFetchFilteredDataModelMIO2DPrimary(TestCase, MagneticModelTestMixIn, FetchFilteredDataMixIn):
+class TestFetchFilteredDataModelMIO2DPrimary(TestCase, MagneticModelMIOTestMixIn, FetchFilteredDataMixIn):
     model_name = "MIO_SHA_2D-Primary"
     model = load_model_swarm_mio_external(MIO_SHA_2D)
 
 
-class TestAsyncFetchFilteredDataModelMIO2DPrimary(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataMixIn):
+class TestAsyncFetchFilteredDataModelMIO2DPrimary(TestCase, MagneticModelMIOTestMixIn, AsyncFetchFilteredDataMixIn):
     model_name = "MIO_SHA_2D-Primary"
     model = load_model_swarm_mio_external(MIO_SHA_2D)
 
 
-class TestFetchDataModelMIO2DSecondary(TestCase, MagneticModelTestMixIn, FetchDataMixIn):
+class TestFetchDataModelMIO2DSecondary(TestCase, MagneticModelMIOTestMixIn, FetchDataMixIn):
     model_name = "MIO_SHA_2D-Secondary"
     model = load_model_swarm_mio_internal(MIO_SHA_2D)
 
 
-class TestFetchFilteredDataModelMIO2DSecondary(TestCase, MagneticModelTestMixIn, FetchFilteredDataMixIn):
+class TestFetchFilteredDataModelMIO2DSecondary(TestCase, MagneticModelMIOTestMixIn, FetchFilteredDataMixIn):
     model_name = "MIO_SHA_2D-Secondary"
     model = load_model_swarm_mio_internal(MIO_SHA_2D)
 
 
-class TestAsyncFetchFilteredDataModelMIO2DSecondary(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataMixIn):
+class TestAsyncFetchFilteredDataModelMIO2DSecondary(TestCase, MagneticModelMIOTestMixIn, AsyncFetchFilteredDataMixIn):
     model_name = "MIO_SHA_2D-Secondary"
     model = load_model_swarm_mio_internal(MIO_SHA_2D)
 
