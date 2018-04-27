@@ -520,6 +520,21 @@ fi # end of VIRES configuration
 if [ "$CONFIGURE_ALLAUTH" != "YES" ]
 then
     warn "ALLAUTH specific configuration is disabled."
+
+    # extending the EOxServer urls.py
+    ex "$URLS" <<END
+$ a
+# ALLAUTH URLS - BEGIN - Do not edit or remove this line!
+# added for compatibility with AllAuth enabled configuration
+
+urlpatterns += patterns('',
+    url(r'^openows$', include("eoxserver.services.urls")),
+)
+# ALLAUTH URLS - END - Do not edit or remove this line!
+.
+wq
+END
+
 else
     info "ALLAUTH specific configuration ..."
 
@@ -665,6 +680,7 @@ from django.views.generic import TemplateView
 urlpatterns += patterns('',
     url(r'^/?$', eoxs_allauth.views.workspace),
     url(r'^ows$', eoxs_allauth.views.wrapped_ows),
+    url(r'^openows$', eoxs_allauth.views.open_ows),
     url(r'^accounts/', include('eoxs_allauth.urls')),
     url(
         r'^accounts/faq$',
