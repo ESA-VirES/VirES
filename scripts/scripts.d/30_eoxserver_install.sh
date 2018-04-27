@@ -15,4 +15,4 @@ activate_virtualenv
 
 pip install $PIP_OPTIONS lxml
 
-pip install $PIP_OPTIONS --force-reinstall "${EOXSERVER_SOURCE_PATH:-/usr/local/eoxserver}"
+pip install $PIP_OPTIONS "${EOXSERVER_SOURCE_PATH:-/usr/local/eoxserver}"

@@ -13,4 +13,4 @@ info "Installing EOxServer django-allauth integration package from sources ..."
 
 activate_virtualenv
 
-pip install $PIP_OPTIONS --force-reinstall "${EOXS_ALLAUTH_SOURCE_PATH:-/usr/local/vires/eoxs_allauth}"
+pip install $PIP_OPTIONS "${EOXS_ALLAUTH_SOURCE_PATH:-/usr/local/vires/eoxs_allauth}"

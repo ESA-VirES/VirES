@@ -17,4 +17,4 @@ activate_virtualenv
 
 yum --assumeyes install wmm2015-lib wmm2015-devel qdipole qdipole-devel
 
-pip install $PIP_OPTIONS --force-reinstall "$SOURCE_URL"
+pip install $PIP_OPTIONS "$SOURCE_URL"
