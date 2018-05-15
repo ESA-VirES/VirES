@@ -11,6 +11,7 @@
 
 info "Installing psycopg2 (Python-PostgreSQL Database Adapter) ... """
 
-activate_virtualenv
+yum --assumeyes install postgresql-devel
 
-pip install $PIP_OPTIONS psycopg2
+activate_virtualenv
+pip install --force-reinstall --no-binary :all: psycopg2
