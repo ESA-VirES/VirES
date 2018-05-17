@@ -72,8 +72,8 @@ MMA_SHA_2F = "./data/SW_OPER_MMA_SHA_2F.cdf"
 
 RAD2DEG = 180.0/pi
 
-START_TIME = parse_datetime("2016-01-01T00:00:00Z")
-END_TIME = START_TIME + timedelta(minutes=10)
+START_TIME = parse_datetime("2016-01-01T23:50:00Z")
+END_TIME = parse_datetime("2016-01-02T00:00:00Z")
 
 #-------------------------------------------------------------------------------
 
