@@ -44,6 +44,8 @@ from eoxmagmod import (
     convert, GEOCENTRIC_SPHERICAL, GEOCENTRIC_CARTESIAN,
     load_model_swarm_mma_2c_external,
     load_model_swarm_mma_2c_internal,
+    load_model_swarm_mma_2f_geo_external,
+    load_model_swarm_mma_2f_geo_internal,
     load_model_swarm_mio_external,
     load_model_swarm_mio_internal,
 )
@@ -66,11 +68,12 @@ MLI_SHA_2D = "./data/SW_OPER_MLI_SHA_2D.shc"
 MIO_SHA_2C = "./data/SW_OPER_MIO_SHA_2C.txt"
 MIO_SHA_2D = "./data/SW_OPER_MIO_SHA_2D.txt"
 MMA_SHA_2C = "./data/SW_OPER_MMA_SHA_2C.cdf"
+MMA_SHA_2F = "./data/SW_OPER_MMA_SHA_2F.cdf"
 
 RAD2DEG = 180.0/pi
 
-START_TIME = parse_datetime("2016-01-01T00:00:00Z")
-END_TIME = START_TIME + timedelta(minutes=10)
+START_TIME = parse_datetime("2016-01-01T23:50:00Z")
+END_TIME = parse_datetime("2016-01-02T00:00:00Z")
 
 #-------------------------------------------------------------------------------
 
@@ -807,6 +810,37 @@ class TestFetchFilteredDataModelMMA2CSecondary(TestCase, MagneticModelTestMixIn,
 class TestAsyncFetchFilteredDataModelMMA2CSecondary(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataMixIn):
     model_name = "MMA_SHA_2C-Secondary"
     model = load_model_swarm_mma_2c_internal(MMA_SHA_2C)
+
+#-------------------------------------------------------------------------------
+
+class TestFetchDataModelMMA2FPrimary(TestCase, MagneticModelTestMixIn, FetchDataMixIn):
+    model_name = "MMA_SHA_2F-Primary"
+    model = load_model_swarm_mma_2f_geo_external(MMA_SHA_2F)
+
+
+class TestFetchFilteredDataModelMMA2FPrimary(TestCase, MagneticModelTestMixIn, FetchFilteredDataMixIn):
+    model_name = "MMA_SHA_2F-Primary"
+    model = load_model_swarm_mma_2f_geo_external(MMA_SHA_2F)
+
+
+class TestAsyncFetchFilteredDataModelMMA2FPrimary(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataMixIn):
+    model_name = "MMA_SHA_2F-Primary"
+    model = load_model_swarm_mma_2f_geo_external(MMA_SHA_2F)
+
+
+class TestFetchDataModelMMA2FSecondary(TestCase, MagneticModelTestMixIn, FetchDataMixIn):
+    model_name = "MMA_SHA_2F-Secondary"
+    model = load_model_swarm_mma_2f_geo_internal(MMA_SHA_2F)
+
+
+class TestFetchFilteredDataModelMMA2FSecondary(TestCase, MagneticModelTestMixIn, FetchFilteredDataMixIn):
+    model_name = "MMA_SHA_2F-Secondary"
+    model = load_model_swarm_mma_2f_geo_internal(MMA_SHA_2F)
+
+
+class TestAsyncFetchFilteredDataModelMMA2FSecondary(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataMixIn):
+    model_name = "MMA_SHA_2F-Secondary"
+    model = load_model_swarm_mma_2f_geo_internal(MMA_SHA_2F)
 
 #-------------------------------------------------------------------------------
 
