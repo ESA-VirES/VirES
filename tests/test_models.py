@@ -299,7 +299,7 @@ class QuasiDipoleTestMixIn(object):
         qdlat_ref, qdlon_ref, f11, f12, f21, f22, _ = eval_qdlatlon_with_base_vectors(
             lats, lons, rads, mjd2000_to_decimal_year(time)
         )
-        mlt_ref = eval_mlt(time, qdlon_ref)
+        mlt_ref = eval_mlt(qdlon_ref, time)
 
         qdbasis_ref = stack(
             (f11, f12, f21, f22), axis=1
