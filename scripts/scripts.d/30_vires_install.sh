@@ -13,4 +13,5 @@ info "Installing VirES for Swarm server packages from sources ..."
 
 activate_virtualenv
 
-pip install $PIP_OPTIONS --force-reinstall "${VIRES_SOURCE_PATH:-/usr/local/vires/vires}"
+set -x
+pip install $PIP_OPTIONS "${VIRES_SOURCE_PATH:-/usr/local/vires/vires}"

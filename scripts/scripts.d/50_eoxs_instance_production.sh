@@ -107,6 +107,9 @@ do
         Header set Access-Control-Allow-Origin "*"
     </Directory>
 
+    # favicon redirect
+    Alias "/favicon.ico" "$INSTSTAT_DIR/other/favicon/favicon.ico"
+
     # WSGI service endpoint
     WSGIScriptAlias "${BASE_URL_PATH:-/}" "${INSTROOT}/${INSTANCE}/${INSTANCE}/wsgi.py"
     <Directory "${INSTROOT}/${INSTANCE}/${INSTANCE}">
@@ -295,7 +298,7 @@ LOGGING = {
             'filters': [],
         },
         'mail_admins': {
-            'level': 'WARNING',
+            'level': 'ERROR',
             'class': 'django.utils.log.AdminEmailHandler',
             'formatter': 'default',
             'filters': [],
@@ -314,7 +317,7 @@ LOGGING = {
         },
         'django': {
             'handlers': ['mail_admins'],
-            'level': 'WARNING',
+            'level': 'ERROR',
             'propagate': False,
         },
         '': {
@@ -345,17 +348,15 @@ $EOXSLOG {
     copytruncate
     weekly
     minsize 1M
-    compress
     rotate 560
-    missingok
+    compress
 }
 $ACCESSLOG {
     copytruncate
     weekly
     minsize 1M
-    compress
     rotate 560
-    missingok
+    compress
 }
 END
 
@@ -428,6 +429,17 @@ VIRES_ORBIT_COUNTER_DB = {
     'A': "$VIRES_CACHE_DIR/SW_OPER_AUXAORBCNT.cdf",
     'B': "$VIRES_CACHE_DIR/SW_OPER_AUXBORBCNT.cdf",
     'C': "$VIRES_CACHE_DIR/SW_OPER_AUXCORBCNT.cdf",
+}
+VIRES_CACHED_PRODUCTS = {
+    "MCO_SHA_2C": "$VIRES_CACHE_DIR/SW_OPER_MCO_SHA_2C.shc",
+    "MCO_SHA_2D": "$VIRES_CACHE_DIR/SW_OPER_MCO_SHA_2D.shc",
+    "MCO_SHA_2F": "$VIRES_CACHE_DIR/SW_OPER_MCO_SHA_2F.shc",
+    "MLI_SHA_2C": "$VIRES_CACHE_DIR/SW_OPER_MLI_SHA_2C.shc",
+    "MLI_SHA_2D": "$VIRES_CACHE_DIR/SW_OPER_MLI_SHA_2D.shc",
+    "MMA_SHA_2C": "$VIRES_CACHE_DIR/SW_OPER_MMA_SHA_2C.cdf",
+    "MMA_SHA_2F": "$VIRES_CACHE_DIR/SW_OPER_MMA_SHA_2F.cdf",
+    "MIO_SHA_2C": "$VIRES_CACHE_DIR/SW_OPER_MIO_SHA_2C.txt",
+    "MIO_SHA_2D": "$VIRES_CACHE_DIR/SW_OPER_MIO_SHA_2D.txt",
 }
 
 # TODO: Find a better way how to map a collection to the satellite!
@@ -644,7 +656,7 @@ LOGGING['loggers'].update({
     'django.request': {
         'handlers': ['access_file'],
         'level': 'DEBUG' if DEBUG else 'INFO',
-        'propagate': True,
+        'propagate': False,
     },
 })
 # ALLAUTH LOGGING - END - Do not edit or remove this line!
@@ -863,10 +875,19 @@ info "Initializing EOxServer instance '${INSTANCE}' ..."
 python "$MNGCMD" collectstatic -l --noinput
 
 # setup new database
+# NOTE: When a new DB is created Django migrate does not seem to respect
+#       the apps' models dependencies and does not create the models
+#       in the right order.
+##  setup this procedure to ensure that migrations run in the right order
+python "$MNGCMD" migrate sites
+python "$MNGCMD" migrate contenttypes
+python "$MNGCMD" migrate admin
+python "$MNGCMD" migrate auth
 python "$MNGCMD" migrate
 
 #-------------------------------------------------------------------------------
 # STEP 8: APP-SPECIFIC INITIALISATION
+info "APP specific initialisatins (ragetypes, models, etc.) ..."
 
 if [ "$CONFIGURE_VIRES" == "YES" ]
 then
@@ -875,7 +896,13 @@ then
 
     # register models
     python "$MNGCMD" vires_model_remove --all
-    python "$MNGCMD" vires_model_add "SIFM" "IGRF12" "CHAOS-6-Combined" "CHAOS-6-Core" "CHAOS-6-Static"
+    python "$MNGCMD" vires_model_add \
+        "SIFM" "IGRF12" "CHAOS-6-Combined" "CHAOS-6-Core" "CHAOS-6-Static" \
+        "MCO_SHA_2C" "MCO_SHA_2D" "MCO_SHA_2F" "MLI_SHA_2C" "MLI_SHA_2D" \
+        "MMA_SHA_2C-Primary" "MMA_SHA_2C-Secondary" \
+        "MMA_SHA_2F-Primary" "MMA_SHA_2F-Secondary" \
+        "MIO_SHA_2C-Primary" "MIO_SHA_2C-Secondary" \
+        "MIO_SHA_2D-Primary" "MIO_SHA_2D-Secondary"
 fi
 
 #-------------------------------------------------------------------------------
