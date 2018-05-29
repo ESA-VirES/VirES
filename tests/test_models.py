@@ -32,7 +32,7 @@
 from unittest import TestCase, main
 from math import pi
 from datetime import timedelta
-from numpy import array, stack, ones, broadcast_to, arcsin, arctan2
+from numpy import array, stack, ones, broadcast_to, arcsin, arctan2, nan, empty
 from numpy.testing import assert_allclose
 from time_util import parse_datetime
 from eoxmagmod import (
@@ -58,6 +58,10 @@ from eoxmagmod.data import (
 )
 from wps_util import (
     WpsPostRequestMixIn, WpsAsyncPostRequestMixIn, CsvRequestMixIn,
+)
+from pyamps_wrapper import (
+    eval_ionospheric_current_model,
+    eval_associated_magnetic_model,
 )
 
 MCO_SHA_2C = "./data/SW_OPER_MCO_SHA_2C.shc"
@@ -93,6 +97,133 @@ class AsyncFetchFilteredDataMixIn(CsvRequestMixIn, WpsAsyncPostRequestMixIn):
     template_source = "test_vires_fetch_filtered_data_async.xml"
     begin_time = START_TIME
     end_time = END_TIME
+
+#-------------------------------------------------------------------------------
+
+class AMPSIonosphericCurrentTestMixIn(object):
+    variables = [
+        "IMF_V", "IMF_BY_GSM", "IMF_BZ_GSM", "DipoleTiltAngle", "F10_INDEX",
+        "QDLat", "MLT", "QDBasis",
+        "DivergenceFreeCurrentFunction",
+        "TotalCurrent",
+        "UpwardCurrent",
+    ]
+
+    def test_ionospheric_current_model(self):
+        request = self.get_request(
+            begin_time=self.begin_time,
+            end_time=self.end_time,
+            variables=self.variables,
+            collection_ids={"Alpha": ["SW_OPER_MAGA_LR_1B"]},
+        )
+        response = self.get_parsed_response(request)
+        times = array(response["Timestamp"])
+
+        qdlat = array(response["QDLat"])
+        mlt = array(response["MLT"])
+        qdbasis = array(response["QDBasis"])
+
+        if times.size > 0:
+            #median_time = times[times.size // 2]
+            #idx = argmax(abs(times - median_time), axis=0)
+            idx = times.size // 2
+
+            v_imf = array(response["IMF_V"])[idx]
+            by_gsm_imf = array(response["IMF_BY_GSM"])[idx]
+            bz_gsm_imf = array(response["IMF_BZ_GSM"])[idx]
+            tilt_angle = array(response["DipoleTiltAngle"])[idx]
+            f107 = array(response["F10_INDEX"])[idx]
+        else:
+            v_imf = nan
+            by_gsm_imf = nan
+            bz_gsm_imf = nan
+            tilt_angle = nan
+            f107 = nan
+
+        div_free_current_funct = array(response["DivergenceFreeCurrentFunction"])
+        total_current = array(response["TotalCurrent"])
+        upward_current = array(response["UpwardCurrent"])
+
+        div_free_current_funct_ref, total_current_ref, upward_current_ref = (
+            eval_ionospheric_current_model(
+                qdlat, mlt, qdbasis, v_imf, by_gsm_imf, bz_gsm_imf,
+                tilt_angle, f107
+            )
+        )
+
+        assert_allclose(div_free_current_funct, div_free_current_funct_ref, atol=1e-6)
+        assert_allclose(total_current, total_current_ref, atol=1e-5)
+        assert_allclose(upward_current, upward_current_ref, atol=1e-6)
+
+
+class TestFetchDataAMPSIonosphericCurrent(TestCase, AMPSIonosphericCurrentTestMixIn, FetchDataMixIn):
+    pass
+
+
+class TestFetchFilteredDataAMPSIonosphericCurrent(TestCase, AMPSIonosphericCurrentTestMixIn, FetchFilteredDataMixIn):
+    pass
+
+
+class TestAsyncFetchFilteredDataAMPSIonosphericCurrent(TestCase, AMPSIonosphericCurrentTestMixIn, AsyncFetchFilteredDataMixIn):
+    pass
+
+#-------------------------------------------------------------------------------
+
+
+class AMPSAssociatedMagneticFieldTestMixIn(object):
+    variables = [
+        'IMF_V', 'IMF_BY_GSM', 'IMF_BZ_GSM', 'DipoleTiltAngle', 'F10_INDEX',
+        "F_AMPS", "B_NEC_AMPS"
+    ]
+
+    def test_associated_magnetic_field(self):
+        request = self.get_request(
+            begin_time=self.begin_time,
+            end_time=self.end_time,
+            variables=self.variables,
+            collection_ids={"Alpha": ["SW_OPER_MAGA_LR_1B"]},
+        )
+        response = self.get_parsed_response(request)
+        times = array(response["Timestamp"])
+        lats = array(response["Latitude"])
+        lons = array(response["Longitude"])
+        rads = array(response["Radius"])*1e-3
+
+        v_imf = array(response["IMF_V"])
+        by_gsm_imf = array(response["IMF_BY_GSM"])
+        bz_gsm_imf = array(response["IMF_BZ_GSM"])
+        tilt_angle = array(response["DipoleTiltAngle"])
+        f107 = array(response["F10_INDEX"])
+
+        f_amps = array(response["F_AMPS"])
+        b_amps = array(response["B_NEC_AMPS"])
+
+        if times.size > 0:
+            idx = times.size // 2
+            b_amps_ref = eval_associated_magnetic_model(
+                times[idx], times, lats, lons, rads,
+                v_imf, by_gsm_imf, bz_gsm_imf, tilt_angle, f107
+            )
+        else:
+            b_amps_ref = empty((0, 3))
+
+        f_amps_ref = vnorm(b_amps_ref)
+
+        assert_allclose(b_amps, b_amps_ref, atol=2e-6)
+        assert_allclose(f_amps, f_amps_ref, atol=1e-6)
+
+
+class TestFetchDataAMPSAssociatedMagneticField(TestCase, AMPSAssociatedMagneticFieldTestMixIn, FetchDataMixIn):
+    pass
+
+
+class TestFetchFilteredDataAMPSAssociatedMagneticField(TestCase, AMPSAssociatedMagneticFieldTestMixIn, FetchFilteredDataMixIn):
+    pass
+
+
+class TestAsyncFetchFilteredDataAMPSAssociatedMagneticField(TestCase, AMPSAssociatedMagneticFieldTestMixIn, AsyncFetchFilteredDataMixIn):
+    pass
+
 
 #-------------------------------------------------------------------------------
 
