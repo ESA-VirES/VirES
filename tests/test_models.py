@@ -172,7 +172,7 @@ class TestAsyncFetchFilteredDataAMPSIonosphericCurrent(TestCase, AMPSIonospheric
 
 class AMPSAssociatedMagneticFieldTestMixIn(object):
     variables = [
-        'IMF_V', 'IMF_BY_GSM', 'IMF_BZ_GSM', 'DipoleTiltAngle', 'F10_INDEX',
+        'IMF_V', 'IMF_BY_GSM', 'IMF_BZ_GSM', 'DipoleTiltAngle', 'F107',
         "F_AMPS", "B_NEC_AMPS"
     ]
 
@@ -193,7 +193,7 @@ class AMPSAssociatedMagneticFieldTestMixIn(object):
         by_gsm_imf = array(response["IMF_BY_GSM"])
         bz_gsm_imf = array(response["IMF_BZ_GSM"])
         tilt_angle = array(response["DipoleTiltAngle"])
-        f107 = array(response["F10_INDEX"])
+        f107 = array(response["F107"])
 
         f_amps = array(response["F_AMPS"])
         b_amps = array(response["B_NEC_AMPS"])
