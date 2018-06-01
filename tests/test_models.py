@@ -545,7 +545,7 @@ class MagneticModelMIOTestMixIn(MagneticModelTestMixIn):
 
     @property
     def f107_variables(self):
-        return ["F10_INDEX"]
+        return ["F107"]
 
     def test_model(self):
         request = self.get_request(
@@ -565,7 +565,7 @@ class MagneticModelMIOTestMixIn(MagneticModelTestMixIn):
         ), axis=1)
         mag_field = array(response["B_NEC_%s" % self.model_name])
         mag_intensity = array(response["F_%s" % self.model_name])
-        f107 = array(response["F10_INDEX"])
+        f107 = array(response["F107"])
 
         assert_allclose(mag_intensity, vnorm(mag_field))
         assert_allclose(
