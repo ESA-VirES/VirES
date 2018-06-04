@@ -7,9 +7,13 @@
 # Copyright (C) 2016 EOX IT Services GmbH
 
 . `dirname $0`/../lib_logging.sh
+. `dirname $0`/../lib_virtualenv.sh
 
 info "Installing django-allauth ..."
 
-yum --assumeyes install python-openid python-requests-oauthlib
-pip install --upgrade --no-deps django-allauth==0.32.0
-pip install --upgrade django-countries==3.4.1
+activate_virtualenv
+
+pip install $PIP_OPTIONS python-openid
+pip install $PIP_OPTIONS requests-oauthlib
+pip install $PIP_OPTIONS "django-allauth==0.32.0"
+pip install $PIP_OPTIONS "django-countries==3.4.1"

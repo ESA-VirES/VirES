@@ -8,32 +8,40 @@
 
 . `dirname $0`/../lib_logging.sh
 . `dirname $0`/../lib_apache.sh
+. `dirname $0`/../lib_eoxserver.sh
+
+CONFIGURE_ALLAUTH="${CONFIGURE_ALLAUTH:-YES}"
 
 info "Configuring VirES client ..."
 
-[ -z "$VIRES_SERVER_HOME" ] && error "Missing the required VIRES_SERVER_HOME variable!"
-[ -z "$VIRES_CLIENT_HOME" ] && error "Missing the required VIRES_CLIENT_HOME variable!"
-[ -z "$VIRES_USER" ] && error "Missing the required VIRES_USER variable!"
+set_instance_variables
+required_variables VIRES_CLIENT_HOME STATIC_DIR
 
-CONFIGURE_ALLAUTH="${CONFIGURE_ALLAUTH:-YES}"
-BASIC_AUTH_PASSWD_FILE="/etc/httpd/authn/damats-passwords"
-#VIRES_SERVER_URL="/`basename "$VIRES_SERVER_HOME"`"
-VIRES_SERVER_URL=""
 VIRES_CLIENT_URL="/`basename "$VIRES_CLIENT_HOME"`"
+#VIRES_SERVER_URL="${VIRES_SERVER_URL:-}"
+
 if [ "$CONFIGURE_ALLAUTH" == "YES" ]
 then
-    INSTANCE="`basename "$VIRES_SERVER_HOME"`"
-    CONFIG_JSON="${VIRES_SERVER_HOME}/${INSTANCE}/static/workspace/scripts/config.json"
+    INSTALL_DIR="${STATIC_DIR}/workspace"
 else
-    CONFIG_JSON="${VIRES_CLIENT_HOME}/scripts/config.json"
+    INSTALL_DIR="${VIRES_CLIENT_HOME}"
 fi
+
+[ -d "$VIRES_CLIENT_HOME" ] || {
+    warn "The client does not seem to be installed."
+    warn "The client configuration is skipped."
+    exit 0
+}
 
 #-------------------------------------------------------------------------------
 # Client configuration.
 
-# locate original replaced URL
-OLD_URL="`sudo -u "$VIRES_USER" jq -r '.mapConfig.products[].download.url | select(.)' "$CONFIG_JSON" | sort | uniq | grep '/ows$' | head -n 1`"
-[ -z "$OLD_URL" ] || sudo -u "$VIRES_USER" sed -i -e "s#\"${OLD_URL}#\"${VIRES_SERVER_URL}/ows#g" "$CONFIG_JSON"
+CONFIG_JSON="${INSTALL_DIR}/scripts/config.json"
+[ -f "$CONFIG_JSON" ] || error "Client configuration file $CONFIG_JSON not found!"
+
+# replace OWS URLs
+OLD_URL="`jq -r '.mapConfig.products[].download.url | select(.)' "$CONFIG_JSON" | sort | uniq | grep '/ows$' | head -n 1`"
+[ -z "$OLD_URL" ] || sed -i -e "s#\"${OLD_URL}#\"${VIRES_SERVER_URL}/ows#g" "$CONFIG_JSON"
 
 #-------------------------------------------------------------------------------
 # Integration with the Apache web server
@@ -74,9 +82,3 @@ END
 wq
 END
 done
-
-#-------------------------------------------------------------------------------
-# Restart Apache web server.
-
-systemctl restart httpd.service
-systemctl status httpd.service

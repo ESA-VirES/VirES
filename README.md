@@ -6,7 +6,7 @@ VirES system.
 
 The repository contains following directories:
 
--  `scripts/` - installation scripts
+-  `scripts/` - installation and utility scripts
 -  `contrib/` - location of the installed SW packages
 -  `vagrant/` - vagrant VirES server development machine
 
@@ -20,13 +20,13 @@ In this section the VirES installation is described.
 #### Prerequisites
 
 The installation should be performed on a *clean* (virtual or physical)
-CentOS 6 machine. Although not tested, it is assumed that the installation
-will also work on the RHEL 6 and its other clones (e.g., SL 6).
+CentOS 7 machine. Although not tested, it is assumed that the installation
+will also work on the RHEL 7 and its other clones.
 
 The installation requires access to the Internet.
 
 The installation scripts may search for some the SW installation packages
-in the `contrib/` directory and if not found they try to download the SW
+in the `contrib/` directory or they try to download the SW
 packages form the predefined location. As not all SW packages are available
 on-line some of the SW packages might need to be copied manually
 and put in the `contrib/` directory beforehand.
@@ -58,14 +58,14 @@ Execute the installation script with the root's permission:
 sudo VirES/scripts/install.sh
 ```
 
-The output os the `install.sh` command is automatically saved to a log file
+The output of the `install.sh` command is automatically saved to a log file
 which can be inspected in case of failure.
 
 ```bash
 less -rS  install.log
 ```
 
-The `install.sh` command executes the individual installation scrips
+The `install.sh` command executes the individual installation scripts
 located in the `scripts/install.d/` directory:
 
 ```bash
@@ -86,7 +86,7 @@ the explicitly selected scripts as, e.g., in following command
 
 ```bash
 sudo VirES/scripts/install.sh
-VirES/scripts/install.d/{50_eoxs_instance.sh,70_eoxs_load_fixtures.sh}
+VirES/scripts/scripts.d/{50_eoxs_instance.sh,70_eoxs_load_fixtures.sh}
 ```
 
 This allows installation and/or update of selected SW packages only.
@@ -104,22 +104,22 @@ instance of the VirES server.
 git clone git@github.com:ESA-VirES/VirES.git
 git clone git@github.com:ESA-VirES/VirES-Server.git
 git clone git@github.com:EOxServer/eoxserver.git
-git clone git@github.com:ESA-VirES/MagneticModel.git
 ```
 
-Switch branch of eoxserver
+Switch to `0.4` branch of the `eoxserver`
 ```bash
 cd eoxserver
 git checkout 0.4
 git pull
 ```
 
-Currently, the built web client needs to be copied manually to the `contrib`
+Currently, the optional built web client can be copied manually to the `contrib`
 directory:
 
 ```bash
 cp WebClient-Framework.tar.gz VirES/contrib/
 ```
+
 
 #### Step 2 - Customisation
 
@@ -139,15 +139,49 @@ FIXTURES_DIR_SRC="/usr/local/vires-dempo_ops/fixtures"
 ```bash
 cd VirES/vagrant
 vagrant up
-vagrant ssh
 ```
 
 #### Quick Start
 
-To access the server use following URLs:
+After the installation the web server should be up and running and
+if can be access on following at following URLs:
 
 ```
 http://localhost:8300
 http://localhost:8300/eoxs
-http://localhost:8300/eoxc
+http://localhost:8300/ows
+```
+
+To enter the vagrant machine use following command
+```
+vagrant ssh
+```
+
+To control the VirES installation change to the `scripts/` folder
+```
+cd VirES/scripts/
+```
+
+To restart the web server (including the asynchronous processing daemon)
+use following script located in the `script` folder
+```
+./restart_server.sh
+```
+
+To call the EOxServer's `manage.py` with the activated `virtualenv` environment
+use the following convenience command in the `scripts/` folder
+```
+./virtualenv_manage.sh [<options>]
+```
+
+To call Python with the activated `virtualenv` environment
+use the following convenience command in the `scripts/` folder
+```
+./virtualenv_python.sh [<options>]
+```
+
+To call an arbitrary command with activated `virtualenv` environment
+use the following convenience command in the `scripts/` folder
+```
+./virtualenv_execute.sh <command> [<options>]
 ```
