@@ -50,7 +50,7 @@ from eoxmagmod import (
 from eoxmagmod.data import (
     IGRF11, IGRF12, SIFM,
     CHAOS5_STATIC, CHAOS5_CORE_V4,
-    CHAOS6_STATIC, CHAOS6_CORE_X3,
+    CHAOS6_STATIC, CHAOS6_CORE_LATEST,
     WMM_2010, WMM_2015,
     EMM_2010_STATIC, EMM_2010_SECVAR,
 )
@@ -633,17 +633,17 @@ class TestAsyncFetchFilteredDataModelCHAOS5Core(TestCase, MagneticModelTestMixIn
 
 class TestFetchDataModelCHAOS6Core(TestCase, MagneticModelTestMixIn, FetchDataMixIn):
     model_name = "CHAOS-6-Core"
-    model = load_model_shc(CHAOS6_CORE_X3)
+    model = load_model_shc(CHAOS6_CORE_LATEST)
 
 
 class TestFetchFilteredDataModelCHAOS6Core(TestCase, MagneticModelTestMixIn, FetchFilteredDataMixIn):
     model_name = "CHAOS-6-Core"
-    model = load_model_shc(CHAOS6_CORE_X3)
+    model = load_model_shc(CHAOS6_CORE_LATEST)
 
 
 class TestAsyncFetchFilteredDataModelCHAOS6Core(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataMixIn):
     model_name = "CHAOS-6-Core"
-    model = load_model_shc(CHAOS6_CORE_X3)
+    model = load_model_shc(CHAOS6_CORE_LATEST)
 
 
 class TestFetchDataModelCHAOSCore(TestFetchDataModelCHAOS6Core):
@@ -676,17 +676,17 @@ class TestAsyncFetchFilteredDataModelCHAOS5Combined(TestCase, MagneticModelTestM
 
 class TestFetchDataModelCHAOS6Combined(TestCase, MagneticModelTestMixIn, FetchDataMixIn):
     model_name = "CHAOS-6-Combined"
-    model = load_model_shc_combined(CHAOS6_CORE_X3, CHAOS6_STATIC)
+    model = load_model_shc_combined(CHAOS6_CORE_LATEST, CHAOS6_STATIC)
 
 
 class TestFetchFilteredDataModelCHAOS6Combined(TestCase, MagneticModelTestMixIn, FetchFilteredDataMixIn):
     model_name = "CHAOS-6-Combined"
-    model = load_model_shc_combined(CHAOS6_CORE_X3, CHAOS6_STATIC)
+    model = load_model_shc_combined(CHAOS6_CORE_LATEST, CHAOS6_STATIC)
 
 
 class TestAsyncFetchFilteredDataModelCHAOS6Combined(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataMixIn):
     model_name = "CHAOS-6-Combined"
-    model = load_model_shc_combined(CHAOS6_CORE_X3, CHAOS6_STATIC)
+    model = load_model_shc_combined(CHAOS6_CORE_LATEST, CHAOS6_STATIC)
 
 
 class TestFetchDataModelCHAOSCombined(TestFetchDataModelCHAOS6Combined):
