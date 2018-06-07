@@ -53,13 +53,16 @@ WPS_STATUS = {
 }
 
 def parse_array(value):
-    return json.loads(value.translate(maketrans("{;}", "[,]")))
+    return json.loads(
+        value.translate(maketrans("{;}", "[,]")).replace("nan", "NaN")
+    )
 
 
 CSV_DEFAULT_TYPE = parse_array
 CSV_VARIABLE_TYPES = {
     'id': str,
     'Spacecraft': str,
+    #'UpwardCurrent': float,
     #'Timestamp': float,
     #'Latitude': float,
     #'Longitude': float,
@@ -184,7 +187,7 @@ class WpsAsyncPostRequestMixIn(WpsPostRequestMixIn):
             execute_response, self.output_name
         )
 
-        response = self.retrieve(Request(output_url), parser)
+        response = self.retrieve(Request(output_url, None, self.headers), parser)
         self.delete_all_async_jobs()
         return response
 
