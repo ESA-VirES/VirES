@@ -33,8 +33,10 @@
 #-------------------------------------------------------------------------------
 
 . `dirname $0`/../lib_logging.sh
+. `dirname $0`/../lib_virtualenv.sh
 
 info "Installing pyinotify ..."
 
-# Should we activate virtualenv?
+activate_virtualenv
+
 pip install pyinotify
