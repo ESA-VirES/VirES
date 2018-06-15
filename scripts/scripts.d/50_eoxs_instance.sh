@@ -401,7 +401,7 @@ VIRES_CACHED_PRODUCTS = {
     "MLI_SHA_2C": "$VIRES_CACHE_DIR/SW_OPER_MLI_SHA_2C.shc",
     "MLI_SHA_2D": "$VIRES_CACHE_DIR/SW_OPER_MLI_SHA_2D.shc",
     "MMA_SHA_2C": "$VIRES_CACHE_DIR/SW_OPER_MMA_SHA_2C.cdf",
-    #"MMA_SHA_2F": "$VIRES_CACHE_DIR/SW_OPER_MMA_SHA_2F.cdf",
+    "MMA_SHA_2F": "$VIRES_CACHE_DIR/SW_OPER_MMA_SHA_2F.cdf",
     "MIO_SHA_2C": "$VIRES_CACHE_DIR/SW_OPER_MIO_SHA_2C.txt",
     "MIO_SHA_2D": "$VIRES_CACHE_DIR/SW_OPER_MIO_SHA_2D.txt",
 }
@@ -816,6 +816,7 @@ then
         "SIFM" "IGRF12" "CHAOS-6-Combined" "CHAOS-6-Core" "CHAOS-6-Static" \
         "MCO_SHA_2C" "MCO_SHA_2D" "MCO_SHA_2F" "MLI_SHA_2C" "MLI_SHA_2D" \
         "MMA_SHA_2C-Primary" "MMA_SHA_2C-Secondary" \
+        "MMA_SHA_2F-Primary" "MMA_SHA_2F-Secondary" \
         "MIO_SHA_2C-Primary" "MIO_SHA_2C-Secondary" \
         "MIO_SHA_2D-Primary" "MIO_SHA_2D-Secondary"
 fi
