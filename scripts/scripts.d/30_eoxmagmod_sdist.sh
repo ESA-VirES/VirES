@@ -9,7 +9,7 @@
 . `dirname $0`/../lib_logging.sh
 . `dirname $0`/../lib_virtualenv.sh
 
-SOURCE_URL="https://github.com/ESA-VirES/MagneticModel/releases/download/eoxmagmod-0.5.1/eoxmagmod-0.5.1.tar.gz"
+SOURCE_URL="https://github.com/ESA-VirES/MagneticModel/releases/download/eoxmagmod-0.5.3/eoxmagmod-0.5.3.tar.gz"
 
 info "Installing EOxMagMod from source disribution package ..."
 
