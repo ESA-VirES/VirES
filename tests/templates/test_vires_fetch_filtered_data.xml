@@ -28,6 +28,14 @@
         <wps:LiteralData>{{ end_time|d2s }}</wps:LiteralData>
       </wps:Data>
     </wps:Input>
+    {% if sampling_step -%}
+    <wps:Input>
+      <ows:Identifier>sampling_step</ows:Identifier>
+      <wps:Data>
+        <wps:LiteralData>{{ sampling_step|d2s }}</wps:LiteralData>
+      </wps:Data>
+    </wps:Input>
+    {% endif -%}
     <wps:Input>
       <ows:Identifier>variables</ows:Identifier>
       <wps:Data>
@@ -38,7 +46,7 @@
     <wps:Input>
       <ows:Identifier>filters</ows:Identifier>
       <wps:Data>
-        <wps:LiteralData>{{ filters }}</wps:LiteralData>
+        <wps:LiteralData>{{ filters|l2s(';') }}</wps:LiteralData>
       </wps:Data>
     </wps:Input>
     {% endif -%}

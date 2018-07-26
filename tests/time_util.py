@@ -29,6 +29,8 @@
 import re
 from datetime import date, datetime, timedelta, tzinfo
 
+DT_2000 = datetime(2000, 1, 1)
+
 RE_ISO_8601_DATETIME_LONG = re.compile(
     r"^(\d{4,4})-(\d{2,2})-(\d{2,2})(?:"
     r"T(\d{2,2}):(\d{2,2})"
@@ -173,6 +175,12 @@ def parse_duration(value):
     return timedelta(days, fsec)
 
 
+def encode_datetime(value):
+    """ Encode python timedelta object as ISO 8601 date/time string.
+    """
+    return to_utc_naive(value).isoformat("T") + "Z"
+
+
 def encode_duration(value):
     """ Encode python timedelta object as ISO 8601 duration string.
     Raises a `ValueError` if the conversion was not possible.
@@ -202,3 +210,13 @@ def encode_duration(value):
         elif seconds != 0:
             items.append('%dS'%seconds)
     return "".join(items)
+
+
+def datetime_to_mjd2000(value):
+    """ Convert `datetime.datetime` object to Modified Julian Date 2000. """
+    return timedelta_to_days(to_utc_naive(value) - DT_2000)
+
+
+def timedelta_to_days(value):
+    """ Convert timedelta object to days. """
+    return value.total_seconds() / 86400.

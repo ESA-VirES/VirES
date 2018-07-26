@@ -30,18 +30,27 @@
 from time import sleep
 import xml.etree.ElementTree as ElementTree
 import json
+from os import remove
+from shutil import copyfileobj
+from tempfile import NamedTemporaryFile
 from string import maketrans
 from contextlib import closing
 from urllib2 import urlopen, Request, HTTPError
 from jinja2 import Environment, FileSystemLoader
-#from time_util import parse_datetime
+from time_util import timedelta, encode_duration, encode_datetime
+from cdf_util import load_cdf
 
 SERVICE_URL = "http://127.0.0.1:8300/ows"
 
+HEADERS = [
+]
+
 JINJA2_ENVIRONMENT = Environment(loader=FileSystemLoader("./templates"))
 JINJA2_ENVIRONMENT.filters.update(
-    d2s=lambda d: d.isoformat("T") + "Z",
-    l2s=lambda l: ", ".join(str(v) for v in l),
+    d2s=lambda d: (
+        encode_duration(d) if isinstance(d, timedelta) else encode_datetime(d)
+    ),
+    l2s=lambda l, d=',': d.join(str(v) for v in l),
     o2j=json.dumps,
 )
 
@@ -110,13 +119,6 @@ CSV_VARIABLE_TYPES = {
 }
 
 
-class WpsException(Exception):
-    def __init__(self, code, locator, text):
-        Exception.__init__(
-            self, "WPS Process Failed!\n%s [%s]: %s" % (code, locator, text)
-        )
-
-
 class HttpMixIn(object):
     url = SERVICE_URL
 
@@ -132,7 +134,9 @@ class HttpMixIn(object):
 
 class WpsPostRequestMixIn(HttpMixIn):
     url = SERVICE_URL
-    headers = {"Content-Type": "application/xml"}
+    headers = dict(HEADERS + [
+        ("Content-Type", "application/xml")
+    ])
     template_source = None
     extra_template_params = {}
 
@@ -150,6 +154,34 @@ class WpsPostRequestMixIn(HttpMixIn):
 
     def get_response(self, parser, request):
         return self.retrieve(Request(self.url, request, self.headers), parser)
+
+    @classmethod
+    def retrieve(cls, request, parser):
+        try:
+            with closing(urlopen(request)) as file_in:
+                return parser(file_in)
+        except HTTPError as error:
+            response = error.read()
+            try:
+                wps_exception = cls.get_process_exception(
+                    ElementTree.fromstring(response)
+                )
+            except:
+                print(response)
+                raise error
+            else:
+                raise wps_exception
+
+    @staticmethod
+    def get_process_exception(xml):
+        elm_exception = xml.find(".//{http://www.opengis.net/ows/1.1}Exception")
+        locator = elm_exception.attrib["locator"]
+        exception_code = elm_exception.attrib["exceptionCode"]
+        elm_exception_text = elm_exception.find(
+            "{http://www.opengis.net/ows/1.1}ExceptionText"
+        )
+        exception_text = elm_exception_text.text
+        return wps_exception_factory(exception_code, locator, exception_text)
 
 
 class WpsAsyncPostRequestMixIn(WpsPostRequestMixIn):
@@ -174,7 +206,7 @@ class WpsAsyncPostRequestMixIn(WpsPostRequestMixIn):
 
             if status == "FAILED":
                 self.delete_all_async_jobs()
-                self.raise_process_exception(execute_response)
+                raise self.get_process_exception(execute_response)
 
             execute_response = self.retrieve(
                 Request(status_url, None, self.headers),
@@ -202,17 +234,6 @@ class WpsAsyncPostRequestMixIn(WpsPostRequestMixIn):
                     "./{http://www.opengis.net/wps/1.0.0}Reference"
                 )
                 return elm_reference.attrib["href"]
-
-    @staticmethod
-    def raise_process_exception(xml):
-        elm_exception = xml.find(".//{http://www.opengis.net/ows/1.1}Exception")
-        locator = elm_exception.attrib["locator"]
-        exception_code = elm_exception.attrib["exceptionCode"]
-        elm_exception_text = elm_exception.find(
-            "{http://www.opengis.net/ows/1.1}ExceptionText"
-        )
-        exception_text = elm_exception_text.text
-        raise WpsException(exception_code, locator, exception_text)
 
     @staticmethod
     def parse_process_status(xml):
@@ -246,6 +267,29 @@ class WpsAsyncPostRequestMixIn(WpsPostRequestMixIn):
         return self.retrieve(
             Request(self.url, request, self.headers), json.load
         )
+
+
+class CdfRequestMixIn(object):
+    extra_template_params = {"response_type": "application/x-cdf"}
+
+    @staticmethod
+    def cdf_parser(file_in):
+        file_out = NamedTemporaryFile(
+            prefix="vires_", suffix=".cdf", delete=False
+        )
+        try:
+            try:
+                copyfileobj(file_in, file_out)
+            finally:
+                file_out.close()
+            data = load_cdf(file_out.name)
+        finally:
+            remove(file_out.name)
+        return data
+
+    def get_parsed_response(self, request):
+        return self.get_response(self.cdf_parser, request)
+
 
 
 class CsvRequestMixIn(object):
@@ -287,3 +331,50 @@ class CsvRequestMixIn(object):
 
     def get_parsed_response(self, request):
         return self.get_response(self.csv_parser, request)
+
+#-------------------------------------------------------------------------------
+
+class WpsException(Exception):
+    @classmethod
+    def _get_message(cls, code, locator, text):
+        return "%s: [%s] %s" % (code, locator, text)
+
+    def __init__(self, code, locator, text):
+        Exception.__init__(self, self._get_message(code, locator, text))
+
+
+class NamedWpsException(WpsException):
+    NAME = None
+
+    @classmethod
+    def _get_message(cls, code, locator, text):
+        return "[%s] %s" % (locator, text)
+
+    def __init__(self, locator, text):
+        WpsException.__init__(self, self.NAME, locator, text)
+
+
+class NoApplicableCode(NamedWpsException):
+    NAME = "NoApplicableCode"
+
+
+class MissingParameterValue(NamedWpsException):
+    NAME = "MissingParameterValue"
+
+
+class InvalidParameterValue(NamedWpsException):
+    NAME = "InvalidParameterValue"
+
+
+NAMED_EXCEPTIONS = {cls.NAME: cls for cls in [
+    NoApplicableCode,
+    MissingParameterValue,
+    InvalidParameterValue,
+]}
+
+
+def wps_exception_factory(code, locator, text):
+    try:
+        return NAMED_EXCEPTIONS[code](locator, text)
+    except:
+        return WpsException(code, locator, text)
