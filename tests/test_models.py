@@ -57,7 +57,8 @@ from eoxmagmod.data import (
     EMM_2010_STATIC, EMM_2010_SECVAR,
 )
 from wps_util import (
-    WpsPostRequestMixIn, WpsAsyncPostRequestMixIn, CsvRequestMixIn,
+    WpsPostRequestMixIn, WpsAsyncPostRequestMixIn,
+    CsvRequestMixIn, CdfRequestMixIn,
 )
 
 MCO_SHA_2C = "./data/SW_OPER_MCO_SHA_2C.shc"
@@ -76,23 +77,28 @@ START_TIME = parse_datetime("2016-01-01T23:50:00Z")
 END_TIME = parse_datetime("2016-01-02T00:00:00Z")
 
 #-------------------------------------------------------------------------------
+class TimeRangeMixIn(object):
+    begin_time = START_TIME
+    end_time = END_TIME
 
-class FetchDataMixIn(CsvRequestMixIn, WpsPostRequestMixIn):
+class FetchDataCSVMixIn(CsvRequestMixIn, WpsPostRequestMixIn, TimeRangeMixIn):
     template_source = "test_vires_fetch_data.xml"
-    begin_time = START_TIME
-    end_time = END_TIME
 
 
-class FetchFilteredDataMixIn(CsvRequestMixIn, WpsPostRequestMixIn):
+class FetchFilteredDataCSVMixIn(CsvRequestMixIn, WpsPostRequestMixIn, TimeRangeMixIn):
     template_source = "test_vires_fetch_filtered_data.xml"
-    begin_time = START_TIME
-    end_time = END_TIME
 
 
-class AsyncFetchFilteredDataMixIn(CsvRequestMixIn, WpsAsyncPostRequestMixIn):
+class AsyncFetchFilteredDataCSVMixIn(CsvRequestMixIn, WpsAsyncPostRequestMixIn, TimeRangeMixIn):
     template_source = "test_vires_fetch_filtered_data_async.xml"
-    begin_time = START_TIME
-    end_time = END_TIME
+
+
+class FetchFilteredDataCDFMixIn(CdfRequestMixIn, WpsPostRequestMixIn, TimeRangeMixIn):
+    template_source = "test_vires_fetch_filtered_data.xml"
+
+
+class AsyncFetchFilteredDataCDFMixIn(CdfRequestMixIn, WpsAsyncPostRequestMixIn, TimeRangeMixIn):
+    template_source = "test_vires_fetch_filtered_data_async.xml"
 
 #-------------------------------------------------------------------------------
 
@@ -153,15 +159,23 @@ class SunPositionTestMixIn(object):
         self.assertEqual(len(response["Timestamp"]), 0)
 
 
-class TestFetchDataSunPosition(TestCase, SunPositionTestMixIn, FetchDataMixIn):
+class TestFetchDataCSVSunPosition(TestCase, SunPositionTestMixIn, FetchDataCSVMixIn):
     pass
 
 
-class TestFetchFilteredDataSunPosition(TestCase, SunPositionTestMixIn, FetchFilteredDataMixIn):
+class TestFetchFilteredDataCSVSunPosition(TestCase, SunPositionTestMixIn, FetchFilteredDataCSVMixIn):
     pass
 
 
-class TestAsyncFetchFilteredDataSunPosition(TestCase, SunPositionTestMixIn, AsyncFetchFilteredDataMixIn):
+class TestAsyncFetchFilteredDataCSVSunPosition(TestCase, SunPositionTestMixIn, AsyncFetchFilteredDataCSVMixIn):
+    pass
+
+
+class TestFetchFilteredDataCDFSunPosition(TestCase, SunPositionTestMixIn, FetchFilteredDataCDFMixIn):
+    pass
+
+
+class TestAsyncFetchFilteredDataCDFSunPosition(TestCase, SunPositionTestMixIn, AsyncFetchFilteredDataCDFMixIn):
     pass
 
 #-------------------------------------------------------------------------------
@@ -217,15 +231,23 @@ class DipoleTestMixIn(object):
 
 
 
-class TestFetchDataDipole(TestCase, DipoleTestMixIn, FetchDataMixIn):
+class TestFetchDataCSVDipole(TestCase, DipoleTestMixIn, FetchDataCSVMixIn):
     pass
 
 
-class TestFetchFilteredDataDipole(TestCase, DipoleTestMixIn, FetchFilteredDataMixIn):
+class TestFetchFilteredDataCSVDipole(TestCase, DipoleTestMixIn, FetchFilteredDataCSVMixIn):
     pass
 
 
-class TestAsyncFetchFilteredDataDipole(TestCase, DipoleTestMixIn, AsyncFetchFilteredDataMixIn):
+class TestAsyncFetchFilteredDataCSVDipole(TestCase, DipoleTestMixIn, AsyncFetchFilteredDataCSVMixIn):
+    pass
+
+
+class TestFetchFilteredDataCDFDipole(TestCase, DipoleTestMixIn, FetchFilteredDataCDFMixIn):
+    pass
+
+
+class TestAsyncFetchFilteredDataCDFDipole(TestCase, DipoleTestMixIn, AsyncFetchFilteredDataCDFMixIn):
     pass
 
 #-------------------------------------------------------------------------------
@@ -262,15 +284,23 @@ class TiltAngleTestMixIn(object):
         self.assertEqual(len(response["Timestamp"]), 0)
 
 
-class TestFetchDataTiltAngle(TestCase, TiltAngleTestMixIn, FetchDataMixIn):
+class TestFetchDataCSVTiltAngle(TestCase, TiltAngleTestMixIn, FetchDataCSVMixIn):
     pass
 
 
-class TestFetchFilteredDataTiltAngle(TestCase, TiltAngleTestMixIn, FetchFilteredDataMixIn):
+class TestFetchFilteredDataCSVTiltAngle(TestCase, TiltAngleTestMixIn, FetchFilteredDataCSVMixIn):
     pass
 
 
-class TestAsyncFetchFilteredDataTiltAngle(TestCase, TiltAngleTestMixIn, AsyncFetchFilteredDataMixIn):
+class TestAsyncFetchFilteredDataCSVTiltAngle(TestCase, TiltAngleTestMixIn, AsyncFetchFilteredDataCSVMixIn):
+    pass
+
+
+class TestFetchFilteredDataCDFTiltAngle(TestCase, TiltAngleTestMixIn, FetchFilteredDataCDFMixIn):
+    pass
+
+
+class TestAsyncFetchFilteredDataCDFTiltAngle(TestCase, TiltAngleTestMixIn, AsyncFetchFilteredDataCDFMixIn):
     pass
 
 
@@ -321,15 +351,23 @@ class QuasiDipoleTestMixIn(object):
         self.assertEqual(len(response["Timestamp"]), 0)
 
 
-class TestFetchDataQuasiDipole(TestCase, QuasiDipoleTestMixIn, FetchDataMixIn):
+class TestFetchDataCSVQuasiDipole(TestCase, QuasiDipoleTestMixIn, FetchDataCSVMixIn):
     pass
 
 
-class TestFetchFilteredDataQuasiDipole(TestCase, QuasiDipoleTestMixIn, FetchFilteredDataMixIn):
+class TestFetchFilteredDataCSVQuasiDipole(TestCase, QuasiDipoleTestMixIn, FetchFilteredDataCSVMixIn):
     pass
 
 
-class TestAsyncFetchFilteredDataQuasiDipole(TestCase, QuasiDipoleTestMixIn, AsyncFetchFilteredDataMixIn):
+class TestAsyncFetchFilteredDataCSVQuasiDipole(TestCase, QuasiDipoleTestMixIn, AsyncFetchFilteredDataCSVMixIn):
+    pass
+
+
+class TestFetchFilteredDataCDFQuasiDipole(TestCase, QuasiDipoleTestMixIn, FetchFilteredDataCDFMixIn):
+    pass
+
+
+class TestAsyncFetchFilteredDataCDFQuasiDipole(TestCase, QuasiDipoleTestMixIn, AsyncFetchFilteredDataCDFMixIn):
     pass
 
 #-------------------------------------------------------------------------------
@@ -446,460 +484,758 @@ class MagneticModelMIOTestMixIn(MagneticModelTestMixIn):
 
 #-------------------------------------------------------------------------------
 
-class TestFetchDataModelEMM2010(TestCase, MagneticModelTestMixIn, FetchDataMixIn):
+class TestFetchDataCSVModelEMM2010(TestCase, MagneticModelTestMixIn, FetchDataCSVMixIn):
     model_name = "EMM2010"
     model = load_model_emm(EMM_2010_STATIC, EMM_2010_SECVAR)
 
 
-class TestFetchFilteredDataModelEMM2010(TestCase, MagneticModelTestMixIn, FetchFilteredDataMixIn):
+class TestFetchFilteredDataCSVModelEMM2010(TestCase, MagneticModelTestMixIn, FetchFilteredDataCSVMixIn):
     model_name = "EMM2010"
     model = load_model_emm(EMM_2010_STATIC, EMM_2010_SECVAR)
 
 
-class TestAsyncFetchFilteredDataModelEMM2010(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataMixIn):
+class TestAsyncFetchFilteredDataCSVModelEMM2010(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataCSVMixIn):
     model_name = "EMM2010"
     model = load_model_emm(EMM_2010_STATIC, EMM_2010_SECVAR)
 
 
-class TestFetchDataModelEMM(TestFetchDataModelEMM2010, FetchDataMixIn):
+class TestFetchFilteredDataCDFModelEMM2010(TestCase, MagneticModelTestMixIn, FetchFilteredDataCDFMixIn):
+    model_name = "EMM2010"
+    model = load_model_emm(EMM_2010_STATIC, EMM_2010_SECVAR)
+
+
+class TestAsyncFetchFilteredDataCDFModelEMM2010(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataCDFMixIn):
+    model_name = "EMM2010"
+    model = load_model_emm(EMM_2010_STATIC, EMM_2010_SECVAR)
+
+
+class TestFetchDataCSVModelEMM(TestFetchDataCSVModelEMM2010, FetchDataCSVMixIn):
     model_name = "EMM"
 
 
-class TestFetchFilteredDataModelEMM(TestFetchFilteredDataModelEMM2010, FetchFilteredDataMixIn):
+class TestFetchFilteredDataCSVModelEMM(TestFetchFilteredDataCSVModelEMM2010, FetchFilteredDataCSVMixIn):
     model_name = "EMM"
 
 
-class TestAsyncFetchFilteredDataModelEMM(TestAsyncFetchFilteredDataModelEMM2010, AsyncFetchFilteredDataMixIn):
+class TestAsyncFetchFilteredDataCSVModelEMM(TestAsyncFetchFilteredDataCSVModelEMM2010, AsyncFetchFilteredDataCSVMixIn):
+    model_name = "EMM"
+
+
+class TestFetchFilteredDataCDFModelEMM(TestFetchFilteredDataCDFModelEMM2010, FetchFilteredDataCDFMixIn):
+    model_name = "EMM"
+
+
+class TestAsyncFetchFilteredDataCDFModelEMM(TestAsyncFetchFilteredDataCDFModelEMM2010, AsyncFetchFilteredDataCDFMixIn):
     model_name = "EMM"
 
 #-------------------------------------------------------------------------------
 
-class TestFetchDataModelWMM2010(TestCase, MagneticModelTestMixIn, FetchDataMixIn):
+class TestFetchDataCSVModelWMM2010(TestCase, MagneticModelTestMixIn, FetchDataCSVMixIn):
     model_name = "WMM2010"
     model = load_model_wmm(WMM_2010)
 
 
-class TestFetchFilteredDataModelWMM2010(TestCase, MagneticModelTestMixIn, FetchFilteredDataMixIn):
+class TestFetchFilteredDataCSVModelWMM2010(TestCase, MagneticModelTestMixIn, FetchFilteredDataCSVMixIn):
     model_name = "WMM2010"
     model = load_model_wmm(WMM_2010)
 
 
-class TestAsyncFetchFilteredDataModelWMM2010(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataMixIn):
+class TestAsyncFetchFilteredDataCSVModelWMM2010(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataCSVMixIn):
     model_name = "WMM2010"
     model = load_model_wmm(WMM_2010)
 
 
-class TestFetchDataModelWMM2015(TestCase, MagneticModelTestMixIn, FetchDataMixIn):
+class TestFetchFilteredDataCDFModelWMM2010(TestCase, MagneticModelTestMixIn, FetchFilteredDataCDFMixIn):
+    model_name = "WMM2010"
+    model = load_model_wmm(WMM_2010)
+
+
+class TestAsyncFetchFilteredDataCDFModelWMM2010(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataCDFMixIn):
+    model_name = "WMM2010"
+    model = load_model_wmm(WMM_2010)
+
+
+class TestFetchDataCSVModelWMM2015(TestCase, MagneticModelTestMixIn, FetchDataCSVMixIn):
     model_name = "WMM2015"
     model = load_model_wmm(WMM_2015)
 
 
-class TestFetchFilteredDataModelWMM2015(TestCase, MagneticModelTestMixIn, FetchFilteredDataMixIn):
+class TestFetchFilteredDataCSVModelWMM2015(TestCase, MagneticModelTestMixIn, FetchFilteredDataCSVMixIn):
     model_name = "WMM2015"
     model = load_model_wmm(WMM_2015)
 
 
-class TestAsyncFetchFilteredDataModelWMM2015(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataMixIn):
+class TestAsyncFetchFilteredDataCSVModelWMM2015(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataCSVMixIn):
     model_name = "WMM2015"
     model = load_model_wmm(WMM_2015)
 
 
-class TestFetchDataModelWMM(TestFetchDataModelWMM2015):
+class TestFetchFilteredDataCDFModelWMM2015(TestCase, MagneticModelTestMixIn, FetchFilteredDataCDFMixIn):
+    model_name = "WMM2015"
+    model = load_model_wmm(WMM_2015)
+
+
+class TestAsyncFetchFilteredDataCDFModelWMM2015(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataCDFMixIn):
+    model_name = "WMM2015"
+    model = load_model_wmm(WMM_2015)
+
+
+class TestFetchDataCSVModelWMM(TestFetchDataCSVModelWMM2015):
     model_name = "WMM"
 
 
-class TestFetchFilteredDataModelWMM(TestFetchFilteredDataModelWMM2015):
+class TestFetchFilteredDataCSVModelWMM(TestFetchFilteredDataCSVModelWMM2015):
     model_name = "WMM"
 
 
-class TestAsyncFetchFilteredDataModelWMM(TestAsyncFetchFilteredDataModelWMM2015):
+class TestAsyncFetchFilteredDataCSVModelWMM(TestAsyncFetchFilteredDataCSVModelWMM2015):
+    model_name = "WMM"
+
+
+class TestFetchFilteredDataCDFModelWMM(TestFetchFilteredDataCDFModelWMM2015):
+    model_name = "WMM"
+
+
+class TestAsyncFetchFilteredDataCDFModelWMM(TestAsyncFetchFilteredDataCDFModelWMM2015):
     model_name = "WMM"
 
 #-------------------------------------------------------------------------------
 
-class TestFetchDataModelIGRF11(TestCase, MagneticModelTestMixIn, FetchDataMixIn):
+class TestFetchDataCSVModelIGRF11(TestCase, MagneticModelTestMixIn, FetchDataCSVMixIn):
     model_name = "IGRF11"
     model = load_model_igrf(IGRF11)
 
 
-class TestFetchFilteredDataModelIGRF11(TestCase, MagneticModelTestMixIn, FetchFilteredDataMixIn):
+class TestFetchFilteredDataCSVModelIGRF11(TestCase, MagneticModelTestMixIn, FetchFilteredDataCSVMixIn):
     model_name = "IGRF11"
     model = load_model_igrf(IGRF11)
 
 
-class TestAsyncFetchFilteredDataModelIGRF11(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataMixIn):
+class TestAsyncFetchFilteredDataCSVModelIGRF11(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataCSVMixIn):
     model_name = "IGRF11"
     model = load_model_igrf(IGRF11)
 
 
-class TestFetchDataModelIGRF12(TestCase, MagneticModelTestMixIn, FetchDataMixIn):
+class TestFetchFilteredDataCDFModelIGRF11(TestCase, MagneticModelTestMixIn, FetchFilteredDataCDFMixIn):
+    model_name = "IGRF11"
+    model = load_model_igrf(IGRF11)
+
+
+class TestAsyncFetchFilteredDataCDFModelIGRF11(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataCDFMixIn):
+    model_name = "IGRF11"
+    model = load_model_igrf(IGRF11)
+
+
+class TestFetchDataCSVModelIGRF12(TestCase, MagneticModelTestMixIn, FetchDataCSVMixIn):
     model_name = "IGRF12"
     model = load_model_shc(IGRF12)
 
 
-class TestFetchFilteredDataModelIGRF12(TestCase, MagneticModelTestMixIn, FetchFilteredDataMixIn):
+class TestFetchFilteredDataCSVModelIGRF12(TestCase, MagneticModelTestMixIn, FetchFilteredDataCSVMixIn):
     model_name = "IGRF12"
     model = load_model_shc(IGRF12)
 
 
-class TestAsyncFetchFilteredDataModelIGRF12(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataMixIn):
+class TestAsyncFetchFilteredDataCSVModelIGRF12(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataCSVMixIn):
     model_name = "IGRF12"
     model = load_model_shc(IGRF12)
 
 
-class TestFetchDataModelIGRF(TestFetchDataModelIGRF12):
+class TestFetchFilteredDataCDFModelIGRF12(TestCase, MagneticModelTestMixIn, FetchFilteredDataCDFMixIn):
+    model_name = "IGRF12"
+    model = load_model_shc(IGRF12)
+
+
+class TestAsyncFetchFilteredDataCDFModelIGRF12(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataCDFMixIn):
+    model_name = "IGRF12"
+    model = load_model_shc(IGRF12)
+
+
+class TestFetchDataCSVModelIGRF(TestFetchDataCSVModelIGRF12):
     model_name = "IGRF"
 
 
-class TestFetchFilteredDataModelIGRF(TestFetchFilteredDataModelIGRF12):
+class TestFetchFilteredDataCSVModelIGRF(TestFetchFilteredDataCSVModelIGRF12):
     model_name = "IGRF"
 
 
-class TestAsyncFetchFilteredDataModelIGRF(TestAsyncFetchFilteredDataModelIGRF12):
+class TestAsyncFetchFilteredDataCSVModelIGRF(TestAsyncFetchFilteredDataCSVModelIGRF12):
+    model_name = "IGRF"
+
+
+class TestFetchFilteredDataCDFModelIGRF(TestFetchFilteredDataCDFModelIGRF12):
+    model_name = "IGRF"
+
+
+class TestAsyncFetchFilteredDataCDFModelIGRF(TestAsyncFetchFilteredDataCDFModelIGRF12):
     model_name = "IGRF"
 
 #-------------------------------------------------------------------------------
 
-class TestFetchDataModelSIFM(TestCase, MagneticModelTestMixIn, FetchDataMixIn):
+class TestFetchDataCSVModelSIFM(TestCase, MagneticModelTestMixIn, FetchDataCSVMixIn):
     model_name = "SIFM"
     model = load_model_shc(SIFM)
 
 
-class TestFetchFilteredDataModelSIFM(TestCase, MagneticModelTestMixIn, FetchFilteredDataMixIn):
+class TestFetchFilteredDataCSVModelSIFM(TestCase, MagneticModelTestMixIn, FetchFilteredDataCSVMixIn):
     model_name = "SIFM"
     model = load_model_shc(SIFM)
 
 
-class TestAsyncFetchFilteredDataModelSIFM(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataMixIn):
+class TestAsyncFetchFilteredDataCSVModelSIFM(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataCSVMixIn):
+    model_name = "SIFM"
+    model = load_model_shc(SIFM)
+
+
+class TestFetchFilteredDataCDFModelSIFM(TestCase, MagneticModelTestMixIn, FetchFilteredDataCDFMixIn):
+    model_name = "SIFM"
+    model = load_model_shc(SIFM)
+
+
+class TestAsyncFetchFilteredDataCDFModelSIFM(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataCDFMixIn):
     model_name = "SIFM"
     model = load_model_shc(SIFM)
 
 #-------------------------------------------------------------------------------
 
-class TestFetchDataModelCHAOS5Static(TestCase, MagneticModelTestMixIn, FetchDataMixIn):
+class TestFetchDataCSVModelCHAOS5Static(TestCase, MagneticModelTestMixIn, FetchDataCSVMixIn):
     model_name = "CHAOS-5-Static"
     model = load_model_shc(CHAOS5_STATIC)
 
 
-class TestFetchFilteredDataModelCHAOS5Static(TestCase, MagneticModelTestMixIn, FetchFilteredDataMixIn):
+class TestFetchFilteredDataCSVModelCHAOS5Static(TestCase, MagneticModelTestMixIn, FetchFilteredDataCSVMixIn):
     model_name = "CHAOS-5-Static"
     model = load_model_shc(CHAOS5_STATIC)
 
 
-class TestAsyncFetchFilteredDataModelCHAOS5Static(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataMixIn):
+class TestAsyncFetchFilteredDataCSVModelCHAOS5Static(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataCSVMixIn):
     model_name = "CHAOS-5-Static"
     model = load_model_shc(CHAOS5_STATIC)
 
 
-class TestFetchDataModelCHAOS6Static(TestCase, MagneticModelTestMixIn, FetchDataMixIn):
+class TestFetchFilteredDataCDFModelCHAOS5Static(TestCase, MagneticModelTestMixIn, FetchFilteredDataCDFMixIn):
+    model_name = "CHAOS-5-Static"
+    model = load_model_shc(CHAOS5_STATIC)
+
+
+class TestAsyncFetchFilteredDataCDFModelCHAOS5Static(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataCDFMixIn):
+    model_name = "CHAOS-5-Static"
+    model = load_model_shc(CHAOS5_STATIC)
+
+
+class TestFetchDataCSVModelCHAOS6Static(TestCase, MagneticModelTestMixIn, FetchDataCSVMixIn):
     model_name = "CHAOS-6-Static"
     model = load_model_shc(CHAOS6_STATIC)
 
 
-class TestFetchFilteredDataModelCHAOS6Static(TestCase, MagneticModelTestMixIn, FetchFilteredDataMixIn):
+class TestFetchFilteredDataCSVModelCHAOS6Static(TestCase, MagneticModelTestMixIn, FetchFilteredDataCSVMixIn):
     model_name = "CHAOS-6-Static"
     model = load_model_shc(CHAOS6_STATIC)
 
 
-class TestAsyncFetchFilteredDataModelCHAOS6Static(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataMixIn):
+class TestAsyncFetchFilteredDataCSVModelCHAOS6Static(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataCSVMixIn):
     model_name = "CHAOS-6-Static"
     model = load_model_shc(CHAOS6_STATIC)
 
 
-class TestFetchDataModelCHAOSStatic(TestFetchDataModelCHAOS6Static):
+class TestFetchFilteredDataCDFModelCHAOS6Static(TestCase, MagneticModelTestMixIn, FetchFilteredDataCDFMixIn):
+    model_name = "CHAOS-6-Static"
+    model = load_model_shc(CHAOS6_STATIC)
+
+
+class TestAsyncFetchFilteredDataCDFModelCHAOS6Static(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataCDFMixIn):
+    model_name = "CHAOS-6-Static"
+    model = load_model_shc(CHAOS6_STATIC)
+
+
+class TestFetchDataCSVModelCHAOSStatic(TestFetchDataCSVModelCHAOS6Static):
     model_name = "CHAOS-Static"
 
 
-class TestFetchFilteredDataModelCHAOSStatic(TestFetchFilteredDataModelCHAOS6Static):
+class TestFetchFilteredDataCSVModelCHAOSStatic(TestFetchFilteredDataCSVModelCHAOS6Static):
     model_name = "CHAOS-Static"
 
 
-class TestAsyncFetchFilteredDataModelCHAOSStatic(TestAsyncFetchFilteredDataModelCHAOS6Static):
+class TestAsyncFetchFilteredDataCSVModelCHAOSStatic(TestAsyncFetchFilteredDataCSVModelCHAOS6Static):
+    model_name = "CHAOS-Static"
+
+
+class TestFetchFilteredDataCDFModelCHAOSStatic(TestFetchFilteredDataCDFModelCHAOS6Static):
+    model_name = "CHAOS-Static"
+
+
+class TestAsyncFetchFilteredDataCDFModelCHAOSStatic(TestAsyncFetchFilteredDataCDFModelCHAOS6Static):
     model_name = "CHAOS-Static"
 
 #-------------------------------------------------------------------------------
 
-class TestFetchDataModelCHAOS5Core(TestCase, MagneticModelTestMixIn, FetchDataMixIn):
+class TestFetchDataCSVModelCHAOS5Core(TestCase, MagneticModelTestMixIn, FetchDataCSVMixIn):
     model_name = "CHAOS-5-Core"
     model = load_model_shc(CHAOS5_CORE_V4)
 
 
-class TestFetchFilteredDataModelCHAOS5Core(TestCase, MagneticModelTestMixIn, FetchFilteredDataMixIn):
+class TestFetchFilteredDataCSVModelCHAOS5Core(TestCase, MagneticModelTestMixIn, FetchFilteredDataCSVMixIn):
     model_name = "CHAOS-5-Core"
     model = load_model_shc(CHAOS5_CORE_V4)
 
 
-class TestAsyncFetchFilteredDataModelCHAOS5Core(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataMixIn):
+class TestAsyncFetchFilteredDataCSVModelCHAOS5Core(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataCSVMixIn):
     model_name = "CHAOS-5-Core"
     model = load_model_shc(CHAOS5_CORE_V4)
 
 
-class TestFetchDataModelCHAOS6Core(TestCase, MagneticModelTestMixIn, FetchDataMixIn):
+class TestFetchFilteredDataCDFModelCHAOS5Core(TestCase, MagneticModelTestMixIn, FetchFilteredDataCDFMixIn):
+    model_name = "CHAOS-5-Core"
+    model = load_model_shc(CHAOS5_CORE_V4)
+
+
+class TestAsyncFetchFilteredDataCDFModelCHAOS5Core(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataCDFMixIn):
+    model_name = "CHAOS-5-Core"
+    model = load_model_shc(CHAOS5_CORE_V4)
+
+
+class TestFetchDataCSVModelCHAOS6Core(TestCase, MagneticModelTestMixIn, FetchDataCSVMixIn):
     model_name = "CHAOS-6-Core"
     model = load_model_shc(CHAOS6_CORE_LATEST)
 
 
-class TestFetchFilteredDataModelCHAOS6Core(TestCase, MagneticModelTestMixIn, FetchFilteredDataMixIn):
+class TestFetchFilteredDataCSVModelCHAOS6Core(TestCase, MagneticModelTestMixIn, FetchFilteredDataCSVMixIn):
     model_name = "CHAOS-6-Core"
     model = load_model_shc(CHAOS6_CORE_LATEST)
 
 
-class TestAsyncFetchFilteredDataModelCHAOS6Core(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataMixIn):
+class TestAsyncFetchFilteredDataCSVModelCHAOS6Core(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataCSVMixIn):
     model_name = "CHAOS-6-Core"
     model = load_model_shc(CHAOS6_CORE_LATEST)
 
 
-class TestFetchDataModelCHAOSCore(TestFetchDataModelCHAOS6Core):
+class TestFetchFilteredDataCDFModelCHAOS6Core(TestCase, MagneticModelTestMixIn, FetchFilteredDataCDFMixIn):
+    model_name = "CHAOS-6-Core"
+    model = load_model_shc(CHAOS6_CORE_LATEST)
+
+
+class TestAsyncFetchFilteredDataCDFModelCHAOS6Core(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataCDFMixIn):
+    model_name = "CHAOS-6-Core"
+    model = load_model_shc(CHAOS6_CORE_LATEST)
+
+
+class TestFetchDataCSVModelCHAOSCore(TestFetchDataCSVModelCHAOS6Core):
     model_name = "CHAOS-Core"
 
 
-class TestFetchFilteredDataModelCHAOSCore(TestFetchFilteredDataModelCHAOS6Core):
+class TestFetchFilteredDataCSVModelCHAOSCore(TestFetchFilteredDataCSVModelCHAOS6Core):
     model_name = "CHAOS-Core"
 
 
-class TestAsyncFetchFilteredDataModelCHAOSCore(TestAsyncFetchFilteredDataModelCHAOS6Core):
+class TestAsyncFetchFilteredDataCSVModelCHAOSCore(TestAsyncFetchFilteredDataCSVModelCHAOS6Core):
+    model_name = "CHAOS-Core"
+
+
+class TestFetchFilteredDataCDFModelCHAOSCore(TestFetchFilteredDataCDFModelCHAOS6Core):
+    model_name = "CHAOS-Core"
+
+
+class TestAsyncFetchFilteredDataCDFModelCHAOSCore(TestAsyncFetchFilteredDataCDFModelCHAOS6Core):
     model_name = "CHAOS-Core"
 
 #-------------------------------------------------------------------------------
 
-class TestFetchDataModelCHAOS5Combined(TestCase, MagneticModelTestMixIn, FetchDataMixIn):
+class TestFetchDataCSVModelCHAOS5Combined(TestCase, MagneticModelTestMixIn, FetchDataCSVMixIn):
     model_name = "CHAOS-5-Combined"
     model = load_model_shc_combined(CHAOS5_CORE_V4, CHAOS5_STATIC)
 
 
-class TestFetchFilteredDataModelCHAOS5Combined(TestCase, MagneticModelTestMixIn, FetchFilteredDataMixIn):
+class TestFetchFilteredDataCSVModelCHAOS5Combined(TestCase, MagneticModelTestMixIn, FetchFilteredDataCSVMixIn):
     model_name = "CHAOS-5-Combined"
     model = load_model_shc_combined(CHAOS5_CORE_V4, CHAOS5_STATIC)
 
 
-class TestAsyncFetchFilteredDataModelCHAOS5Combined(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataMixIn):
+class TestAsyncFetchFilteredDataCSVModelCHAOS5Combined(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataCSVMixIn):
     model_name = "CHAOS-5-Combined"
     model = load_model_shc_combined(CHAOS5_CORE_V4, CHAOS5_STATIC)
 
 
-class TestFetchDataModelCHAOS6Combined(TestCase, MagneticModelTestMixIn, FetchDataMixIn):
+class TestFetchFilteredDataCDFModelCHAOS5Combined(TestCase, MagneticModelTestMixIn, FetchFilteredDataCDFMixIn):
+    model_name = "CHAOS-5-Combined"
+    model = load_model_shc_combined(CHAOS5_CORE_V4, CHAOS5_STATIC)
+
+
+class TestAsyncFetchFilteredDataCDFModelCHAOS5Combined(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataCDFMixIn):
+    model_name = "CHAOS-5-Combined"
+    model = load_model_shc_combined(CHAOS5_CORE_V4, CHAOS5_STATIC)
+
+
+class TestFetchDataCSVModelCHAOS6Combined(TestCase, MagneticModelTestMixIn, FetchDataCSVMixIn):
     model_name = "CHAOS-6-Combined"
     model = load_model_shc_combined(CHAOS6_CORE_LATEST, CHAOS6_STATIC)
 
 
-class TestFetchFilteredDataModelCHAOS6Combined(TestCase, MagneticModelTestMixIn, FetchFilteredDataMixIn):
+class TestFetchFilteredDataCSVModelCHAOS6Combined(TestCase, MagneticModelTestMixIn, FetchFilteredDataCSVMixIn):
     model_name = "CHAOS-6-Combined"
     model = load_model_shc_combined(CHAOS6_CORE_LATEST, CHAOS6_STATIC)
 
 
-class TestAsyncFetchFilteredDataModelCHAOS6Combined(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataMixIn):
+class TestAsyncFetchFilteredDataCSVModelCHAOS6Combined(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataCSVMixIn):
     model_name = "CHAOS-6-Combined"
     model = load_model_shc_combined(CHAOS6_CORE_LATEST, CHAOS6_STATIC)
 
 
-class TestFetchDataModelCHAOSCombined(TestFetchDataModelCHAOS6Combined):
+class TestFetchFilteredDataCDFModelCHAOS6Combined(TestCase, MagneticModelTestMixIn, FetchFilteredDataCDFMixIn):
+    model_name = "CHAOS-6-Combined"
+    model = load_model_shc_combined(CHAOS6_CORE_LATEST, CHAOS6_STATIC)
+
+
+class TestAsyncFetchFilteredDataCDFModelCHAOS6Combined(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataCDFMixIn):
+    model_name = "CHAOS-6-Combined"
+    model = load_model_shc_combined(CHAOS6_CORE_LATEST, CHAOS6_STATIC)
+
+
+class TestFetchDataCSVModelCHAOSCombined(TestFetchDataCSVModelCHAOS6Combined):
     model_name = "CHAOS-Combined"
 
 
-class TestFetchFilteredDataModelCHAOSCombined(TestFetchFilteredDataModelCHAOS6Combined):
+class TestFetchFilteredDataCSVModelCHAOSCombined(TestFetchFilteredDataCSVModelCHAOS6Combined):
     model_name = "CHAOS-Combined"
 
 
-class TestAsyncFetchFilteredDataModelCHAOSCombined(TestAsyncFetchFilteredDataModelCHAOS6Combined):
+class TestAsyncFetchFilteredDataCSVModelCHAOSCombined(TestAsyncFetchFilteredDataCSVModelCHAOS6Combined):
+    model_name = "CHAOS-Combined"
+
+
+class TestFetchFilteredDataCDFModelCHAOSCombined(TestFetchFilteredDataCDFModelCHAOS6Combined):
+    model_name = "CHAOS-Combined"
+
+
+class TestAsyncFetchFilteredDataCDFModelCHAOSCombined(TestAsyncFetchFilteredDataCDFModelCHAOS6Combined):
     model_name = "CHAOS-Combined"
 
 #-------------------------------------------------------------------------------
 
-class TestFetchDataModelMCO2C(TestCase, MagneticModelTestMixIn, FetchDataMixIn):
+class TestFetchDataCSVModelMCO2C(TestCase, MagneticModelTestMixIn, FetchDataCSVMixIn):
     model_name = "MCO_SHA_2C"
     model = load_model_shc(MCO_SHA_2C)
 
 
-class TestFetchFilteredDataModelMCO2C(TestCase, MagneticModelTestMixIn, FetchFilteredDataMixIn):
+class TestFetchFilteredDataCSVModelMCO2C(TestCase, MagneticModelTestMixIn, FetchFilteredDataCSVMixIn):
     model_name = "MCO_SHA_2C"
     model = load_model_shc(MCO_SHA_2C)
 
 
-class TestAsyncFetchFilteredDataModelMCO2C(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataMixIn):
+class TestAsyncFetchFilteredDataCSVModelMCO2C(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataCSVMixIn):
     model_name = "MCO_SHA_2C"
     model = load_model_shc(MCO_SHA_2C)
 
 
-class TestFetchDataModelMCO2D(TestCase, MagneticModelTestMixIn, FetchDataMixIn):
+class TestFetchFilteredDataCDFModelMCO2C(TestCase, MagneticModelTestMixIn, FetchFilteredDataCDFMixIn):
+    model_name = "MCO_SHA_2C"
+    model = load_model_shc(MCO_SHA_2C)
+
+
+class TestAsyncFetchFilteredDataCDFModelMCO2C(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataCDFMixIn):
+    model_name = "MCO_SHA_2C"
+    model = load_model_shc(MCO_SHA_2C)
+
+
+class TestFetchDataCSVModelMCO2D(TestCase, MagneticModelTestMixIn, FetchDataCSVMixIn):
     model_name = "MCO_SHA_2D"
     model = load_model_shc(MCO_SHA_2D)
 
 
-class TestFetchFilteredDataModelMCO2D(TestCase, MagneticModelTestMixIn, FetchFilteredDataMixIn):
+class TestFetchFilteredDataCSVModelMCO2D(TestCase, MagneticModelTestMixIn, FetchFilteredDataCSVMixIn):
     model_name = "MCO_SHA_2D"
     model = load_model_shc(MCO_SHA_2D)
 
 
-class TestAsyncFetchFilteredDataModelMCO2D(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataMixIn):
+class TestAsyncFetchFilteredDataCSVModelMCO2D(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataCSVMixIn):
     model_name = "MCO_SHA_2D"
     model = load_model_shc(MCO_SHA_2D)
 
 
-class TestFetchDataModelMCO2F(TestCase, MagneticModelTestMixIn, FetchDataMixIn):
+class TestFetchFilteredDataCDFModelMCO2D(TestCase, MagneticModelTestMixIn, FetchFilteredDataCDFMixIn):
+    model_name = "MCO_SHA_2D"
+    model = load_model_shc(MCO_SHA_2D)
+
+
+class TestAsyncFetchFilteredDataCDFModelMCO2D(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataCDFMixIn):
+    model_name = "MCO_SHA_2D"
+    model = load_model_shc(MCO_SHA_2D)
+
+
+class TestFetchDataCSVModelMCO2F(TestCase, MagneticModelTestMixIn, FetchDataCSVMixIn):
     model_name = "MCO_SHA_2F"
     model = load_model_shc(MCO_SHA_2F)
 
 
-class TestFetchFilteredDataModelMCO2F(TestCase, MagneticModelTestMixIn, FetchFilteredDataMixIn):
+class TestFetchFilteredDataCSVModelMCO2F(TestCase, MagneticModelTestMixIn, FetchFilteredDataCSVMixIn):
     model_name = "MCO_SHA_2F"
     model = load_model_shc(MCO_SHA_2F)
 
 
-class TestAsyncFetchFilteredDataModelMCO2F(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataMixIn):
+class TestAsyncFetchFilteredDataCSVModelMCO2F(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataCSVMixIn):
+    model_name = "MCO_SHA_2F"
+    model = load_model_shc(MCO_SHA_2F)
+
+
+class TestFetchFilteredDataCDFModelMCO2F(TestCase, MagneticModelTestMixIn, FetchFilteredDataCDFMixIn):
+    model_name = "MCO_SHA_2F"
+    model = load_model_shc(MCO_SHA_2F)
+
+
+class TestAsyncFetchFilteredDataCDFModelMCO2F(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataCDFMixIn):
     model_name = "MCO_SHA_2F"
     model = load_model_shc(MCO_SHA_2F)
 
 #-------------------------------------------------------------------------------
 
-class TestFetchDataModelMLI2C(TestCase, MagneticModelTestMixIn, FetchDataMixIn):
+class TestFetchDataCSVModelMLI2C(TestCase, MagneticModelTestMixIn, FetchDataCSVMixIn):
     model_name = "MLI_SHA_2C"
     model = load_model_shc(MLI_SHA_2C)
 
 
-class TestFetchFilteredDataModelMLI2C(TestCase, MagneticModelTestMixIn, FetchFilteredDataMixIn):
+class TestFetchFilteredDataCSVModelMLI2C(TestCase, MagneticModelTestMixIn, FetchFilteredDataCSVMixIn):
     model_name = "MLI_SHA_2C"
     model = load_model_shc(MLI_SHA_2C)
 
 
-class TestAsyncFetchFilteredDataModelMLI2C(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataMixIn):
+class TestAsyncFetchFilteredDataCSVModelMLI2C(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataCSVMixIn):
     model_name = "MLI_SHA_2C"
     model = load_model_shc(MLI_SHA_2C)
 
 
-class TestFetchDataModelMLI2D(TestCase, MagneticModelTestMixIn, FetchDataMixIn):
+class TestFetchFilteredDataCDFModelMLI2C(TestCase, MagneticModelTestMixIn, FetchFilteredDataCDFMixIn):
+    model_name = "MLI_SHA_2C"
+    model = load_model_shc(MLI_SHA_2C)
+
+
+class TestAsyncFetchFilteredDataCDFModelMLI2C(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataCDFMixIn):
+    model_name = "MLI_SHA_2C"
+    model = load_model_shc(MLI_SHA_2C)
+
+
+class TestFetchDataCSVModelMLI2D(TestCase, MagneticModelTestMixIn, FetchDataCSVMixIn):
     model_name = "MLI_SHA_2D"
     model = load_model_shc(MLI_SHA_2D)
 
 
-class TestFetchFilteredDataModelMLI2D(TestCase, MagneticModelTestMixIn, FetchFilteredDataMixIn):
+class TestFetchFilteredDataCSVModelMLI2D(TestCase, MagneticModelTestMixIn, FetchFilteredDataCSVMixIn):
     model_name = "MLI_SHA_2D"
     model = load_model_shc(MLI_SHA_2D)
 
 
-class TestAsyncFetchFilteredDataModelMLI2D(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataMixIn):
+class TestAsyncFetchFilteredDataCSVModelMLI2D(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataCSVMixIn):
+    model_name = "MLI_SHA_2D"
+    model = load_model_shc(MLI_SHA_2D)
+
+
+class TestFetchFilteredDataCDFModelMLI2D(TestCase, MagneticModelTestMixIn, FetchFilteredDataCDFMixIn):
+    model_name = "MLI_SHA_2D"
+    model = load_model_shc(MLI_SHA_2D)
+
+
+class TestAsyncFetchFilteredDataCDFModelMLI2D(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataCDFMixIn):
     model_name = "MLI_SHA_2D"
     model = load_model_shc(MLI_SHA_2D)
 
 #-------------------------------------------------------------------------------
 
-class TestFetchDataModelMMA2CPrimary(TestCase, MagneticModelTestMixIn, FetchDataMixIn):
+class TestFetchDataCSVModelMMA2CPrimary(TestCase, MagneticModelTestMixIn, FetchDataCSVMixIn):
     model_name = "MMA_SHA_2C-Primary"
     model = load_model_swarm_mma_2c_external(MMA_SHA_2C)
 
 
-class TestFetchFilteredDataModelMMA2CPrimary(TestCase, MagneticModelTestMixIn, FetchFilteredDataMixIn):
+class TestFetchFilteredDataCSVModelMMA2CPrimary(TestCase, MagneticModelTestMixIn, FetchFilteredDataCSVMixIn):
     model_name = "MMA_SHA_2C-Primary"
     model = load_model_swarm_mma_2c_external(MMA_SHA_2C)
 
 
-class TestAsyncFetchFilteredDataModelMMA2CPrimary(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataMixIn):
+class TestAsyncFetchFilteredDataCSVModelMMA2CPrimary(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataCSVMixIn):
     model_name = "MMA_SHA_2C-Primary"
     model = load_model_swarm_mma_2c_external(MMA_SHA_2C)
 
 
-class TestFetchDataModelMMA2CSecondary(TestCase, MagneticModelTestMixIn, FetchDataMixIn):
+class TestFetchFilteredDataCDFModelMMA2CPrimary(TestCase, MagneticModelTestMixIn, FetchFilteredDataCDFMixIn):
+    model_name = "MMA_SHA_2C-Primary"
+    model = load_model_swarm_mma_2c_external(MMA_SHA_2C)
+
+
+class TestAsyncFetchFilteredDataCDFModelMMA2CPrimary(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataCDFMixIn):
+    model_name = "MMA_SHA_2C-Primary"
+    model = load_model_swarm_mma_2c_external(MMA_SHA_2C)
+
+
+class TestFetchDataCSVModelMMA2CSecondary(TestCase, MagneticModelTestMixIn, FetchDataCSVMixIn):
     model_name = "MMA_SHA_2C-Secondary"
     model = load_model_swarm_mma_2c_internal(MMA_SHA_2C)
 
 
-class TestFetchFilteredDataModelMMA2CSecondary(TestCase, MagneticModelTestMixIn, FetchFilteredDataMixIn):
+class TestFetchFilteredDataCSVModelMMA2CSecondary(TestCase, MagneticModelTestMixIn, FetchFilteredDataCSVMixIn):
     model_name = "MMA_SHA_2C-Secondary"
     model = load_model_swarm_mma_2c_internal(MMA_SHA_2C)
 
 
-class TestAsyncFetchFilteredDataModelMMA2CSecondary(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataMixIn):
+class TestAsyncFetchFilteredDataCSVModelMMA2CSecondary(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataCSVMixIn):
+    model_name = "MMA_SHA_2C-Secondary"
+    model = load_model_swarm_mma_2c_internal(MMA_SHA_2C)
+
+
+class TestFetchFilteredDataCDFModelMMA2CSecondary(TestCase, MagneticModelTestMixIn, FetchFilteredDataCDFMixIn):
+    model_name = "MMA_SHA_2C-Secondary"
+    model = load_model_swarm_mma_2c_internal(MMA_SHA_2C)
+
+
+class TestAsyncFetchFilteredDataCDFModelMMA2CSecondary(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataCDFMixIn):
     model_name = "MMA_SHA_2C-Secondary"
     model = load_model_swarm_mma_2c_internal(MMA_SHA_2C)
 
 #-------------------------------------------------------------------------------
 
-class TestFetchDataModelMMA2FPrimary(TestCase, MagneticModelTestMixIn, FetchDataMixIn):
+class TestFetchDataCSVModelMMA2FPrimary(TestCase, MagneticModelTestMixIn, FetchDataCSVMixIn):
     model_name = "MMA_SHA_2F-Primary"
     model = load_model_swarm_mma_2f_geo_external(MMA_SHA_2F)
 
 
-class TestFetchFilteredDataModelMMA2FPrimary(TestCase, MagneticModelTestMixIn, FetchFilteredDataMixIn):
+class TestFetchFilteredDataCSVModelMMA2FPrimary(TestCase, MagneticModelTestMixIn, FetchFilteredDataCSVMixIn):
     model_name = "MMA_SHA_2F-Primary"
     model = load_model_swarm_mma_2f_geo_external(MMA_SHA_2F)
 
 
-class TestAsyncFetchFilteredDataModelMMA2FPrimary(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataMixIn):
+class TestAsyncFetchFilteredDataCSVModelMMA2FPrimary(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataCSVMixIn):
     model_name = "MMA_SHA_2F-Primary"
     model = load_model_swarm_mma_2f_geo_external(MMA_SHA_2F)
 
 
-class TestFetchDataModelMMA2FSecondary(TestCase, MagneticModelTestMixIn, FetchDataMixIn):
+class TestFetchFilteredDataCDFModelMMA2FPrimary(TestCase, MagneticModelTestMixIn, FetchFilteredDataCDFMixIn):
+    model_name = "MMA_SHA_2F-Primary"
+    model = load_model_swarm_mma_2f_geo_external(MMA_SHA_2F)
+
+
+class TestAsyncFetchFilteredDataCDFModelMMA2FPrimary(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataCDFMixIn):
+    model_name = "MMA_SHA_2F-Primary"
+    model = load_model_swarm_mma_2f_geo_external(MMA_SHA_2F)
+
+
+class TestFetchDataCSVModelMMA2FSecondary(TestCase, MagneticModelTestMixIn, FetchDataCSVMixIn):
     model_name = "MMA_SHA_2F-Secondary"
     model = load_model_swarm_mma_2f_geo_internal(MMA_SHA_2F)
 
 
-class TestFetchFilteredDataModelMMA2FSecondary(TestCase, MagneticModelTestMixIn, FetchFilteredDataMixIn):
+class TestFetchFilteredDataCSVModelMMA2FSecondary(TestCase, MagneticModelTestMixIn, FetchFilteredDataCSVMixIn):
     model_name = "MMA_SHA_2F-Secondary"
     model = load_model_swarm_mma_2f_geo_internal(MMA_SHA_2F)
 
 
-class TestAsyncFetchFilteredDataModelMMA2FSecondary(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataMixIn):
+class TestAsyncFetchFilteredDataCSVModelMMA2FSecondary(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataCSVMixIn):
+    model_name = "MMA_SHA_2F-Secondary"
+    model = load_model_swarm_mma_2f_geo_internal(MMA_SHA_2F)
+
+
+class TestFetchFilteredDataCDFModelMMA2FSecondary(TestCase, MagneticModelTestMixIn, FetchFilteredDataCDFMixIn):
+    model_name = "MMA_SHA_2F-Secondary"
+    model = load_model_swarm_mma_2f_geo_internal(MMA_SHA_2F)
+
+
+class TestAsyncFetchFilteredDataCDFModelMMA2FSecondary(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataCDFMixIn):
     model_name = "MMA_SHA_2F-Secondary"
     model = load_model_swarm_mma_2f_geo_internal(MMA_SHA_2F)
 
 #-------------------------------------------------------------------------------
 
-class TestFetchDataModelMIO2CPrimary(TestCase, MagneticModelMIOTestMixIn, FetchDataMixIn):
+class TestFetchDataCSVModelMIO2CPrimary(TestCase, MagneticModelMIOTestMixIn, FetchDataCSVMixIn):
     model_name = "MIO_SHA_2C-Primary"
     model = load_model_swarm_mio_external(MIO_SHA_2C)
 
 
-class TestFetchFilteredDataModelMIO2CPrimary(TestCase, MagneticModelMIOTestMixIn, FetchFilteredDataMixIn):
+class TestFetchFilteredDataCSVModelMIO2CPrimary(TestCase, MagneticModelMIOTestMixIn, FetchFilteredDataCSVMixIn):
     model_name = "MIO_SHA_2C-Primary"
     model = load_model_swarm_mio_external(MIO_SHA_2C)
 
 
-class TestAsyncFetchFilteredDataModelMIO2CPrimary(TestCase, MagneticModelMIOTestMixIn, AsyncFetchFilteredDataMixIn):
+class TestAsyncFetchFilteredDataCSVModelMIO2CPrimary(TestCase, MagneticModelMIOTestMixIn, AsyncFetchFilteredDataCSVMixIn):
     model_name = "MIO_SHA_2C-Primary"
     model = load_model_swarm_mio_external(MIO_SHA_2C)
 
 
-class TestFetchDataModelMIO2CSecondary(TestCase, MagneticModelMIOTestMixIn, FetchDataMixIn):
+class TestFetchFilteredDataCDFModelMIO2CPrimary(TestCase, MagneticModelMIOTestMixIn, FetchFilteredDataCDFMixIn):
+    model_name = "MIO_SHA_2C-Primary"
+    model = load_model_swarm_mio_external(MIO_SHA_2C)
+
+
+class TestAsyncFetchFilteredDataCDFModelMIO2CPrimary(TestCase, MagneticModelMIOTestMixIn, AsyncFetchFilteredDataCDFMixIn):
+    model_name = "MIO_SHA_2C-Primary"
+    model = load_model_swarm_mio_external(MIO_SHA_2C)
+
+
+class TestFetchDataCSVModelMIO2CSecondary(TestCase, MagneticModelMIOTestMixIn, FetchDataCSVMixIn):
     model_name = "MIO_SHA_2C-Secondary"
     model = load_model_swarm_mio_internal(MIO_SHA_2C)
 
 
-class TestFetchFilteredDataModelMIO2CSecondary(TestCase, MagneticModelMIOTestMixIn, FetchFilteredDataMixIn):
+class TestFetchFilteredDataCSVModelMIO2CSecondary(TestCase, MagneticModelMIOTestMixIn, FetchFilteredDataCSVMixIn):
     model_name = "MIO_SHA_2C-Secondary"
     model = load_model_swarm_mio_internal(MIO_SHA_2C)
 
 
-class TestAsyncFetchFilteredDataModelMIO2CSecondary(TestCase, MagneticModelMIOTestMixIn, AsyncFetchFilteredDataMixIn):
+class TestAsyncFetchFilteredDataCSVModelMIO2CSecondary(TestCase, MagneticModelMIOTestMixIn, AsyncFetchFilteredDataCSVMixIn):
     model_name = "MIO_SHA_2C-Secondary"
     model = load_model_swarm_mio_internal(MIO_SHA_2C)
 
 
-class TestFetchDataModelMIO2DPrimary(TestCase, MagneticModelMIOTestMixIn, FetchDataMixIn):
+class TestFetchFilteredDataCDFModelMIO2CSecondary(TestCase, MagneticModelMIOTestMixIn, FetchFilteredDataCDFMixIn):
+    model_name = "MIO_SHA_2C-Secondary"
+    model = load_model_swarm_mio_internal(MIO_SHA_2C)
+
+
+class TestAsyncFetchFilteredDataCDFModelMIO2CSecondary(TestCase, MagneticModelMIOTestMixIn, AsyncFetchFilteredDataCDFMixIn):
+    model_name = "MIO_SHA_2C-Secondary"
+    model = load_model_swarm_mio_internal(MIO_SHA_2C)
+
+
+class TestFetchDataCSVModelMIO2DPrimary(TestCase, MagneticModelMIOTestMixIn, FetchDataCSVMixIn):
     model_name = "MIO_SHA_2D-Primary"
     model = load_model_swarm_mio_external(MIO_SHA_2D)
 
 
-class TestFetchFilteredDataModelMIO2DPrimary(TestCase, MagneticModelMIOTestMixIn, FetchFilteredDataMixIn):
+class TestFetchFilteredDataCSVModelMIO2DPrimary(TestCase, MagneticModelMIOTestMixIn, FetchFilteredDataCSVMixIn):
     model_name = "MIO_SHA_2D-Primary"
     model = load_model_swarm_mio_external(MIO_SHA_2D)
 
 
-class TestAsyncFetchFilteredDataModelMIO2DPrimary(TestCase, MagneticModelMIOTestMixIn, AsyncFetchFilteredDataMixIn):
+class TestAsyncFetchFilteredDataCSVModelMIO2DPrimary(TestCase, MagneticModelMIOTestMixIn, AsyncFetchFilteredDataCSVMixIn):
     model_name = "MIO_SHA_2D-Primary"
     model = load_model_swarm_mio_external(MIO_SHA_2D)
 
 
-class TestFetchDataModelMIO2DSecondary(TestCase, MagneticModelMIOTestMixIn, FetchDataMixIn):
+class TestFetchFilteredDataCDFModelMIO2DPrimary(TestCase, MagneticModelMIOTestMixIn, FetchFilteredDataCDFMixIn):
+    model_name = "MIO_SHA_2D-Primary"
+    model = load_model_swarm_mio_external(MIO_SHA_2D)
+
+
+class TestAsyncFetchFilteredDataCDFModelMIO2DPrimary(TestCase, MagneticModelMIOTestMixIn, AsyncFetchFilteredDataCDFMixIn):
+    model_name = "MIO_SHA_2D-Primary"
+    model = load_model_swarm_mio_external(MIO_SHA_2D)
+
+
+class TestFetchDataCSVModelMIO2DSecondary(TestCase, MagneticModelMIOTestMixIn, FetchDataCSVMixIn):
     model_name = "MIO_SHA_2D-Secondary"
     model = load_model_swarm_mio_internal(MIO_SHA_2D)
 
 
-class TestFetchFilteredDataModelMIO2DSecondary(TestCase, MagneticModelMIOTestMixIn, FetchFilteredDataMixIn):
+class TestFetchFilteredDataCSVModelMIO2DSecondary(TestCase, MagneticModelMIOTestMixIn, FetchFilteredDataCSVMixIn):
     model_name = "MIO_SHA_2D-Secondary"
     model = load_model_swarm_mio_internal(MIO_SHA_2D)
 
 
-class TestAsyncFetchFilteredDataModelMIO2DSecondary(TestCase, MagneticModelMIOTestMixIn, AsyncFetchFilteredDataMixIn):
+class TestAsyncFetchFilteredDataCSVModelMIO2DSecondary(TestCase, MagneticModelMIOTestMixIn, AsyncFetchFilteredDataCSVMixIn):
+    model_name = "MIO_SHA_2D-Secondary"
+    model = load_model_swarm_mio_internal(MIO_SHA_2D)
+
+
+class TestFetchFilteredDataCDFModelMIO2DSecondary(TestCase, MagneticModelMIOTestMixIn, FetchFilteredDataCDFMixIn):
+    model_name = "MIO_SHA_2D-Secondary"
+    model = load_model_swarm_mio_internal(MIO_SHA_2D)
+
+
+class TestAsyncFetchFilteredDataCDFModelMIO2DSecondary(TestCase, MagneticModelMIOTestMixIn, AsyncFetchFilteredDataCDFMixIn):
     model_name = "MIO_SHA_2D-Secondary"
     model = load_model_swarm_mio_internal(MIO_SHA_2D)
 
