@@ -73,6 +73,7 @@ MIO_SHA_2C = "./data/SW_OPER_MIO_SHA_2C.txt"
 MIO_SHA_2D = "./data/SW_OPER_MIO_SHA_2D.txt"
 MMA_SHA_2C = "./data/SW_OPER_MMA_SHA_2C.cdf"
 MMA_SHA_2F = "./data/SW_OPER_MMA_SHA_2F.cdf"
+MMA_CHAOS6 = "./data/SW_OPER_MMA_CHAOS6.cdf"
 
 RAD2DEG = 180.0/pi
 
@@ -833,6 +834,61 @@ class TestFetchFilteredDataModelCHAOSCombined(TestFetchFilteredDataModelCHAOS6Co
 
 class TestAsyncFetchFilteredDataModelCHAOSCombined(TestAsyncFetchFilteredDataModelCHAOS6Combined):
     model_name = "CHAOS-Combined"
+
+#-------------------------------------------------------------------------------
+
+class TestFetchDataModelCHAOS6MMAPrimary(TestCase, MagneticModelTestMixIn, FetchDataMixIn):
+    model_name = "CHAOS-6-MMA-Primary"
+    model = load_model_swarm_mma_2c_external(MMA_CHAOS6)
+
+
+class TestFetchFilteredDataModelCHAOS6MMAPrimary(TestCase, MagneticModelTestMixIn, FetchFilteredDataMixIn):
+    model_name = "CHAOS-6-MMA-Primary"
+    model = load_model_swarm_mma_2c_external(MMA_CHAOS6)
+
+
+class TestAsyncFetchFilteredDataModelCHAOS6MMAPrimary(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataMixIn):
+    model_name = "CHAOS-6-MMA-Primary"
+    model = load_model_swarm_mma_2c_external(MMA_CHAOS6)
+
+
+class TestFetchDataModelCHAOS6MMASecondary(TestCase, MagneticModelTestMixIn, FetchDataMixIn):
+    model_name = "CHAOS-6-MMA-Secondary"
+    model = load_model_swarm_mma_2c_internal(MMA_CHAOS6)
+
+
+class TestFetchFilteredDataModelCHAOS6MMASecondary(TestCase, MagneticModelTestMixIn, FetchFilteredDataMixIn):
+    model_name = "CHAOS-6-MMA-Secondary"
+    model = load_model_swarm_mma_2c_internal(MMA_CHAOS6)
+
+
+class TestAsyncFetchFilteredDataModelCHAOS6MMASecondary(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataMixIn):
+    model_name = "CHAOS-6-MMA-Secondary"
+    model = load_model_swarm_mma_2c_internal(MMA_CHAOS6)
+
+
+class TestFetchDataModelCHAOSMMAPrimary(TestFetchDataModelCHAOS6MMAPrimary):
+    model_name = "CHAOS-MMA-Primary"
+
+
+class TestFetchFilteredDataModelCHAOSMMAPrimary(TestFetchFilteredDataModelCHAOS6MMAPrimary):
+    model_name = "CHAOS-MMA-Primary"
+
+
+class TestAsyncFetchFilteredDataModelCHAOS6MMAPrimary(TestAsyncFetchFilteredDataModelCHAOS6MMAPrimary):
+    model_name = "CHAOS-MMA-Primary"
+
+
+class TestFetchDataModelCHAOSMMASecondary(TestFetchDataModelCHAOS6MMASecondary):
+    model_name = "CHAOS-MMA-Secondary"
+
+
+class TestFetchFilteredDataModelCHAOSMMASecondary(TestFetchFilteredDataModelCHAOS6MMASecondary):
+    model_name = "CHAOS-MMA-Secondary"
+
+
+class TestAsyncFetchFilteredDataModelCHAOS6MMASecondary(TestAsyncFetchFilteredDataModelCHAOS6MMASecondary):
+    model_name = "CHAOS-MMA-Secondary"
 
 #-------------------------------------------------------------------------------
 
