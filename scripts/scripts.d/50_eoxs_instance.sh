@@ -405,6 +405,7 @@ VIRES_CACHED_PRODUCTS = {
     "MMA_SHA_2F": "$VIRES_CACHE_DIR/SW_OPER_MMA_SHA_2F.cdf",
     "MIO_SHA_2C": "$VIRES_CACHE_DIR/SW_OPER_MIO_SHA_2C.txt",
     "MIO_SHA_2D": "$VIRES_CACHE_DIR/SW_OPER_MIO_SHA_2D.txt",
+    "MMA_CHAOS6": "$VIRES_CACHE_DIR/SW_OPER_MMA_CHAOS6.cdf",
 }
 
 # TODO: Find a better way how to map a collection to the satellite!
@@ -819,7 +820,8 @@ then
         "MMA_SHA_2C-Primary" "MMA_SHA_2C-Secondary" \
         "MMA_SHA_2F-Primary" "MMA_SHA_2F-Secondary" \
         "MIO_SHA_2C-Primary" "MIO_SHA_2C-Secondary" \
-        "MIO_SHA_2D-Primary" "MIO_SHA_2D-Secondary"
+        "MIO_SHA_2D-Primary" "MIO_SHA_2D-Secondary" \
+        "CHAOS-6-MMA-Primary" "CHAOS-6-MMA-Secondary"
 fi
 
 #-------------------------------------------------------------------------------
