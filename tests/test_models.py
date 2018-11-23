@@ -56,6 +56,7 @@ from eoxmagmod.data import (
     WMM_2010, WMM_2015,
     EMM_2010_STATIC, EMM_2010_SECVAR,
 )
+from eoxmagmod.time_util import decimal_year_to_mjd2000_simple
 from wps_util import (
     WpsPostRequestMixIn, WpsAsyncPostRequestMixIn, CsvRequestMixIn,
 )
@@ -169,7 +170,7 @@ class TestAsyncFetchFilteredDataSunPosition(TestCase, SunPositionTestMixIn, Asyn
 class DipoleTestMixIn(object):
     variables = ["DipoleAxisVector", "NGPLatitude", "NGPLongitude"]
     model_name = "IGRF12"
-    model = load_model_shc(IGRF12)
+    model = load_model_shc(IGRF12, interpolate_in_decimal_years=True)
 
     def test_dipole(self):
         request = self.get_request(
@@ -534,17 +535,17 @@ class TestAsyncFetchFilteredDataModelIGRF11(TestCase, MagneticModelTestMixIn, As
 
 class TestFetchDataModelIGRF12(TestCase, MagneticModelTestMixIn, FetchDataMixIn):
     model_name = "IGRF12"
-    model = load_model_shc(IGRF12)
+    model = load_model_shc(IGRF12, interpolate_in_decimal_years=True)
 
 
 class TestFetchFilteredDataModelIGRF12(TestCase, MagneticModelTestMixIn, FetchFilteredDataMixIn):
     model_name = "IGRF12"
-    model = load_model_shc(IGRF12)
+    model = load_model_shc(IGRF12, interpolate_in_decimal_years=True)
 
 
 class TestAsyncFetchFilteredDataModelIGRF12(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataMixIn):
     model_name = "IGRF12"
-    model = load_model_shc(IGRF12)
+    model = load_model_shc(IGRF12, interpolate_in_decimal_years=True)
 
 
 class TestFetchDataModelIGRF(TestFetchDataModelIGRF12):
@@ -621,32 +622,50 @@ class TestAsyncFetchFilteredDataModelCHAOSStatic(TestAsyncFetchFilteredDataModel
 
 class TestFetchDataModelCHAOS5Core(TestCase, MagneticModelTestMixIn, FetchDataMixIn):
     model_name = "CHAOS-5-Core"
-    model = load_model_shc(CHAOS5_CORE_V4)
+    model = load_model_shc(
+        CHAOS5_CORE_V4,
+        to_mjd2000=decimal_year_to_mjd2000_simple
+    )
 
 
 class TestFetchFilteredDataModelCHAOS5Core(TestCase, MagneticModelTestMixIn, FetchFilteredDataMixIn):
     model_name = "CHAOS-5-Core"
-    model = load_model_shc(CHAOS5_CORE_V4)
+    model = load_model_shc(
+        CHAOS5_CORE_V4,
+        to_mjd2000=decimal_year_to_mjd2000_simple
+    )
 
 
 class TestAsyncFetchFilteredDataModelCHAOS5Core(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataMixIn):
     model_name = "CHAOS-5-Core"
-    model = load_model_shc(CHAOS5_CORE_V4)
+    model = load_model_shc(
+        CHAOS5_CORE_V4,
+        to_mjd2000=decimal_year_to_mjd2000_simple
+    )
 
 
 class TestFetchDataModelCHAOS6Core(TestCase, MagneticModelTestMixIn, FetchDataMixIn):
     model_name = "CHAOS-6-Core"
-    model = load_model_shc(CHAOS6_CORE_LATEST)
+    model = load_model_shc(
+        CHAOS6_CORE_LATEST,
+        to_mjd2000=decimal_year_to_mjd2000_simple
+    )
 
 
 class TestFetchFilteredDataModelCHAOS6Core(TestCase, MagneticModelTestMixIn, FetchFilteredDataMixIn):
     model_name = "CHAOS-6-Core"
-    model = load_model_shc(CHAOS6_CORE_LATEST)
+    model = load_model_shc(
+        CHAOS6_CORE_LATEST,
+        to_mjd2000=decimal_year_to_mjd2000_simple
+    )
 
 
 class TestAsyncFetchFilteredDataModelCHAOS6Core(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataMixIn):
     model_name = "CHAOS-6-Core"
-    model = load_model_shc(CHAOS6_CORE_LATEST)
+    model = load_model_shc(
+        CHAOS6_CORE_LATEST,
+        to_mjd2000=decimal_year_to_mjd2000_simple
+    )
 
 
 class TestFetchDataModelCHAOSCore(TestFetchDataModelCHAOS6Core):
@@ -664,32 +683,50 @@ class TestAsyncFetchFilteredDataModelCHAOSCore(TestAsyncFetchFilteredDataModelCH
 
 class TestFetchDataModelCHAOS5Combined(TestCase, MagneticModelTestMixIn, FetchDataMixIn):
     model_name = "CHAOS-5-Combined"
-    model = load_model_shc_combined(CHAOS5_CORE_V4, CHAOS5_STATIC)
+    model = load_model_shc_combined(
+        CHAOS5_CORE_V4, CHAOS5_STATIC,
+        to_mjd2000=decimal_year_to_mjd2000_simple
+    )
 
 
 class TestFetchFilteredDataModelCHAOS5Combined(TestCase, MagneticModelTestMixIn, FetchFilteredDataMixIn):
     model_name = "CHAOS-5-Combined"
-    model = load_model_shc_combined(CHAOS5_CORE_V4, CHAOS5_STATIC)
+    model = load_model_shc_combined(
+        CHAOS5_CORE_V4, CHAOS5_STATIC,
+        to_mjd2000=decimal_year_to_mjd2000_simple
+    )
 
 
 class TestAsyncFetchFilteredDataModelCHAOS5Combined(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataMixIn):
     model_name = "CHAOS-5-Combined"
-    model = load_model_shc_combined(CHAOS5_CORE_V4, CHAOS5_STATIC)
+    model = load_model_shc_combined(
+        CHAOS5_CORE_V4, CHAOS5_STATIC,
+        to_mjd2000=decimal_year_to_mjd2000_simple
+    )
 
 
 class TestFetchDataModelCHAOS6Combined(TestCase, MagneticModelTestMixIn, FetchDataMixIn):
     model_name = "CHAOS-6-Combined"
-    model = load_model_shc_combined(CHAOS6_CORE_LATEST, CHAOS6_STATIC)
+    model = load_model_shc_combined(
+        CHAOS6_CORE_LATEST, CHAOS6_STATIC,
+        to_mjd2000=decimal_year_to_mjd2000_simple
+    )
 
 
 class TestFetchFilteredDataModelCHAOS6Combined(TestCase, MagneticModelTestMixIn, FetchFilteredDataMixIn):
     model_name = "CHAOS-6-Combined"
-    model = load_model_shc_combined(CHAOS6_CORE_LATEST, CHAOS6_STATIC)
+    model = load_model_shc_combined(
+        CHAOS6_CORE_LATEST, CHAOS6_STATIC,
+        to_mjd2000=decimal_year_to_mjd2000_simple
+    )
 
 
 class TestAsyncFetchFilteredDataModelCHAOS6Combined(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataMixIn):
     model_name = "CHAOS-6-Combined"
-    model = load_model_shc_combined(CHAOS6_CORE_LATEST, CHAOS6_STATIC)
+    model = load_model_shc_combined(
+        CHAOS6_CORE_LATEST, CHAOS6_STATIC,
+        to_mjd2000=decimal_year_to_mjd2000_simple
+    )
 
 
 class TestFetchDataModelCHAOSCombined(TestFetchDataModelCHAOS6Combined):
