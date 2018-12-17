@@ -28,32 +28,26 @@
 #-------------------------------------------------------------------------------
 
 from __future__ import print_function
+from numpy import abs, nan, isnan, any
 from numpy.testing import assert_allclose
 
 
 def test_variables(data, reference, tested_variables):
     """ Test a dataset. """
-
     tests_count = 0
     tests_failed = 0
-    tests_skipped = 0
 
     for key, prm in tested_variables.items():
         if key in data:
             print("Testing %s ... " % key, end='')
             tests_failed += test_variable(data[key], reference[key], **prm)
             tests_count += 1
-        else:
-            print("Variable %s not provided. Test skipped." % key)
-            tests_skipped += 1
 
-    print("%d of %d passed successfully." % (
+    print("%d of %d tests passed successfully." % (
         tests_count - tests_failed, tests_count
     ))
     if tests_failed:
         print("%d of %d tests failed!" % (tests_failed, tests_count))
-    if tests_skipped:
-        print("%d of %d tests were skipped!" % (tests_failed, tests_count))
 
 
 def test_variable(data, reference, atol, uom, sanitize=None):
@@ -61,22 +55,27 @@ def test_variable(data, reference, atol, uom, sanitize=None):
     if sanitize is None:
         sanitize = lambda v, r: v
 
+    data = sanitize(data, reference)
+    reference = sanitize(reference, reference)
+    mask = ~isnan(reference)
+
+    if any(mask):
+        max_deviation = abs(data[mask] - reference[mask]).max()
+    else:
+        max_deviation = nan
+
     try:
-        assert_allclose(
-            sanitize(data, reference),
-            sanitize(reference, reference),
-            atol=atol
-        )
+        assert_allclose(data, reference, atol=atol)
     except AssertionError as error:
         print(
-            "FAILED: The result deviation is not within the required "
-            "%s%s absolute tolerance!" % (atol, uom)
+            "FAILED: The result maximum deviation %.3g%s is not within the "
+            "required %s%s absolute tolerance!" % (max_deviation, uom, atol, uom)
         )
         print(error)
         return True
     else:
         print(
-            "PASSED: The result deviation is within the required "
-            "%s%s absolute tolerance." % (atol, uom)
+            "PASSED: The result maximum deviation %.3g%s is within the required "
+            "%s%s absolute tolerance." % (max_deviation, uom, atol, uom)
         )
         return False

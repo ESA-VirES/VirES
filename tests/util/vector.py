@@ -28,16 +28,16 @@
 #-------------------------------------------------------------------------------
 
 from math import pi
-from numpy import stack, arccos, sqrt
+from numpy import stack, arccos, sqrt, clip
 
 RAD2DEG = 180./pi
 
 
 def vector_angle(vect1, vect2):
     """ Get angle between two vectors. """
-    return RAD2DEG*arccos(vector_product(vect1, vect2) / sqrt(
+    return RAD2DEG*arccos(clip(vector_product(vect1, vect2) / sqrt(
         vector_product(vect1, vect1) * vector_product(vect2, vect2)
-    ))
+    ), -1.0, 1.0))
 
 
 def normalize_vector(vect):
