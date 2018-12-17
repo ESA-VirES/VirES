@@ -221,7 +221,7 @@ def parse_inputs(argv):
 def usage(exename, file=sys.stderr):
     """ Print usage. """
     print(
-        "USAGE: %s <model_name> <tested file> [<model_file>]"
+        "USAGE: %s <model_name> <tested file> [<model_file> ...]"
         % basename(exename), file=file
     )
 
