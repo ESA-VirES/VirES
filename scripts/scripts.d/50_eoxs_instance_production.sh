@@ -435,6 +435,7 @@ VIRES_CACHED_PRODUCTS = {
     "MCO_SHA_2C": "$VIRES_CACHE_DIR/SW_OPER_MCO_SHA_2C.shc",
     "MCO_SHA_2D": "$VIRES_CACHE_DIR/SW_OPER_MCO_SHA_2D.shc",
     "MCO_SHA_2F": "$VIRES_CACHE_DIR/SW_OPER_MCO_SHA_2F.shc",
+    "MCO_CHAOS6": "$VIRES_CACHE_DIR/SW_OPER_MCO_CHAOS6.shc",
     "MLI_SHA_2C": "$VIRES_CACHE_DIR/SW_OPER_MLI_SHA_2C.shc",
     "MLI_SHA_2D": "$VIRES_CACHE_DIR/SW_OPER_MLI_SHA_2D.shc",
     "MMA_SHA_2C": "$VIRES_CACHE_DIR/SW_OPER_MMA_SHA_2C.cdf",
@@ -900,7 +901,7 @@ then
     python "$MNGCMD" vires_model_remove --all
     python "$MNGCMD" vires_model_add \
         "SIFM" "IGRF12" "CHAOS-6-Combined" "CHAOS-6-Core" "CHAOS-6-Static" \
-        "MCO_SHA_2C" "MCO_SHA_2D" "MCO_SHA_2F" "MLI_SHA_2C" "MLI_SHA_2D" \
+        "MCO_SHA_2C" "MCO_SHA_2D" "MCO_SHA_2F" "MCO_SHA_2X" "MLI_SHA_2C" "MLI_SHA_2D" \
         "MMA_SHA_2C-Primary" "MMA_SHA_2C-Secondary" \
         "MMA_SHA_2F-Primary" "MMA_SHA_2F-Secondary" \
         "MIO_SHA_2C-Primary" "MIO_SHA_2C-Secondary" \
