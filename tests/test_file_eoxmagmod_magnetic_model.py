@@ -43,7 +43,7 @@ from eoxmagmod import (
     load_model_swarm_mio_external,
     load_model_swarm_mio_internal,
 )
-from eoxmagmod.data import IGRF12, CHAOS6_STATIC, CHAOS6_CORE_LATEST, SIFM
+from eoxmagmod.data import IGRF12, CHAOS6_STATIC, SIFM
 from eoxmagmod.time_util import decimal_year_to_mjd2000_simple
 from util.cdf import load_cdf, CDFError, read_time_as_mjd2000
 from util.csv import load_csv
@@ -68,6 +68,7 @@ CSV_VALUE_PARSERS = {
 MCO_SHA_2C = "./data/SW_OPER_MCO_SHA_2C.shc"
 MCO_SHA_2D = "./data/SW_OPER_MCO_SHA_2D.shc"
 MCO_SHA_2F = "./data/SW_OPER_MCO_SHA_2F.shc"
+MCO_CHAOS6 = "./data/SW_OPER_MCO_CHAOS6.shc"
 MLI_SHA_2C = "./data/SW_OPER_MLI_SHA_2C.shc"
 MLI_SHA_2D = "./data/SW_OPER_MLI_SHA_2D.shc"
 MIO_SHA_2C = "./data/SW_OPER_MIO_SHA_2C.txt"
@@ -84,13 +85,19 @@ MODELS = {
         "loader": lambda f: load_model_shc(
             f, to_mjd2000=decimal_year_to_mjd2000_simple
         ),
-        "files": [CHAOS6_CORE_LATEST],
+        "files": [MCO_CHAOS6],
+    },
+    "MCO_SHA_2X": {
+        "loader": lambda f: load_model_shc(
+            f, to_mjd2000=decimal_year_to_mjd2000_simple
+        ),
+        "files": [MCO_CHAOS6],
     },
     "CHAOS-6-Combined": {
         "loader": lambda f1, f2: load_model_shc_combined(
             f1, f2, to_mjd2000=decimal_year_to_mjd2000_simple
         ),
-        "files": [CHAOS6_CORE_LATEST, CHAOS6_STATIC],
+        "files": [MCO_CHAOS6, CHAOS6_STATIC],
     },
     "CHAOS-6-Static": {"loader": load_model_shc, "files": [CHAOS6_STATIC]},
     "SIFM": {"loader": load_model_shc, "files": [SIFM]},

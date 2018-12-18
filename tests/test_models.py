@@ -66,6 +66,7 @@ from util.wps import (
 MCO_SHA_2C = "./data/SW_OPER_MCO_SHA_2C.shc"
 MCO_SHA_2D = "./data/SW_OPER_MCO_SHA_2D.shc"
 MCO_SHA_2F = "./data/SW_OPER_MCO_SHA_2F.shc"
+MCO_CHAOS6 = "./data/SW_OPER_MCO_CHAOS6.shc"
 MLI_SHA_2C = "./data/SW_OPER_MLI_SHA_2C.shc"
 MLI_SHA_2D = "./data/SW_OPER_MLI_SHA_2D.shc"
 MIO_SHA_2C = "./data/SW_OPER_MIO_SHA_2C.txt"
@@ -821,7 +822,7 @@ class TestAsyncFetchFilteredDataCdfModelCHAOS5Core(TestCase, MagneticModelTestMi
 class TestFetchDataCsvModelCHAOS6Core(TestCase, MagneticModelTestMixIn, FetchDataCsvMixIn):
     model_name = "CHAOS-6-Core"
     model = load_model_shc(
-        CHAOS6_CORE_LATEST,
+        MCO_CHAOS6,
         to_mjd2000=decimal_year_to_mjd2000_simple
     )
 
@@ -829,7 +830,7 @@ class TestFetchDataCsvModelCHAOS6Core(TestCase, MagneticModelTestMixIn, FetchDat
 class TestFetchFilteredDataCsvModelCHAOS6Core(TestCase, MagneticModelTestMixIn, FetchFilteredDataCsvMixIn):
     model_name = "CHAOS-6-Core"
     model = load_model_shc(
-        CHAOS6_CORE_LATEST,
+        MCO_CHAOS6,
         to_mjd2000=decimal_year_to_mjd2000_simple
     )
 
@@ -837,7 +838,7 @@ class TestFetchFilteredDataCsvModelCHAOS6Core(TestCase, MagneticModelTestMixIn, 
 class TestFetchFilteredDataCdfModelCHAOS6Core(TestCase, MagneticModelTestMixIn, FetchFilteredDataCdfMixIn):
     model_name = "CHAOS-6-Core"
     model = load_model_shc(
-        CHAOS6_CORE_LATEST,
+        MCO_CHAOS6,
         to_mjd2000=decimal_year_to_mjd2000_simple
     )
 
@@ -845,7 +846,7 @@ class TestFetchFilteredDataCdfModelCHAOS6Core(TestCase, MagneticModelTestMixIn, 
 class TestAsyncFetchFilteredDataCsvModelCHAOS6Core(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataCsvMixIn):
     model_name = "CHAOS-6-Core"
     model = load_model_shc(
-        CHAOS6_CORE_LATEST,
+        MCO_CHAOS6,
         to_mjd2000=decimal_year_to_mjd2000_simple
     )
 
@@ -853,7 +854,7 @@ class TestAsyncFetchFilteredDataCsvModelCHAOS6Core(TestCase, MagneticModelTestMi
 class TestAsyncFetchFilteredDataCdfModelCHAOS6Core(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataCdfMixIn):
     model_name = "CHAOS-6-Core"
     model = load_model_shc(
-        CHAOS6_CORE_LATEST,
+        MCO_CHAOS6,
         to_mjd2000=decimal_year_to_mjd2000_simple
     )
 
@@ -922,7 +923,7 @@ class TestAsyncFetchFilteredDataCdfModelCHAOS5Combined(TestCase, MagneticModelTe
 class TestFetchDataCsvModelCHAOS6Combined(TestCase, MagneticModelTestMixIn, FetchDataCsvMixIn):
     model_name = "CHAOS-6-Combined"
     model = load_model_shc_combined(
-        CHAOS6_CORE_LATEST, CHAOS6_STATIC,
+        MCO_CHAOS6, CHAOS6_STATIC,
         to_mjd2000=decimal_year_to_mjd2000_simple
     )
 
@@ -930,7 +931,7 @@ class TestFetchDataCsvModelCHAOS6Combined(TestCase, MagneticModelTestMixIn, Fetc
 class TestFetchFilteredDataCsvModelCHAOS6Combined(TestCase, MagneticModelTestMixIn, FetchFilteredDataCsvMixIn):
     model_name = "CHAOS-6-Combined"
     model = load_model_shc_combined(
-        CHAOS6_CORE_LATEST, CHAOS6_STATIC,
+        MCO_CHAOS6, CHAOS6_STATIC,
         to_mjd2000=decimal_year_to_mjd2000_simple
     )
 
@@ -938,7 +939,7 @@ class TestFetchFilteredDataCsvModelCHAOS6Combined(TestCase, MagneticModelTestMix
 class TestFetchFilteredDataCdfModelCHAOS6Combined(TestCase, MagneticModelTestMixIn, FetchFilteredDataCdfMixIn):
     model_name = "CHAOS-6-Combined"
     model = load_model_shc_combined(
-        CHAOS6_CORE_LATEST, CHAOS6_STATIC,
+        MCO_CHAOS6, CHAOS6_STATIC,
         to_mjd2000=decimal_year_to_mjd2000_simple
     )
 
@@ -946,7 +947,7 @@ class TestFetchFilteredDataCdfModelCHAOS6Combined(TestCase, MagneticModelTestMix
 class TestAsyncFetchFilteredDataCsvModelCHAOS6Combined(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataCsvMixIn):
     model_name = "CHAOS-6-Combined"
     model = load_model_shc_combined(
-        CHAOS6_CORE_LATEST, CHAOS6_STATIC,
+        MCO_CHAOS6, CHAOS6_STATIC,
         to_mjd2000=decimal_year_to_mjd2000_simple
     )
 
@@ -954,7 +955,7 @@ class TestAsyncFetchFilteredDataCsvModelCHAOS6Combined(TestCase, MagneticModelTe
 class TestAsyncFetchFilteredDataCdfModelCHAOS6Combined(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataCdfMixIn):
     model_name = "CHAOS-6-Combined"
     model = load_model_shc_combined(
-        CHAOS6_CORE_LATEST, CHAOS6_STATIC,
+        MCO_CHAOS6, CHAOS6_STATIC,
         to_mjd2000=decimal_year_to_mjd2000_simple
     )
 
@@ -1053,6 +1054,26 @@ class TestAsyncFetchFilteredDataCsvModelMCO2F(TestCase, MagneticModelTestMixIn, 
 class TestAsyncFetchFilteredDataCdfModelMCO2F(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataCdfMixIn):
     model_name = "MCO_SHA_2F"
     model = load_model_shc(MCO_SHA_2F)
+
+
+class TestFetchDataCsvModelMCO2X(TestFetchDataCsvModelCHAOS6Core):
+    model_name = "MCO_SHA_2X"
+
+
+class TestFetchFilteredDataCsvModelMCO2X(TestFetchFilteredDataCsvModelCHAOS6Core):
+    model_name = "MCO_SHA_2X"
+
+
+class TestFetchFilteredDataCdfModelMCO2X(TestFetchFilteredDataCdfModelCHAOS6Core):
+    model_name = "MCO_SHA_2X"
+
+
+class TestAsyncFetchFilteredDataCsvModelMCO2X(TestAsyncFetchFilteredDataCsvModelCHAOS6Core):
+    model_name = "MCO_SHA_2X"
+
+
+class TestAsyncFetchFilteredDataCdfModelMCO2X(TestAsyncFetchFilteredDataCdfModelCHAOS6Core):
+    model_name = "MCO_SHA_2X"
 
 #-------------------------------------------------------------------------------
 
