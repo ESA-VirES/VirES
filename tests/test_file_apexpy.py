@@ -67,43 +67,43 @@ CSV_VALUE_PARSERS = {
 
 TESTED_VARIABLES = {
     "SunDeclination": {
-        "uom": "deg", "atol": 1e-2
+        "uom": "deg", "atol": 1e-1
     },
     "SunLongitude": {
-        "uom": "deg", "atol": 1e-2,
+        "uom": "deg", "atol": 1e-1,
         "sanitize": lambda v, r: angle_difference(v, r)
     },
     "SunHourAngle": {
-        "uom": "deg", "atol": 1e-2,
+        "uom": "deg", "atol": 1e-1,
         "sanitize": lambda v, r: angle_difference(v, r)
     },
     "SunVector": {
-        "uom": "deg", "atol": 1e-2,
+        "uom": "deg", "atol": 1e-1,
         "sanitize": lambda v, r: vector_angle(v, r)
     },
     "SunZenithAngle": {
-        "uom": "deg", "atol": 1e-2,
+        "uom": "deg", "atol": 1e-1,
     },
     "SunAzimuthAngle": {
-        "uom": "deg", "atol": 1e-2,
+        "uom": "deg", "atol": 1e-1,
         "sanitize": lambda v, r: angle_difference(v, r)
     },
     "SunRightAscension": {
-        "uom": "deg", "atol": 1e-2,
+        "uom": "deg", "atol": 1e-1,
         "sanitize": lambda v, r: angle_difference(v, r)
     },
     "QDLat": {
-        "uom": "deg", "atol": 1e-2,
+        "uom": "deg", "atol": 1e-1,
     },
     "QDLon": {
-        "uom": "deg", "atol": 1e-2,
+        "uom": "deg", "atol": 1e-1,
         "sanitize": lambda v, r: angle_difference(v, r)
     },
     "QDBasis": {
         "uom": "", "atol": 1e-4,
     },
     "MLT": {
-        "uom": "h", "atol": 1e-2,
+        "uom": "h", "atol": 1e-1,
         "sanitize": lambda v, r: angle_difference(v, r, period=24, offset=-12)
     },
 }
