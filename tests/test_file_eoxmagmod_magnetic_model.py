@@ -184,7 +184,14 @@ def get_model_instance(model_name, *model_filenames):
     if model_def["files"] is None and not model_filenames:
         raise CommandError("%s model requires model filename!" % model_name)
 
-    model = model_def["loader"](*(model_filenames or model_def["files"]))
+    if not model_filenames:
+        model_filenames = model_def["files"]
+
+    print("Using following Model files:")
+    for filename in model_filenames:
+        print(filename)
+
+    model = model_def["loader"](*model_filenames)
 
     return model, model_def.get("parameters", {})
 

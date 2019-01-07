@@ -416,6 +416,7 @@ VIRES_CACHED_PRODUCTS = {
 VIRES_SAT2COL = {
     'A': [
         "SW_OPER_MAGA_LR_1B",
+        "SW_OPER_EFIA_LP_1B",
         "SW_OPER_EFIA_PL_1B",
         "SW_OPER_IBIATMS_2F",
         "SW_OPER_TECATMS_2F",
@@ -424,6 +425,7 @@ VIRES_SAT2COL = {
     ],
     'B': [
         "SW_OPER_MAGB_LR_1B",
+        "SW_OPER_EFIB_LP_1B",
         "SW_OPER_EFIB_PL_1B",
         "SW_OPER_IBIBTMS_2F",
         "SW_OPER_TECBTMS_2F",
@@ -432,6 +434,7 @@ VIRES_SAT2COL = {
     ],
     'C': [
         "SW_OPER_MAGC_LR_1B",
+        "SW_OPER_EFIC_LP_1B",
         "SW_OPER_EFIC_PL_1B",
         "SW_OPER_IBICTMS_2F",
         "SW_OPER_TECCTMS_2F",
