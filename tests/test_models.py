@@ -1175,11 +1175,11 @@ class TestFetchFilteredDataCdfModelCHAOSMMAPrimary(TestFetchFilteredDataCdfModel
     model_name = "CHAOS-MMA-Primary"
 
 
-class TestAsyncFetchFilteredDataCsvModelCHAOS6MMAPrimary(TestAsyncFetchFilteredDataCsvModelCHAOS6MMAPrimary):
+class TestAsyncFetchFilteredDataCsvModelCHAOSMMAPrimary(TestAsyncFetchFilteredDataCsvModelCHAOS6MMAPrimary):
     model_name = "CHAOS-MMA-Primary"
 
 
-class TestAsyncFetchFilteredDataCdfModelCHAOS6MMAPrimary(TestAsyncFetchFilteredDataCdfModelCHAOS6MMAPrimary):
+class TestAsyncFetchFilteredDataCdfModelCHAOSMMAPrimary(TestAsyncFetchFilteredDataCdfModelCHAOS6MMAPrimary):
     model_name = "CHAOS-MMA-Primary"
 
 
@@ -1195,11 +1195,11 @@ class TestFetchFilteredDataCdfModelCHAOSMMASecondary(TestFetchFilteredDataCdfMod
     model_name = "CHAOS-MMA-Secondary"
 
 
-class TestAsyncFetchFilteredDataCsvModelCHAOS6MMASecondary(TestAsyncFetchFilteredDataCsvModelCHAOS6MMASecondary):
+class TestAsyncFetchFilteredDataCsvModelCHAOSMMASecondary(TestAsyncFetchFilteredDataCsvModelCHAOS6MMASecondary):
     model_name = "CHAOS-MMA-Secondary"
 
 
-class TestAsyncFetchFilteredDataCdfModelCHAOS6MMASecondary(TestAsyncFetchFilteredDataCdfModelCHAOS6MMASecondary):
+class TestAsyncFetchFilteredDataCdfModelCHAOSMMASecondary(TestAsyncFetchFilteredDataCdfModelCHAOS6MMASecondary):
     model_name = "CHAOS-MMA-Secondary"
 
 #-------------------------------------------------------------------------------

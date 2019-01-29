@@ -75,6 +75,7 @@ MIO_SHA_2C = "./data/SW_OPER_MIO_SHA_2C.txt"
 MIO_SHA_2D = "./data/SW_OPER_MIO_SHA_2D.txt"
 MMA_SHA_2C = "./data/SW_OPER_MMA_SHA_2C.cdf"
 MMA_SHA_2F = "./data/SW_OPER_MMA_SHA_2F.cdf"
+MMA_CHAOS6 = "./data/SW_OPER_MMA_CHAOS6.cdf"
 
 MODELS = {
     "IGRF12": {
@@ -134,6 +135,12 @@ MODELS = {
     },
     "MMA_SHA_2F-Secondary": {
         "loader": load_model_swarm_mma_2f_geo_internal, "files": [MMA_SHA_2F],
+    },
+    "CHAOS-6-MMA-Primary": {
+        "loader": load_model_swarm_mma_2c_external, "files": [MMA_CHAOS6],
+    },
+    "CHAOS-6-MMA-Secondary": {
+        "loader": load_model_swarm_mma_2c_internal, "files": [MMA_CHAOS6],
     },
 }
 
