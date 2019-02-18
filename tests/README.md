@@ -6,6 +6,19 @@ This directory contains various test scripts.
 
 The tests are written in Python and require Python 2.7 or Python 3 installed.
 
+### Installation
+
+The get the scripts to your local computer clone the `VirES` repository
+```
+git clone https://github.com/ESA-VirES/VirES.git
+```
+
+Then change the directory to the location of the tests scripts
+
+```
+cd VirES/tests/
+```
+
 ### Magnetic Model
 
 The test of the magnetic model require installation of the
@@ -60,10 +73,26 @@ Optionally, the model file(s) can be provided to override the defaults.
 
 The script accepts downloaded datasets in both the CDF and CSV format.
 
+### Testing Downloaded VirES dataset against the original Swarm products
+
+Two CDF files containing the same data but each obtained from a different source
+can be compared by
+```
+./compare_cdf_files.py <CDF-file> <CDF-file>
+```
+
+The reference files can be filtered manually (emulating the server side filters)
+by the following script
+```
+./filter_cdf_file.py <CDF-input> <CDF-output>
+```
+
+The script accepts downloaded datasets in the CDF format only.
+
 ### Testing Support Variables - `eoxmagmod`
 
 The support variables (Sun ephemeris, magnetic coordinates or dipole axis
-parameters) can be tested by the follow script.
+parameters) can be tested by the following script.
 ```
 ./test_file_eoxmagmod.py <tested_file>
 ```
@@ -82,7 +111,7 @@ The script accepts downloaded datasets in both the CDF and CSV format.
 ### Testing Support Variables - `apexpy`
 
 The support variables (Sun ephemeris or magnetic coordinates)
-can be tested by the follow script.
+can be tested by the following script.
 ```
 ./test_file_apexpy.py <tested_file>
 ```
