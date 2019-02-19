@@ -405,9 +405,13 @@ else
     # remove unnecessary or conflicting component paths
     { ex "$SETTINGS" || /bin/true ; } <<END
 g/^COMPONENTS\s*=\s*(/,/^)/s/'eoxserver\.services\.ows\.wcs\.\*\*'/#&/
+g/^COMPONENTS\s*=\s*(/,/^)/s/'eoxserver\.services\.ows\.wms\.\*\*'/#&/
 g/^COMPONENTS\s*=\s*(/,/^)/s/'eoxserver\.services\.native\.\*\*'/#&/
 g/^COMPONENTS\s*=\s*(/,/^)/s/'eoxserver\.services\.gdal\.\*\*'/#&/
 g/^COMPONENTS\s*=\s*(/,/^)/s/'eoxserver\.services\.mapserver\.\*\*'/#&/
+g/^COMPONENTS\s*=\s*(/,/^)/s/'eoxserver\.services\.opensearch\.\*\*'/#&/
+g/^COMPONENTS\s*=\s*(/,/^)/s/'eoxserver\.resources\.coverages/#&/
+g/^COMPONENTS\s*=\s*(/,/^)/s/##\+/#/
 wq
 END
 
@@ -500,11 +504,8 @@ VIRES_TYPE2COL = {
 /^)/a
 # VIRES COMPONENTS - BEGIN - Do not edit or remove this line!
 COMPONENTS += (
-    'eoxserver.services.mapserver.wms.*',
     'vires.processes.*',
-    'vires.ows.**',
-    'vires.forward_models.*',
-    'vires.mapserver.**',
+    'vires.ows.wms.*',
 )
 # VIRES COMPONENTS - END - Do not edit or remove this line!
 .
@@ -884,16 +885,8 @@ then
     # load rangetypes
     python "$MNGCMD" vires_rangetype_load || true
 
-    # register models
+    # de-register models
     python "$MNGCMD" vires_model_remove --all
-    python "$MNGCMD" vires_model_add \
-        "SIFM" "IGRF12" "CHAOS-6-Combined" "CHAOS-6-Core" "CHAOS-6-Static" \
-        "MCO_SHA_2C" "MCO_SHA_2D" "MCO_SHA_2F" "MCO_SHA_2X" "MLI_SHA_2C" "MLI_SHA_2D" \
-        "MMA_SHA_2C-Primary" "MMA_SHA_2C-Secondary" \
-        "MMA_SHA_2F-Primary" "MMA_SHA_2F-Secondary" \
-        "MIO_SHA_2C-Primary" "MIO_SHA_2C-Secondary" \
-        "MIO_SHA_2D-Primary" "MIO_SHA_2D-Secondary" \
-        "CHAOS-6-MMA-Primary" "CHAOS-6-MMA-Secondary"
 fi
 
 #-------------------------------------------------------------------------------
