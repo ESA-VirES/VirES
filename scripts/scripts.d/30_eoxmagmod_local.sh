@@ -15,7 +15,7 @@ info "Installing EOxMagMod in from a local source directory ..."
 
 activate_virtualenv
 
-yum --assumeyes install wmm2015-lib wmm2015-devel qdipole  qdipole-devel
+yum --assumeyes install qdipole qdipole-devel
 
 # get rid of the previous build
 [ -d "$EOXMAGMOD_SOURCE_PATH/build" ] && rm -fvR "$EOXMAGMOD_SOURCE_PATH/build"
