@@ -405,9 +405,13 @@ else
     # remove unnecessary or conflicting component paths
     { ex "$SETTINGS" || /bin/true ; } <<END
 g/^COMPONENTS\s*=\s*(/,/^)/s/'eoxserver\.services\.ows\.wcs\.\*\*'/#&/
+g/^COMPONENTS\s*=\s*(/,/^)/s/'eoxserver\.services\.ows\.wms\.\*\*'/#&/
 g/^COMPONENTS\s*=\s*(/,/^)/s/'eoxserver\.services\.native\.\*\*'/#&/
 g/^COMPONENTS\s*=\s*(/,/^)/s/'eoxserver\.services\.gdal\.\*\*'/#&/
 g/^COMPONENTS\s*=\s*(/,/^)/s/'eoxserver\.services\.mapserver\.\*\*'/#&/
+g/^COMPONENTS\s*=\s*(/,/^)/s/'eoxserver\.services\.opensearch\.\*\*'/#&/
+g/^COMPONENTS\s*=\s*(/,/^)/s/'eoxserver\.resources\.coverages/#&/
+g/^COMPONENTS\s*=\s*(/,/^)/s/##\+/#/
 wq
 END
 
@@ -430,12 +434,14 @@ VIRES_CACHED_PRODUCTS = {
     "MCO_SHA_2C": "$VIRES_CACHE_DIR/SW_OPER_MCO_SHA_2C.shc",
     "MCO_SHA_2D": "$VIRES_CACHE_DIR/SW_OPER_MCO_SHA_2D.shc",
     "MCO_SHA_2F": "$VIRES_CACHE_DIR/SW_OPER_MCO_SHA_2F.shc",
+    "MCO_CHAOS6": "$VIRES_CACHE_DIR/SW_OPER_MCO_CHAOS6.shc",
     "MLI_SHA_2C": "$VIRES_CACHE_DIR/SW_OPER_MLI_SHA_2C.shc",
     "MLI_SHA_2D": "$VIRES_CACHE_DIR/SW_OPER_MLI_SHA_2D.shc",
     "MMA_SHA_2C": "$VIRES_CACHE_DIR/SW_OPER_MMA_SHA_2C.cdf",
     "MMA_SHA_2F": "$VIRES_CACHE_DIR/SW_OPER_MMA_SHA_2F.cdf",
     "MIO_SHA_2C": "$VIRES_CACHE_DIR/SW_OPER_MIO_SHA_2C.txt",
     "MIO_SHA_2D": "$VIRES_CACHE_DIR/SW_OPER_MIO_SHA_2D.txt",
+    "MMA_CHAOS6": "$VIRES_CACHE_DIR/SW_OPER_MMA_CHAOS6.cdf",
     "AUXAORBCNT": "$VIRES_CACHE_DIR/SW_OPER_AUXAORBCNT.cdf",
     "AUXBORBCNT": "$VIRES_CACHE_DIR/SW_OPER_AUXBORBCNT.cdf",
     "AUXCORBCNT": "$VIRES_CACHE_DIR/SW_OPER_AUXCORBCNT.cdf",
@@ -518,11 +524,8 @@ VIRES_TYPE2COL = {
 /^)/a
 # VIRES COMPONENTS - BEGIN - Do not edit or remove this line!
 COMPONENTS += (
-    'eoxserver.services.mapserver.wms.*',
     'vires.processes.*',
-    'vires.ows.**',
-    'vires.forward_models.*',
-    'vires.mapserver.**',
+    'vires.ows.wms.*',
 )
 # VIRES COMPONENTS - END - Do not edit or remove this line!
 .
@@ -902,15 +905,8 @@ then
     # load rangetypes
     python "$MNGCMD" vires_rangetype_load || true
 
-    # register models
+    # de-register models
     python "$MNGCMD" vires_model_remove --all
-    python "$MNGCMD" vires_model_add \
-        "SIFM" "IGRF12" "CHAOS-6-Combined" "CHAOS-6-Core" "CHAOS-6-Static" \
-        "MCO_SHA_2C" "MCO_SHA_2D" "MCO_SHA_2F" "MLI_SHA_2C" "MLI_SHA_2D" \
-        "MMA_SHA_2C-Primary" "MMA_SHA_2C-Secondary" \
-        "MMA_SHA_2F-Primary" "MMA_SHA_2F-Secondary" \
-        "MIO_SHA_2C-Primary" "MIO_SHA_2C-Secondary" \
-        "MIO_SHA_2D-Primary" "MIO_SHA_2D-Secondary"
 fi
 
 #-------------------------------------------------------------------------------
