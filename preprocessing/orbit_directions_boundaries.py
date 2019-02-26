@@ -158,21 +158,19 @@ def _write_orbit_direction_boudaries(cdf, orbit_direction_boundaries,
         )
         cdf[variable].attrs.update(attrs)
 
-    cdf.attrs.update({
-        "TITLE": "%s (%s)" % (orbit_direction_boundaries.label, product_id),
-        "CREATOR": CDF_CREATOR,
-        "CREATED": (
-            datetime.utcnow().replace(microsecond=0)
-        ).isoformat() + "Z",
-        "SOURCES": [
-            _get_product_id(product)
-            for _, _, product in product_registry.ranges
-        ],
-        "SOURCE_TIME_RANGES": [
-            "%sZ/%sZ" % (start, end)
-            for start, end, _ in product_registry.ranges
-        ],
-    })
+    cdf.attrs["CREATOR"] = CDF_CREATOR
+    cdf.attrs["CREATED"] = (
+        datetime.utcnow().replace(microsecond=0)
+    ).isoformat() + "Z"
+    cdf.attrs["TITLE"] = product_id
+    cdf.attrs["PRODUCT_DESCRIPTION"] = orbit_direction_boundaries.label
+    cdf.attrs["SOURCES"] = [
+        _get_product_id(product) for _, _, product in product_registry.ranges
+    ]
+    cdf.attrs["SOURCE_TIME_RANGES"] = [
+        "%sZ/%sZ" % (start, end) for start, end, _ in product_registry.ranges
+    ]
+
     _set_variable(cdf, "Timestamp", orbit_direction_boundaries.times, {
         "UNITS": "-",
         "DESCRIPTION": "Time stamp",
@@ -281,7 +279,6 @@ class ExtremaBase(object):
 
     def verify(self):
         """ Verify data. """
-
         times = self.times
         type_flags = self.type_flags
         pass_flags = self.pass_flags
@@ -290,18 +287,28 @@ class ExtremaBase(object):
             raise DataIntegrityError("Times are not strictly increasing!")
 
         flags = type_flags[type_flags != FLAG_MIDDLE]
+
+        # Every odd is a start. Every even is an end. Starts and ends are paired.
         if (
                 (flags[::2] != FLAG_START).any() or
                 (flags[1::2] != FLAG_END).any() or
-                flags.size % 2 != 0
+                flags.size % 2 != 0 or (type_flags.size and not flags.size)
             ):
-            raise DataIntegrityError("Block flags mismatch!")
+            raise DataIntegrityError(
+                "Wrong block boundaries! Starts and ends are not alternating."
+            )
 
         idx_start, = (type_flags == FLAG_START).nonzero()
         idx_stop, = (type_flags == FLAG_END).nonzero()
 
         if (pass_flags[idx_stop] != FLAG_UNDEFINED).any():
             raise DataIntegrityError("Orbit direction flags mismatch!")
+
+        # An end is always followed by a start.
+        if ((idx_start[1:] - idx_stop[:-1]) != 1).any():
+            raise DataIntegrityError(
+                "Wrong block boundaries! An end is not followed by a start!"
+            )
 
         for start, stop in zip(idx_start, idx_stop):
             # flags within a block must be alternating directions
