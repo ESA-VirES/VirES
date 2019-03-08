@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 #-------------------------------------------------------------------------------
 #
-# This script fixes the incorrect dimension of the EIFx_LP product U_orbit
-# variable.
+# This script fixes the incorrect Nx1 dimensions of a Swarm products
+# in CDF format.
 #
 # Author: Martin Paces <martin.paces@eox.at>
 #
