@@ -482,6 +482,20 @@ VIRES_TYPE2COL = {
     },
 }
 
+# extra sampled collections
+VIRES_EXTRA_SAMPLED_COLLECTIONS = {
+    "SW_OPER_EEFATMS_2F",
+    "SW_OPER_EEFBTMS_2F",
+    "SW_OPER_EEFCTMS_2F",
+}
+
+# collections requiring samples grouping
+VIRES_GROUPED_SAMPLES_COLLECTIONS = {
+    "SW_OPER_TECATMS_2F",
+    "SW_OPER_TECBTMS_2F",
+    "SW_OPER_TECCTMS_2F",
+}
+
 # VIRES APPS - END - Do not edit or remove this line!
 .
 /^COMPONENTS\s*=/
