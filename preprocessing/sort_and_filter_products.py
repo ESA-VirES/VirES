@@ -55,6 +55,7 @@ def check_inputs(argv):
     ignore_extension = False
     allow_overlaps = False
     latest_baseline = False
+    latest_extent = False
 
     it_argv = iter(argv)
     for arg in it_argv:
@@ -66,6 +67,8 @@ def check_inputs(argv):
             allow_overlaps = True
         elif arg in ('-l', '--latest-baseline'):
             latest_baseline = True
+        elif arg in ('-n', '--latest-extent'):
+            latest_extent = True
         elif arg == '--':
             break
         else:
@@ -80,27 +83,33 @@ def check_inputs(argv):
         "ignore_extension": ignore_extension,
         "allow_overlaps": allow_overlaps,
         "latest_baseline": latest_baseline,
+        "latest_extent": latest_extent,
     }
 
 
 def main(invert_filter, filename_pattern, ignore_extension, allow_overlaps,
-         latest_baseline):
+         latest_baseline, latest_extent):
     filtered_products = filter_products(
         read_products(sys.stdin, filename_pattern, ignore_extension),
-        invert_filter, allow_overlaps, latest_baseline,
+        invert_filter, allow_overlaps, latest_baseline, latest_extent,
     )
 
     for path in filtered_products:
         print(path)
 
 
-def filter_products(items, invert_filter, allow_overlaps, latest_baseline):
+def filter_products(items, invert_filter, allow_overlaps, latest_baseline,
+                    latest_extent):
     filters = []
 
     if latest_baseline:
         filters.append(filter_latest_baseline_only)
 
-    if not allow_overlaps:
+    if allow_overlaps:
+        filters.append(sort_products)
+    elif latest_extent:
+        filters.append(filter_latest_extent_nonoverlapping)
+    else:
         filters.append(filter_latest_nonoverlapping)
 
     accepted, rejected = list(items), []
@@ -109,8 +118,7 @@ def filter_products(items, invert_filter, allow_overlaps, latest_baseline):
         accepted, rejected_tmp = filter_(accepted)
         rejected += rejected_tmp
 
-    key = lambda v: (v.start, v.end, v.baseline, v.version)
-    for item in sorted(rejected if invert_filter else accepted, key=key):
+    for item in rejected if invert_filter else accepted:
         yield item.path
 
 
@@ -148,6 +156,11 @@ def read_products(source, filename_pattern, ignore_extension=False):
         yield Product(start_time, end_time, baseline, version, path)
 
 
+def sort_products(items):
+    key = lambda v: (v.start, v.end, v.baseline, v.version)
+    return sorted(items, key=key), []
+
+
 def filter_latest_baseline_only(items):
     """ Filter latest baseline only products. """
     if not items:
@@ -166,6 +179,15 @@ def filter_latest_nonoverlapping(items):
     sorted_intervals = SortedItervals()
     rejected = []
     key = lambda v: (v.baseline, v.version, v.start, v.end)
+    for item in sorted(items, key=key, reverse=True):
+        rejected.extend(sorted_intervals.fill_in(item.start, item.end, item))
+    return list(sorted_intervals), list(reversed(rejected))
+
+def filter_latest_extent_nonoverlapping(items):
+    """ Filter latest extent non-overlapping products. """
+    sorted_intervals = SortedItervals()
+    rejected = []
+    key = lambda v: (v.baseline, v.end, v.start, v.version)
     for item in sorted(items, key=key, reverse=True):
         rejected.extend(sorted_intervals.fill_in(item.start, item.end, item))
     return list(sorted_intervals), list(reversed(rejected))
