@@ -26,6 +26,7 @@ required_variables VIRES_LOGDIR VIRES_TMPDIR VIRES_CACHE_DIR
 required_variables VIRES_WPS_SERVICE_NAME VIRES_WPS_URL_PATH
 required_variables VIRES_WPS_TEMP_DIR VIRES_WPS_PERM_DIR VIRES_WPS_TASK_DIR
 required_variables VIRES_WPS_SOCKET VIRES_WPS_NPROC VIRES_WPS_MAX_JOBS
+required_variables VIRES_UPLOAD_DIR
 
 set_instance_variables
 
@@ -350,6 +351,8 @@ END
 
 { ex "$URLS" || /bin/true ; } <<END
 /^# ALLAUTH URLS - BEGIN/,/^# ALLAUTH URLS - END/d
+/^# NOAUTH URLS - BEGIN/,/^# NOAUTH URLS - END/d
+/^# VIRES URLS - BEGIN/,/^# VIRES URLS - END/d
 wq
 END
 
@@ -389,6 +392,7 @@ INSTALLED_APPS += (
     'vires',
 )
 
+VIRES_UPLOAD_DIR = "$VIRES_UPLOAD_DIR"
 VIRES_AUX_DB_DST = "$VIRES_CACHE_DIR/aux_dst.cdf"
 VIRES_AUX_DB_KP = "$VIRES_CACHE_DIR/aux_kp.cdf"
 VIRES_AUX_DB_IBIA = "$VIRES_CACHE_DIR/aux_ibia.cdf"
@@ -518,6 +522,51 @@ LOGGING['loggers']['vires'] = {
 .
 wq
 END
+
+    if [ "$CONFIGURE_ALLAUTH" == "YES" ]
+    then
+
+        # extending the EOxServer urls.py
+        ex "$URLS" <<END
+$ a
+# VIRES URLS - BEGIN - Do not edit or remove this line!
+from django.views.decorators.csrf import csrf_exempt
+from eoxs_allauth.decorators import log_access, authenticated_only
+import vires.views
+
+def allauth_wrapper(view):
+    return log_access(INFO, WARNING)(
+        authenticated_only(
+            csrf_exempt(view)
+        )
+    )
+
+urlpatterns += patterns('',
+    url(r'^custom_data/?$', allauth_wrapper(vires.views.custom_data_collection)),
+    url(r'^custom_data/(?P<identifier>[0-9a-f-]{36,36}/?$', allauth_wrapper(vires.views.custom_data_item)),
+)
+# VIRES URLS - END - Do not edit or remove this line!
+.
+wq
+END
+
+    else
+
+        # extending the EOxServer urls.py
+        ex "$URLS" <<END
+$ a
+# VIRES URLS - BEGIN - Do not edit or remove this line!
+import vires.views
+urlpatterns += patterns('',
+    url(r'^custom_data/?$', vires.views.custom_data_collection),
+    url(r'^custom_data/(?P<identifier>[0-9a-f-]{36,36}/?$', vires.views.custom_data_item),
+)
+# VIRES URLS - END - Do not edit or remove this line!
+.
+wq
+END
+
+    fi
 
 fi # end of VIRES configuration
 
@@ -840,7 +889,7 @@ info "Initializing EOxServer instance '${INSTANCE}' ..."
 python "$MNGCMD" collectstatic -l --noinput
 
 # setup new database
-python "$MNGCMD" migrate
+python "$MNGCMD" migrate --noinput
 
 #-------------------------------------------------------------------------------
 # STEP 8: APP-SPECIFIC INITIALISATION
@@ -850,9 +899,6 @@ if [ "$CONFIGURE_VIRES" == "YES" ]
 then
     # load rangetypes
     python "$MNGCMD" vires_rangetype_load || true
-
-    # de-register models
-    python "$MNGCMD" vires_model_remove --all
 fi
 
 #-------------------------------------------------------------------------------
