@@ -570,15 +570,15 @@ from eoxs_allauth.decorators import log_access, authenticated_only
 import vires.views
 
 def allauth_wrapper(view):
-    return log_access(INFO, WARNING)(
-        authenticated_only(
-            csrf_exempt(view)
-        )
-    )
+    view = csrf_exempt(view)
+    view = authenticated_only(view)
+    view = log_access(INFO, WARNING)(view)
+    return view
 
 urlpatterns += patterns('',
-    url(r'^custom_data/?$', allauth_wrapper(vires.views.custom_data_collection)),
-    url(r'^custom_data/(?P<identifier>[0-9a-f-]{36,36}/?$', allauth_wrapper(vires.views.custom_data_item)),
+    url(r'^custom_data/(?P<identifier>[0-9a-f-]{36,36})?$', allauth_wrapper(vires.views.custom_data)),
+    url(r'^custom_model/(?P<identifier>[0-9a-f-]{36,36})?$', allauth_wrapper(vires.views.custom_model)),
+    url(r'^client_state/(?P<identifier>[0-9a-f-]{36,36})?$', allauth_wrapper(vires.views.client_state)),
 )
 # VIRES URLS - END - Do not edit or remove this line!
 .
@@ -593,8 +593,9 @@ $ a
 # VIRES URLS - BEGIN - Do not edit or remove this line!
 import vires.views
 urlpatterns += patterns('',
-    url(r'^custom_data/?$', vires.views.custom_data_collection),
-    url(r'^custom_data/(?P<identifier>[0-9a-f-]{36,36}/?$', vires.views.custom_data_item),
+    url(r'^custom_data/(?P<identifier>[0-9a-f-]{36,36})?$', vires.views.custom_data),
+    url(r'^custom_model/(?P<identifier>[0-9a-f-]{36,36})?$', vires.views.custom_model),
+    url(r'^client_state/(?P<identifier>[0-9a-f-]{36,36})?$', vires.views.client_state),
 )
 # VIRES URLS - END - Do not edit or remove this line!
 .
