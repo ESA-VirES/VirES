@@ -560,6 +560,7 @@ wq
 END
 
     if [ "$CONFIGURE_ALLAUTH" == "YES" ]
+    then
 
         # extending the EOxServer urls.py
         ex "$URLS" <<END
