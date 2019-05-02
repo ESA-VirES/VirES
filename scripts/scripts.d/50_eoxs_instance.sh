@@ -530,6 +530,7 @@ END
         ex "$URLS" <<END
 $ a
 # VIRES URLS - BEGIN - Do not edit or remove this line!
+from logging import INFO, WARNING
 from django.views.decorators.csrf import csrf_exempt
 from eoxs_allauth.decorators import log_access, authenticated_only
 import vires.views
