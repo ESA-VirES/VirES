@@ -923,11 +923,11 @@ python "$MNGCMD" collectstatic -l --noinput
 #       the apps' models dependencies and does not create the models
 #       in the right order.
 ##  setup this procedure to ensure that migrations run in the right order
-python "$MNGCMD" migrate sites
-python "$MNGCMD" migrate contenttypes
-python "$MNGCMD" migrate admin
-python "$MNGCMD" migrate auth
-python "$MNGCMD" migrate
+#python "$MNGCMD" migrate sites
+#python "$MNGCMD" migrate contenttypes
+#python "$MNGCMD" migrate admin
+#python "$MNGCMD" migrate auth
+python "$MNGCMD" migrate --noinput
 
 #-------------------------------------------------------------------------------
 # STEP 8: APP-SPECIFIC INITIALISATION
@@ -937,9 +937,6 @@ if [ "$CONFIGURE_VIRES" == "YES" ]
 then
     # load rangetypes
     python "$MNGCMD" vires_rangetype_load || true
-
-    # de-register models
-    python "$MNGCMD" vires_model_remove --all
 fi
 
 #-------------------------------------------------------------------------------

@@ -859,7 +859,7 @@ info "Initializing EOxServer instance '${INSTANCE}' ..."
 python "$MNGCMD" collectstatic -l --noinput
 
 # setup new database
-python "$MNGCMD" migrate
+python "$MNGCMD" migrate --noinput
 
 #-------------------------------------------------------------------------------
 # STEP 8: APP-SPECIFIC INITIALISATION
@@ -869,9 +869,6 @@ if [ "$CONFIGURE_VIRES" == "YES" ]
 then
     # load rangetypes
     python "$MNGCMD" vires_rangetype_load || true
-
-    # de-register models
-    python "$MNGCMD" vires_model_remove --all
 fi
 
 #-------------------------------------------------------------------------------
