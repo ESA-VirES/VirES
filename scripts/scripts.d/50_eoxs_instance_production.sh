@@ -918,9 +918,6 @@ if [ "$CONFIGURE_VIRES" == "YES" ]
 then
     # load rangetypes
     python "$MNGCMD" vires_rangetype_load || true
-
-    # de-register models
-    python "$MNGCMD" vires_model_remove --all
 fi
 
 #-------------------------------------------------------------------------------
