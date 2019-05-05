@@ -114,6 +114,7 @@ do
     WSGIScriptAlias "${BASE_URL_PATH:-/}" "${INSTROOT}/${INSTANCE}/${INSTANCE}/wsgi.py"
     <Directory "${INSTROOT}/${INSTANCE}/${INSTANCE}">
         <Files "wsgi.py">
+            WSGIPassAuthorization On
             WSGIProcessGroup $EOXS_WSGI_PROCESS_GROUP
             WSGIApplicationGroup %{GLOBAL}
             Header set Access-Control-Allow-Origin "*"
@@ -386,6 +387,7 @@ END
 
 { ex "$URLS" || /bin/true ; } <<END
 /^# ALLAUTH URLS - BEGIN/,/^# ALLAUTH URLS - END/d
+/^# VIRES URLS - BEGIN/,/^# VIRES URLS - END/d
 wq
 END
 
