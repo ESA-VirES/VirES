@@ -513,6 +513,8 @@ for satellite, collections in VIRES_SAT2COL.items():
     VIRES_COL2SAT.update(
         (collection, satellite) for collection in collections
     )
+# custom data mapping
+VIRES_COL2SAT["USER_DATA"] = "U"
 
 # relations between range-type satellite collections
 VIRES_TYPE2COL = {
