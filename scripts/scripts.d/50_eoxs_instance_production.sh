@@ -386,6 +386,7 @@ END
 
 { ex "$URLS" || /bin/true ; } <<END
 /^# ALLAUTH URLS - BEGIN/,/^# ALLAUTH URLS - END/d
+/^# VIRES URLS - BEGIN/,/^# VIRES URLS - END/d
 wq
 END
 
