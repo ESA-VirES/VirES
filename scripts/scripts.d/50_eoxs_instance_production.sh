@@ -115,6 +115,7 @@ do
     WSGIScriptAlias "${BASE_URL_PATH:-/}" "${INSTROOT}/${INSTANCE}/${INSTANCE}/wsgi.py"
     <Directory "${INSTROOT}/${INSTANCE}/${INSTANCE}">
         <Files "wsgi.py">
+            WSGIPassAuthorization On
             WSGIProcessGroup $EOXS_WSGI_PROCESS_GROUP
             WSGIApplicationGroup %{GLOBAL}
             Header set Access-Control-Allow-Origin "*"
