@@ -54,6 +54,9 @@ export VIRES_TMPDIR=${VIRES_TMPDIR:-/tmp/vires}
 # location of the data cache directory
 export VIRES_CACHE_DIR=${VIRES_CACHE_DIR:-$VIRES_ROOT/cache}
 
+# location of the data upload directory
+export VIRES_UPLOAD_DIR=${VIRES_UPLOAD_DIR:-$VIRES_ROOT/upload}
+
 # directory where the PosgreSQL DB stores the files
 export VIRES_PGDATA_DIR=${VIRES_PGDATA_DIR:-/var/lib/pgsql/data}
 

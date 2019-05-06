@@ -27,6 +27,7 @@ required_variables VIRES_LOGDIR VIRES_TMPDIR VIRES_CACHE_DIR
 required_variables VIRES_WPS_SERVICE_NAME VIRES_WPS_URL_PATH
 required_variables VIRES_WPS_TEMP_DIR VIRES_WPS_PERM_DIR VIRES_WPS_TASK_DIR
 required_variables VIRES_WPS_SOCKET VIRES_WPS_NPROC VIRES_WPS_MAX_JOBS
+required_variables VIRES_UPLOAD_DIR
 
 set_instance_variables
 
@@ -387,6 +388,7 @@ END
 
 { ex "$URLS" || /bin/true ; } <<END
 /^# ALLAUTH URLS - BEGIN/,/^# ALLAUTH URLS - END/d
+/^# NOAUTH URLS - BEGIN/,/^# NOAUTH URLS - END/d
 /^# VIRES URLS - BEGIN/,/^# VIRES URLS - END/d
 wq
 END
@@ -427,6 +429,7 @@ INSTALLED_APPS += (
     'vires',
 )
 
+VIRES_UPLOAD_DIR = "$VIRES_UPLOAD_DIR"
 VIRES_AUX_DB_DST = "$VIRES_CACHE_DIR/aux_dst.cdf"
 VIRES_AUX_DB_KP = "$VIRES_CACHE_DIR/aux_kp.cdf"
 VIRES_AUX_DB_IBIA = "$VIRES_CACHE_DIR/aux_ibia.cdf"
@@ -511,6 +514,8 @@ for satellite, collections in VIRES_SAT2COL.items():
     VIRES_COL2SAT.update(
         (collection, satellite) for collection in collections
     )
+# custom data mapping
+VIRES_COL2SAT["USER_DATA"] = "U"
 
 # relations between range-type satellite collections
 VIRES_TYPE2COL = {
@@ -556,6 +561,53 @@ LOGGING['loggers']['vires'] = {
 .
 wq
 END
+
+    if [ "$CONFIGURE_ALLAUTH" == "YES" ]
+    then
+
+        # extending the EOxServer urls.py
+        ex "$URLS" <<END
+$ a
+# VIRES URLS - BEGIN - Do not edit or remove this line!
+from logging import INFO, WARNING
+from django.views.decorators.csrf import csrf_exempt
+from eoxs_allauth.decorators import log_access, authenticated_only
+import vires.views
+
+def allauth_wrapper(view):
+    view = csrf_exempt(view)
+    view = authenticated_only(view)
+    view = log_access(INFO, WARNING)(view)
+    return view
+
+urlpatterns += patterns('',
+    url(r'^custom_data/(?P<identifier>[0-9a-f-]{36,36})?$', allauth_wrapper(vires.views.custom_data)),
+    url(r'^custom_model/(?P<identifier>[0-9a-f-]{36,36})?$', allauth_wrapper(vires.views.custom_model)),
+    url(r'^client_state/(?P<identifier>[0-9a-f-]{36,36})?$', allauth_wrapper(vires.views.client_state)),
+)
+# VIRES URLS - END - Do not edit or remove this line!
+.
+wq
+END
+
+    else
+
+        # extending the EOxServer urls.py
+        ex "$URLS" <<END
+$ a
+# VIRES URLS - BEGIN - Do not edit or remove this line!
+import vires.views
+urlpatterns += patterns('',
+    url(r'^custom_data/(?P<identifier>[0-9a-f-]{36,36})?$', vires.views.custom_data),
+    url(r'^custom_model/(?P<identifier>[0-9a-f-]{36,36})?$', vires.views.custom_model),
+    url(r'^client_state/(?P<identifier>[0-9a-f-]{36,36})?$', vires.views.client_state),
+)
+# VIRES URLS - END - Do not edit or remove this line!
+.
+wq
+END
+
+    fi
 
 fi # end of VIRES configuration
 
