@@ -27,6 +27,7 @@ required_variables VIRES_LOGDIR VIRES_TMPDIR VIRES_CACHE_DIR
 required_variables VIRES_WPS_SERVICE_NAME VIRES_WPS_URL_PATH
 required_variables VIRES_WPS_TEMP_DIR VIRES_WPS_PERM_DIR VIRES_WPS_TASK_DIR
 required_variables VIRES_WPS_SOCKET VIRES_WPS_NPROC VIRES_WPS_MAX_JOBS
+required_variables VIRES_UPLOAD_DIR
 
 set_instance_variables
 
@@ -114,6 +115,7 @@ do
     WSGIScriptAlias "${BASE_URL_PATH:-/}" "${INSTROOT}/${INSTANCE}/${INSTANCE}/wsgi.py"
     <Directory "${INSTROOT}/${INSTANCE}/${INSTANCE}">
         <Files "wsgi.py">
+            WSGIPassAuthorization On
             WSGIProcessGroup $EOXS_WSGI_PROCESS_GROUP
             WSGIApplicationGroup %{GLOBAL}
             Header set Access-Control-Allow-Origin "*"
@@ -386,6 +388,8 @@ END
 
 { ex "$URLS" || /bin/true ; } <<END
 /^# ALLAUTH URLS - BEGIN/,/^# ALLAUTH URLS - END/d
+/^# NOAUTH URLS - BEGIN/,/^# NOAUTH URLS - END/d
+/^# VIRES URLS - BEGIN/,/^# VIRES URLS - END/d
 wq
 END
 
@@ -425,6 +429,7 @@ INSTALLED_APPS += (
     'vires',
 )
 
+VIRES_UPLOAD_DIR = "$VIRES_UPLOAD_DIR"
 VIRES_AUX_DB_DST = "$VIRES_CACHE_DIR/aux_dst.cdf"
 VIRES_AUX_DB_KP = "$VIRES_CACHE_DIR/aux_kp.cdf"
 VIRES_AUX_DB_IBIA = "$VIRES_CACHE_DIR/aux_ibia.cdf"
@@ -509,6 +514,8 @@ for satellite, collections in VIRES_SAT2COL.items():
     VIRES_COL2SAT.update(
         (collection, satellite) for collection in collections
     )
+# custom data mapping
+VIRES_COL2SAT["USER_DATA"] = "U"
 
 # relations between range-type satellite collections
 VIRES_TYPE2COL = {
@@ -516,6 +523,20 @@ VIRES_TYPE2COL = {
         "A": "SW_OPER_MAGA_LR_1B",
         "C": "SW_OPER_MAGC_LR_1B",
     },
+}
+
+# extra sampled collections
+VIRES_EXTRA_SAMPLED_COLLECTIONS = {
+    "SW_OPER_EEFATMS_2F",
+    "SW_OPER_EEFBTMS_2F",
+    "SW_OPER_EEFCTMS_2F",
+}
+
+# collections requiring samples grouping
+VIRES_GROUPED_SAMPLES_COLLECTIONS = {
+    "SW_OPER_TECATMS_2F",
+    "SW_OPER_TECBTMS_2F",
+    "SW_OPER_TECCTMS_2F",
 }
 
 # VIRES APPS - END - Do not edit or remove this line!
@@ -540,6 +561,53 @@ LOGGING['loggers']['vires'] = {
 .
 wq
 END
+
+    if [ "$CONFIGURE_ALLAUTH" == "YES" ]
+    then
+
+        # extending the EOxServer urls.py
+        ex "$URLS" <<END
+$ a
+# VIRES URLS - BEGIN - Do not edit or remove this line!
+from logging import INFO, WARNING
+from django.views.decorators.csrf import csrf_exempt
+from eoxs_allauth.decorators import log_access, authenticated_only
+import vires.views
+
+def allauth_wrapper(view):
+    view = csrf_exempt(view)
+    view = authenticated_only(view)
+    view = log_access(INFO, WARNING)(view)
+    return view
+
+urlpatterns += patterns('',
+    url(r'^custom_data/(?P<identifier>[0-9a-f-]{36,36})?$', allauth_wrapper(vires.views.custom_data)),
+    url(r'^custom_model/(?P<identifier>[0-9a-f-]{36,36})?$', allauth_wrapper(vires.views.custom_model)),
+    url(r'^client_state/(?P<identifier>[0-9a-f-]{36,36})?$', allauth_wrapper(vires.views.client_state)),
+)
+# VIRES URLS - END - Do not edit or remove this line!
+.
+wq
+END
+
+    else
+
+        # extending the EOxServer urls.py
+        ex "$URLS" <<END
+$ a
+# VIRES URLS - BEGIN - Do not edit or remove this line!
+import vires.views
+urlpatterns += patterns('',
+    url(r'^custom_data/(?P<identifier>[0-9a-f-]{36,36})?$', vires.views.custom_data),
+    url(r'^custom_model/(?P<identifier>[0-9a-f-]{36,36})?$', vires.views.custom_model),
+    url(r'^client_state/(?P<identifier>[0-9a-f-]{36,36})?$', vires.views.client_state),
+)
+# VIRES URLS - END - Do not edit or remove this line!
+.
+wq
+END
+
+    fi
 
 fi # end of VIRES configuration
 
@@ -890,11 +958,11 @@ python "$MNGCMD" collectstatic -l --noinput
 #       the apps' models dependencies and does not create the models
 #       in the right order.
 ##  setup this procedure to ensure that migrations run in the right order
-python "$MNGCMD" migrate sites
-python "$MNGCMD" migrate contenttypes
-python "$MNGCMD" migrate admin
-python "$MNGCMD" migrate auth
-python "$MNGCMD" migrate
+#python "$MNGCMD" migrate sites
+#python "$MNGCMD" migrate contenttypes
+#python "$MNGCMD" migrate admin
+#python "$MNGCMD" migrate auth
+python "$MNGCMD" migrate --noinput
 
 #-------------------------------------------------------------------------------
 # STEP 8: APP-SPECIFIC INITIALISATION
@@ -904,9 +972,6 @@ if [ "$CONFIGURE_VIRES" == "YES" ]
 then
     # load rangetypes
     python "$MNGCMD" vires_rangetype_load || true
-
-    # de-register models
-    python "$MNGCMD" vires_model_remove --all
 fi
 
 #-------------------------------------------------------------------------------

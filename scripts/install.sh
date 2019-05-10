@@ -87,6 +87,7 @@ SYSTEM_NAME="VirES"
     _mkdir "$VIRES_USER:$VIRES_GROUP" 0775 "$VIRES_DATADIR" "$SYSTEM_NAME long-term data storage directory"
     _mkdir "$VIRES_USER:$VIRES_GROUP" 0775 "$VIRES_TMPDIR" "$SYSTEM_NAME temporary storage directory"
     _mkdir "$VIRES_USER:$VIRES_GROUP" 0775 "$VIRES_CACHE_DIR" "$SYSTEM_NAME data cache directory"
+    _mkdir "$VIRES_USER:$VIRES_GROUP" 0775 "$VIRES_UPLOAD_DIR" "$SYSTEM_NAME data upload directory"
 
     if is_virtualenv_enabled
     then

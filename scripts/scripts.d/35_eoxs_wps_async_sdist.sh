@@ -9,7 +9,7 @@
 . `dirname $0`/../lib_logging.sh
 . `dirname $0`/../lib_virtualenv.sh
 
-SOURCE_URL="https://github.com/DAMATS/WPS-Backend/archive/0.3.0.tar.gz"
+SOURCE_URL="https://github.com/DAMATS/WPS-Backend/archive/0.4.0.tar.gz"
 
 info "Installing EOxServer asynchronous WPS backend."
 
