@@ -739,10 +739,11 @@ END
 $ a
 # ALLAUTH URLS - BEGIN - Do not edit or remove this line!
 import eoxs_allauth.views
+from vires.client_state import parse_client_state
 from django.views.generic import TemplateView
 
 urlpatterns += patterns('',
-    url(r'^/?$', eoxs_allauth.views.workspace),
+    url(r'^/?$', eoxs_allauth.views.workspace(parse_client_state)),
     url(r'^ows$', eoxs_allauth.views.wrapped_ows),
     url(r'^openows$', eoxs_allauth.views.open_ows),
     url(r'^accounts/', include('eoxs_allauth.urls')),
