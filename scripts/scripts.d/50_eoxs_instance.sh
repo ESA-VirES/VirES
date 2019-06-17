@@ -40,7 +40,7 @@ required_variables EOXSMAXSIZE EOXSMAXPAGE
 
 if [ -z "$DBENGINE" -o -z "$DBNAME" ]
 then
-    load_db_conf `dirname $0`/../db.conf
+    load_db_conf "`dirname $0`/../db_eoxs.conf"
 fi
 required_variables DBENGINE DBNAME
 
