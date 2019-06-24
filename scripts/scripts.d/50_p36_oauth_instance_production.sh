@@ -156,14 +156,14 @@ LOGGING = {
         },
     },
     'handlers': {
-        'oauth_file': {
+        'server_log_file': {
             'level': 'DEBUG',
             'class': 'logging.handlers.WatchedFileHandler',
             'filename': '${OAUTHLOG}',
             'formatter': 'default',
             'filters': [],
         },
-        #'access_file': {
+        #'access_log_file': {
         #    'level': 'DEBUG',
         #    'class': 'logging.handlers.WatchedFileHandler',
         #    'filename': '${ACCESSLOG}',
@@ -195,7 +195,7 @@ LOGGING = {
             'propagate': False,
         },
         '': {
-            'handlers': ['oauth_file'],
+            'handlers': ['server_log_file'],
             #'level': 'INFO' if DEBUG else 'WARNING',
             'level': 'DEBUG' if DEBUG else 'INFO',
             'propagate': False,
@@ -423,15 +423,15 @@ SERVER_EMAIL = '$SERVER_EMAIL'
 # OAUTH LOGGING - BEGIN - Do not edit or remove this line!
 LOGGING['loggers'].update({
     'vires_oauth': {
-        'handlers': ['access_file'],
+        'handlers': ['server_log_file'],
         'level': 'DEBUG' if DEBUG else 'INFO',
         'propagate': False,
     },
-    'django.request': {
-        'handlers': ['access_file'],
-        'level': 'DEBUG' if DEBUG else 'INFO',
-        'propagate': True,
-    },
+    #'django.request': {
+    #    'handlers': ['access_log_file'],
+    #    'level': 'DEBUG' if DEBUG else 'INFO',
+    #    'propagate': False,
+    #},
 })
 # OAUTH LOGGING - END - Do not edit or remove this line!
 .
