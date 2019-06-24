@@ -386,19 +386,8 @@ LOGGING['loggers'].update({
 wq
 END
 
-# #-------------------------------------------------------------------------------
-# STEP 7: DJANGO INITIALISATION
-info "Initializing Django instance '${INSTANCE}' ..."
-
-# collect static files
-python "$MNGCMD" collectstatic -l --noinput
-
-# setup new database
-python "$MNGCMD" migrate --noinput
-
-
 #-------------------------------------------------------------------------------
-# STEP 8: setup logfiles
+# STEP 7: setup logfiles
 
 
 _create_log_file() {
@@ -420,7 +409,6 @@ $OAUTHLOG {
     minsize 1M
     rotate 560
     compress
-    missingok
 }
 $ACCESSLOG {
     copytruncate
@@ -428,7 +416,6 @@ $ACCESSLOG {
     minsize 1M
     rotate 560
     compress
-    missingok
 }
 $GUNICORN_ACCESS_LOG {
     copytruncate
@@ -436,7 +423,6 @@ $GUNICORN_ACCESS_LOG {
     minsize 1M
     rotate 560
     compress
-    missingok
 }
 $GUNICORN_ERROR_LOG {
     copytruncate
@@ -444,9 +430,18 @@ $GUNICORN_ERROR_LOG {
     minsize 1M
     rotate 560
     compress
-    missingok
 }
 END
+
+#-------------------------------------------------------------------------------
+# STEP 8: DJANGO INITIALISATION
+info "Initializing Django instance '${INSTANCE}' ..."
+
+# collect static files
+python "$MNGCMD" collectstatic -l --noinput
+
+# setup new database
+python "$MNGCMD" migrate --noinput
 
 #-------------------------------------------------------------------------------
 # STEP 9: CHANGE OWNERSHIP OF THE CONFIGURATION FILES

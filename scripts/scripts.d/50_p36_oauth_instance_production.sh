@@ -443,19 +443,8 @@ LOGGING['loggers'].update({
 wq
 END
 
-# #-------------------------------------------------------------------------------
-# STEP 7: DJANGO INITIALISATION
-info "Initializing Django instance '${INSTANCE}' ..."
-
-# collect static files
-python "$MNGCMD" collectstatic -l --noinput
-
-# setup new database
-python "$MNGCMD" migrate --noinput
-
-
 #-------------------------------------------------------------------------------
-# STEP 8: setup logfiles
+# STEP 7: setup logfiles
 
 
 _create_log_file() {
@@ -500,6 +489,16 @@ $GUNICORN_ERROR_LOG {
     compress
 }
 END
+
+#-------------------------------------------------------------------------------
+# STEP 8: DJANGO INITIALISATION
+info "Initializing Django instance '${INSTANCE}' ..."
+
+# collect static files
+python "$MNGCMD" collectstatic -l --noinput
+
+# setup new database
+python "$MNGCMD" migrate --noinput
 
 #-------------------------------------------------------------------------------
 # STEP 9: CHANGE OWNERSHIP OF THE CONFIGURATION FILES
