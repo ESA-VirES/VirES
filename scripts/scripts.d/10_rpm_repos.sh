@@ -19,16 +19,6 @@ yum --assumeyes install install epel-release
 # EOX - EOX RPM repository 
 rpm -q --quiet eox-release || rpm -Uvh http://yum.packages.eox.at/el/eox-release-7-0.noarch.rpm
 
-# PosgresSQL 9.6 CentOS-7 x86_64
-rpm -q --quiet pgdg-redhat-repo || rpm -Uvh https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
-
-ex /etc/yum.repos.d/pgdg-redhat-all.repo -V <<END
-1,\$s/^\\s*enabled\\s*=.*\$/enabled=0/
-/\[pgdg96\]/
-+1,/^gpgkey/s/^\\s*enabled\\s*=.*\$/enabled=1/
-wq
-END
-
 #info "Enabling EOX testing repository for explicitly listed packages ..."
 #
 #ex /etc/yum.repos.d/eox-testing.repo <<END
