@@ -23,14 +23,11 @@ DEBUG="True"
 
 activate_venv
 
-#required_variables VIRES_SERVER_HOME
 required_variables VIRES_USER VIRES_GROUP VIRES_INSTALL_USER VIRES_INSTALL_GROUP
 required_variables P3_VENV_ROOT
 
 set_instance_variables
 
-#required_variables HOSTNAME
-#required_variables FIXTURES_DIR
 required_variables INSTANCE INSTROOT
 required_variables SETTINGS WSGI_FILE URLS WSGI MNGCMD
 required_variables STATIC_URL_PATH STATIC_DIR
@@ -92,7 +89,7 @@ DATABASES = {
         'USER': '$DBUSER',
         'PASSWORD': '$DBPASSWD',
         'HOST': '$DBHOST',
-        'PORT': '$DBPORT', 
+        'PORT': '$DBPORT',
     }
 }
 .
