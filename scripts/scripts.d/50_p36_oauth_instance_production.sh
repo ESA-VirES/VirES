@@ -104,7 +104,7 @@ END
 fi
 
 # enter new settings
-{ex "$SETTINGS" || /bin/true ; } <<END
+{ ex "$SETTINGS" || /bin/true ; } <<END
 /BASE_DIR/
 i
 PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
