@@ -81,7 +81,7 @@ export OAUTH_SERVER_HOME=${OAUTH_SERVER_HOME:-$VIRES_ROOT/oauth}
 # location of the OAuth2 Server URL
 export OAUTH_SERVER_HOST=${OAUTH_SERVER_HOST:-127.0.0.1:8000}
 # OAuth2 server - service name
-export OAUTH_SERVICE_NAME=${VIRES_WPS_SERVICE_NAME:-oauth}
+export OAUTH_SERVICE_NAME=${OAUTH_SERVICE_NAME:-oauth}
 
 # WSGI daemon - number of processes to be used by the VirES EOxServer instances
 export EOXS_WSGI_NPROC=${EOXS_WSGI_NPROC:-4}
