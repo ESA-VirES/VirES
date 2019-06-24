@@ -19,10 +19,11 @@ OAUTH_SERVER_NPROC=${OAUTH_SERVER_NPROC:-2}
 # number of threds per server process
 OAUTH_SERVER_NTHREAD=${OAUTH_SERVER_NTHREAD:-2}
 
-DEBUG="True"
+DEBUG="False"
 
 activate_venv
 
+required_variables HOSTNAME VIRES_HOSTNAME VIRES_HOSTNAME_INTERNAL VIRES_IP_ADDRESS
 required_variables VIRES_USER VIRES_GROUP VIRES_INSTALL_USER VIRES_INSTALL_GROUP
 required_variables P3_VENV_ROOT
 
@@ -35,6 +36,18 @@ required_variables OAUTHLOG ACCESSLOG
 required_variables OAUTH_SERVER_HOST OAUTH_SERVICE_NAME
 required_variables GUNICORN_ACCESS_LOG GUNICORN_ERROR_LOG
 required_variables OAUTH_BASE_URL_PATH
+required_variables SMTP_HOSTNAME SMTP_DEFAULT_SENDER SERVER_EMAIL
+
+SMTP_USE_TLS=${SMTP_USE_TLS:-YES}
+SMTP_PORT=${SMTP_PORT:-25}
+
+# e-mail backend settings
+if [ "$SMTP_USE_TLS" == YES -o "$SMTP_USE_TLS" == "True" ]
+then
+    _SMTP_USE_TLS="True"
+else
+    _SMTP_USE_TLS="False"
+fi
 
 
 if [ -z "$DBENGINE" -o -z "$DBNAME" ]
@@ -65,6 +78,31 @@ g/^STATIC_ROOT\\s*=/d
 wq
 END
 
+# set secret key
+[ -z "$SECRET_KEY" ] || ex "$SETTINGS" <<END
+/^SECRET_KEY\\s*=/d
+i
+SECRET_KEY = '$SECRET_KEY'
+.
+wq
+END
+
+# set admins
+if [ -n "$ADMINS" ]
+then
+    _ADMINS="`echo $ADMINS | tr ';' '\n' | sed -s "s/^\s*\('[^']*'\)\s*,\s*\('[^']*'\)\s*$/    (\1, \2),/"`"
+    { ex "$SETTINGS" || /bin/true ; } <<END
+/^ADMINS\\s*=/,/^]/d
+/^SECRET_KEY\\s*=/
+a
+ADMINS = [
+$_ADMINS
+]
+.
+wq
+END
+fi
+
 # enter new settings
 ex "$SETTINGS" <<END
 /BASE_DIR/
@@ -76,7 +114,7 @@ g/^DEBUG\s*=/s#\(^DEBUG\s*=\s*\).*#\1$DEBUG#
 i
 STATIC_ROOT = os.path.join(PROJECT_DIR, 'static')
 .
-1,\$s/\(^ALLOWED_HOSTS\s*=\s*\).*/\1['*','127.0.0.1','::1']/
+1,\$s/\(^ALLOWED_HOSTS\s*=\s*\).*/\1['${VIRES_HOSTNAME_INTERNAL}','${VIRES_IP_ADDRESS}','${HOSTNAME}','127.0.0.1','::1']/
 a
 USE_X_FORWARDED_HOST = True
 .
@@ -138,6 +176,12 @@ LOGGING = {
             'formatter': 'default',
             'filters': [],
         },
+        'mail_admins': {
+            'level': 'ERROR',
+            'class': 'django.utils.log.AdminEmailHandler',
+            'formatter': 'default',
+            'filters': [],
+        },
     },
     'loggers': {
         #'access': {
@@ -145,6 +189,11 @@ LOGGING = {
         #    'level': 'DEBUG' if DEBUG else 'INFO',
         #    'propagate': False,
         #},
+        'django': {
+            'handlers': ['mail_admins'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
         '': {
             'handlers': ['oauth_file'],
             #'level': 'INFO' if DEBUG else 'WARNING',
@@ -192,9 +241,11 @@ END
 #info "Mapping OAuth server instance '${INSTANCE}' to URL path '${INSTANCE}' ..."
 
 # locate proper configuration file (see also apache configuration)
+_PORT=443 # HTTPS only
+[ -z `locate_apache_conf $_PORT $HOSTNAME` ] && error "Failed to locate Apache virtual host $HOSTNAME:$_PORT configuration!"
 {
-    locate_apache_conf 80
-    locate_apache_conf 443
+    locate_apache_conf $_PORT $HOSTNAME
+    locate_apache_conf $_PORT $VIRES_HOSTNAME_INTERNAL
 } | while read CONF
 do
     { ex "$CONF" || /bin/true ; } <<END
@@ -314,6 +365,7 @@ MIDDLEWARE += [
     # SessionAuthenticationMiddleware is only available in django 1.7
     # 'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.common.BrokenLinkEmailsMiddleware',
 ]
 
 # general purpose middleware classes
@@ -335,21 +387,19 @@ LOGIN_REDIRECT_URL = "$OAUTH_BASE_URL_PATH"
 ACCOUNT_LOGOUT_REDIRECT_URL = LOGIN_REDIRECT_URL
 ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
 ACCOUNT_EMAIL_REQUIRED = True
-#ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
-ACCOUNT_EMAIL_VERIFICATION = 'none'
+ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 3
 ACCOUNT_UNIQUE_EMAIL = True
 #ACCOUNT_EMAIL_SUBJECT_PREFIX = [vires.services]
 ACCOUNT_CONFIRM_EMAIL_ON_GET = True
 ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
-ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'http'
+ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'https'
 ACCOUNT_PASSWORD_MIN_LENGTH = 8
 ACCOUNT_LOGIN_ON_PASSWORD_RESET = True
 ACCOUNT_USERNAME_REQUIRED = True
 SOCIALACCOUNT_AUTO_SIGNUP = False
 SOCIALACCOUNT_EMAIL_REQUIRED = True
-#SOCIALACCOUNT_EMAIL_VERIFICATION = 'mandatory'
-SOCIALACCOUNT_EMAIL_VERIFICATION = ACCOUNT_EMAIL_VERIFICATION
+SOCIALACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 SOCIALACCOUNT_QUERY_EMAIL = True
 ACCOUNT_SIGNUP_FORM_CLASS = 'vires_oauth.forms.SignupForm'
 ACCOUNT_SIGNUP_EMAIL_ENTER_TWICE = True
@@ -359,6 +409,13 @@ ACCOUNT_SIGNUP_EMAIL_ENTER_TWICE = True
 #PROFILE_UPDATE_TEMPLATE = "account/userprofile_update_form.html"
 #WORKSPACE_TEMPLATE="vires/workspace.html"
 #OWS11_EXCEPTION_XSL = join(STATIC_URL, "other/owserrorstyle.xsl")
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_USE_TLS = $_SMTP_USE_TLS
+EMAIL_HOST = '$SMTP_HOSTNAME'
+EMAIL_PORT = $SMTP_PORT
+DEFAULT_FROM_EMAIL = '$SMTP_DEFAULT_SENDER'
+SERVER_EMAIL = '$SERVER_EMAIL'
 
 # OAUTH MIDDLEWARE - END - Do not edit or remove this line!
 .
@@ -420,7 +477,6 @@ $OAUTHLOG {
     minsize 1M
     rotate 560
     compress
-    missingok
 }
 $ACCESSLOG {
     copytruncate
@@ -428,7 +484,6 @@ $ACCESSLOG {
     minsize 1M
     rotate 560
     compress
-    missingok
 }
 $GUNICORN_ACCESS_LOG {
     copytruncate
@@ -436,7 +491,6 @@ $GUNICORN_ACCESS_LOG {
     minsize 1M
     rotate 560
     compress
-    missingok
 }
 $GUNICORN_ERROR_LOG {
     copytruncate
@@ -444,7 +498,6 @@ $GUNICORN_ERROR_LOG {
     minsize 1M
     rotate 560
     compress
-    missingok
 }
 END
 
