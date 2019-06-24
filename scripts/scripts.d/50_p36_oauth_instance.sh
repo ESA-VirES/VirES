@@ -66,7 +66,7 @@ wq
 END
 
 # enter new settings
-ex "$SETTINGS" <<END
+{ex "$SETTINGS" || /bin/true ; } <<END
 /BASE_DIR/
 i
 PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -80,7 +80,8 @@ STATIC_ROOT = os.path.join(PROJECT_DIR, 'static')
 a
 USE_X_FORWARDED_HOST = True
 .
-/^DATABASES/,/^}$/d
+/^DATABASES\\s*=/
+.,/^}$/d
 i
 DATABASES = {
     'default': {
@@ -94,7 +95,8 @@ DATABASES = {
 }
 .
 $
-g/^LOGGING\s*=/,/^}$/d
+/^LOGGING\\s*=/
+.,/^}$/d
 a
 LOGGING = {
     'version': 1,
@@ -154,7 +156,7 @@ LOGGING = {
     },
 }
 .
-/^TEMPLATES = \\[/p
+/^TEMPLATES = \\[/
 .,/^]/d
 i
 TEMPLATES = [
