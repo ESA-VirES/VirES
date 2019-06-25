@@ -497,13 +497,14 @@ python "$MNGCMD" collectstatic -l --noinput
 # setup new database
 python "$MNGCMD" migrate --noinput
 
-# set site name and domain (SITE_ID=1)
-python "$MNGCMD" shell --command="\
-from django.contrib.sites.models import Site;\
-site = Site.objects.get(id=1);\
-site.name = '$VIRES_HOSTNAME';\
-site.domain = '$VIRES_HOSTNAME';\
-site.save();"
+# set site name and domain
+python "$MNGCMD" auth_set_site --name "$VIRES_HOSTNAME" --domain "$VIRES_HOSTNAME"
+
+# load the social providers
+if [ -n "$OAUTH_SOCIAL_PROVIDERS" ]
+then
+    python "$MNGCMD" auth_load_social_providers --file "$OAUTH_SOCIAL_PROVIDERS"
+fi
 
 #-------------------------------------------------------------------------------
 # STEP 9: CHANGE OWNERSHIP OF THE CONFIGURATION FILES
