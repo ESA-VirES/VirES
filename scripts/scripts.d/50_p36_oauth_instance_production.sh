@@ -497,6 +497,14 @@ python "$MNGCMD" collectstatic -l --noinput
 # setup new database
 python "$MNGCMD" migrate --noinput
 
+# set site name and domain (SITE_ID=1)
+python "$MNGCMD" shell --command="\
+from django.contrib.sites.models import Site;\
+site = Site.objects.get(id=1);\
+site.name = '$VIRES_HOSTNAME';\
+site.domain = '$VIRES_HOSTNAME';\
+site.save();"
+
 #-------------------------------------------------------------------------------
 # STEP 9: CHANGE OWNERSHIP OF THE CONFIGURATION FILES
 
