@@ -39,11 +39,7 @@ required_variables STATIC_URL_PATH OWS_URL
 required_variables EOXSLOG ACCESSLOG
 required_variables EOXSMAXSIZE EOXSMAXPAGE
 
-if [ -z "$DBENGINE" -o -z "$DBNAME" ]
-then
-    load_db_conf `dirname $0`/../db.conf
-fi
-required_variables DBENGINE DBNAME
+required_variables DBENGINE EOXS_DBNAME
 
 required_variables SMTP_HOSTNAME SMTP_DEFAULT_SENDER
 SMTP_USE_TLS=${SMTP_USE_TLS:-YES}
@@ -72,7 +68,7 @@ fi
 
 ex "$SETTINGS" <<END
 1,\$s/\('ENGINE'[	 ]*:[	 ]*\).*\(,\)/\1'$DBENGINE',/
-1,\$s/\('NAME'[	 ]*:[	 ]*\).*\(,\)/\1'$DBNAME',/
+1,\$s/\('NAME'[	 ]*:[	 ]*\).*\(,\)/\1'$EOXS_DBNAME',/
 1,\$s/\('USER'[	 ]*:[	 ]*\).*\(,\)/\1'$DBUSER',/
 1,\$s/\('PASSWORD'[	 ]*:[	 ]*\).*\(,\)/\1'$DBPASSWD',/
 1,\$s/\('HOST'[	 ]*:[	 ]*\).*\(,\)/\1'$DBHOST',/
