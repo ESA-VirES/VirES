@@ -36,6 +36,7 @@ required_variables OAUTHLOG ACCESSLOG
 required_variables OAUTH_SERVER_HOST OAUTH_SERVICE_NAME
 required_variables GUNICORN_ACCESS_LOG GUNICORN_ERROR_LOG
 required_variables OAUTH_BASE_URL_PATH
+required_variables DBENGINE OAUTH_DBNAME
 required_variables SMTP_HOSTNAME SMTP_DEFAULT_SENDER SERVER_EMAIL
 
 SMTP_USE_TLS=${SMTP_USE_TLS:-YES}
@@ -49,12 +50,6 @@ else
     _SMTP_USE_TLS="False"
 fi
 
-
-if [ -z "$DBENGINE" -o -z "$DBNAME" ]
-then
-    load_db_conf `dirname $0`/../db_oauth.conf
-fi
-required_variables DBENGINE DBNAME
 
 #-------------------------------------------------------------------------------
 # STEP 1: CREATE INSTANCE (if not already present)
@@ -124,7 +119,7 @@ i
 DATABASES = {
     'default': {
         'ENGINE': '$DBENGINE',
-        'NAME': '$DBNAME',
+        'NAME': '$OAUTH_DBNAME',
         'USER': '$DBUSER',
         'PASSWORD': '$DBPASSWD',
         'HOST': '$DBHOST',

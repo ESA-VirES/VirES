@@ -36,7 +36,11 @@ required_variables OAUTH_SERVER_HOST OAUTH_SERVICE_NAME
 required_variables GUNICORN_ACCESS_LOG GUNICORN_ERROR_LOG
 required_variables OAUTH_BASE_URL_PATH
 
-required_variables DBENGINE OAUTH_DBNAME
+if [ -z "$DBENGINE" -o -z "$DBNAME" ]
+then
+    load_db_conf `dirname $0`/../db_oauth.conf
+fi
+required_variables DBENGINE DBNAME
 
 #-------------------------------------------------------------------------------
 # STEP 1: CREATE INSTANCE (if not already present)
@@ -81,7 +85,7 @@ i
 DATABASES = {
     'default': {
         'ENGINE': '$DBENGINE',
-        'NAME': '$OAUTH_DBNAME',
+        'NAME': '$DBNAME',
         'USER': '$DBUSER',
         'PASSWORD': '$DBPASSWD',
         'HOST': '$DBHOST',
