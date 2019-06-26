@@ -104,9 +104,6 @@ LOGGING = {
         'require_debug_false': {
             '()': 'django.utils.log.RequireDebugFalse'
         },
-        #'request_filter': {
-        #    '()': 'django_requestlogging.logging_filters.RequestFilter'
-        #},
     },
     'formatters': {
         'default': {
