@@ -333,18 +333,14 @@ SOCIALACCOUNT_PROVIDERS = {
     'linkedin_oauth2': {
         'SCOPE': [
             'r_emailaddress',
-            'r_basicprofile',
+            'r_liteprofile',
         ],
        'PROFILE_FIELDS': [
             'id',
-            'first-name',
-            'last-name',
-            'email-address',
-            'picture-url',
-            'public-profile-url',
-            'industry',
-            'positions',
-            'location',
+            'firstName',
+            'lastName',
+            'profilePicture',
+            'emailAddress',
         ],
     },
 }
