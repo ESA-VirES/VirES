@@ -162,7 +162,7 @@ LOGGING = {
             'class': 'logging.handlers.WatchedFileHandler',
             'filename': '${ACCESSLOG}',
             'formatter': 'access',
-            'filters': ['request_filter'],
+            'filters': [],
         },
         'stderr_stream': {
             'level': 'INFO',
