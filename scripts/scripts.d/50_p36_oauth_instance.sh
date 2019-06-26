@@ -126,13 +126,13 @@ LOGGING = {
             'formatter': 'default',
             'filters': [],
         },
-        #'access_log_file': {
-        #    'level': 'DEBUG',
-        #    'class': 'logging.handlers.WatchedFileHandler',
-        #    'filename': '${ACCESSLOG}',
-        #    'formatter': 'access',
-        #    'filters': ['request_filter'],
-        #},
+        'access_log_file': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.WatchedFileHandler',
+            'filename': '${ACCESSLOG}',
+            'formatter': 'access',
+            'filters': ['request_filter'],
+        },
         'stderr_stream': {
             'level': 'INFO',
             'class': 'logging.StreamHandler',
@@ -141,15 +141,19 @@ LOGGING = {
         },
     },
     'loggers': {
-        #'access': {
-        #    'handlers': ['access_file'],
-        #    'level': 'DEBUG' if DEBUG else 'INFO',
-        #    'propagate': False,
-        #},
+        'access': {
+            'handlers': ['access_file'],
+            'level': 'DEBUG' if DEBUG else 'INFO',
+            'propagate': False,
+        },
+        'django.request': {
+            'handlers': ['access_log_file'],
+            'level': 'DEBUG' if DEBUG else 'INFO',
+            'propagate': False,
+        },
         '': {
             'handlers': ['server_log_file'],
-            #'level': 'INFO' if DEBUG else 'WARNING',
-            'level': 'DEBUG' if DEBUG else 'INFO',
+            'level': 'INFO' if DEBUG else 'WARNING',
             'propagate': False,
         },
     },
@@ -371,11 +375,6 @@ LOGGING['loggers'].update({
         'level': 'DEBUG' if DEBUG else 'INFO',
         'propagate': False,
     },
-    #'django.request': {
-    #    'handlers': ['access_log_file'],
-    #    'level': 'DEBUG' if DEBUG else 'INFO',
-    #    'propagate': False,
-    #},
 })
 # OAUTH LOGGING - END - Do not edit or remove this line!
 .
