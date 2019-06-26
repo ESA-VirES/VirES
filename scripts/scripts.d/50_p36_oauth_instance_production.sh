@@ -179,7 +179,7 @@ LOGGING = {
     },
     'loggers': {
         'access': {
-            'handlers': ['access_file'],
+            'handlers': ['access_log_file'],
             'level': 'DEBUG' if DEBUG else 'INFO',
             'propagate': False,
         },
