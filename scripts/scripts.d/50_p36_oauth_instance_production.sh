@@ -323,8 +323,7 @@ INSTALLED_APPS += [
     'allauth.socialaccount.providers.twitter',
     'allauth.socialaccount.providers.linkedin_oauth2',
     'allauth.socialaccount.providers.google',
-    #'allauth.socialaccount.providers.github',
-    #'allauth.socialaccount.providers.dropbox_oauth2',
+    'allauth.socialaccount.providers.github',
     'django_countries',
     'oauth2_provider',
 ]
@@ -411,6 +410,8 @@ EMAIL_PORT = $SMTP_PORT
 DEFAULT_FROM_EMAIL = '$SMTP_DEFAULT_SENDER'
 SERVER_EMAIL = '$SERVER_EMAIL'
 
+VIRES_OAUTH_DEFAULT_GROUP = "default"
+
 # OAUTH MIDDLEWARE - END - Do not edit or remove this line!
 .
 \$a
@@ -488,6 +489,9 @@ python "$MNGCMD" collectstatic -l --noinput
 
 # setup new database
 python "$MNGCMD" migrate --noinput
+
+# initialize user groups
+python "$MNGCMD" auth_load_groups --default
 
 # set site name and domain
 python "$MNGCMD" auth_set_site --name "$VIRES_HOSTNAME" --domain "$VIRES_HOSTNAME"

@@ -277,7 +277,6 @@ INSTALLED_APPS += [
     #'allauth.socialaccount.providers.linkedin_oauth2',
     #'allauth.socialaccount.providers.google',
     #'allauth.socialaccount.providers.github',
-    #'allauth.socialaccount.providers.dropbox_oauth2',
     'django_countries',
     'oauth2_provider',
 ]
@@ -358,6 +357,8 @@ ACCOUNT_SIGNUP_EMAIL_ENTER_TWICE = True
 #WORKSPACE_TEMPLATE="vires/workspace.html"
 #OWS11_EXCEPTION_XSL = join(STATIC_URL, "other/owserrorstyle.xsl")
 
+VIRES_OAUTH_DEFAULT_GROUP = "default"
+
 # OAUTH MIDDLEWARE - END - Do not edit or remove this line!
 .
 \$a
@@ -435,6 +436,9 @@ python "$MNGCMD" collectstatic -l --noinput
 
 # setup new database
 python "$MNGCMD" migrate --noinput
+
+# initialize user groups
+python "$MNGCMD" auth_load_groups --default
 
 #-------------------------------------------------------------------------------
 # STEP 9: CHANGE OWNERSHIP OF THE CONFIGURATION FILES
