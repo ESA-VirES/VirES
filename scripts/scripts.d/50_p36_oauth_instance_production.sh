@@ -354,6 +354,7 @@ SOCIALACCOUNT_PROVIDERS = {
 MIDDLEWARE += [
     'vires_oauth.middleware.access_logging_middleware',
     'vires_oauth.middleware.inactive_user_logout_middleware',
+    'vires_oauth.middleware.access_vires_admin_middleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     # SessionAuthenticationMiddleware is only available in django 1.7
     # 'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
