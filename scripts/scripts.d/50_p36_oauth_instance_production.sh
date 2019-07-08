@@ -374,8 +374,16 @@ AUTHENTICATION_BACKENDS = [
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
 
+# Django oauth2_provider
+OAUTH2_PROVIDER = {
+    'SCOPES_BACKEND_CLASS': 'vires_oauth.scopes.ViresScopes',
+    'ALLOWED_REDIRECT_URI_SCHEMES': ['https'],
+}
+
 # Django allauth
 SITE_ID = 1 # ID from django.contrib.sites
+SESSION_COOKIE_NAME = "oauth:sessionid"
+CSRF_COOKIE_NAME = "oauth:csrftoken"
 LOGIN_URL = "$OAUTH_BASE_URL_PATH/accounts/login/"
 LOGIN_REDIRECT_URL = "$OAUTH_BASE_URL_PATH"
 ACCOUNT_LOGOUT_REDIRECT_URL = LOGIN_REDIRECT_URL
@@ -397,12 +405,6 @@ SOCIALACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 SOCIALACCOUNT_QUERY_EMAIL = True
 ACCOUNT_SIGNUP_FORM_CLASS = 'vires_oauth.forms.SignupForm'
 ACCOUNT_SIGNUP_EMAIL_ENTER_TWICE = True
-
-#PROFILE_UPDATE_SUCCESS_URL = "/accounts/profile/"
-#PROFILE_UPDATE_SUCCESS_MESSAGE = "Profile was updated successfully."
-#PROFILE_UPDATE_TEMPLATE = "account/userprofile_update_form.html"
-#WORKSPACE_TEMPLATE="vires/workspace.html"
-#OWS11_EXCEPTION_XSL = join(STATIC_URL, "other/owserrorstyle.xsl")
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_USE_TLS = $_SMTP_USE_TLS
