@@ -601,7 +601,7 @@ INSTALLED_APPS += (
 SOCIALACCOUNT_PROVIDERS = {
     'vires': {
         'SERVER_URL': '/oauth/',
-        'DIRECT_SERVER_URL': '$OAUTH_SERVER_HOST',
+        'DIRECT_SERVER_URL': 'http://$OAUTH_SERVER_HOST',
         'SCOPE': ['read_id', 'read_permissions'],
     },
 }
