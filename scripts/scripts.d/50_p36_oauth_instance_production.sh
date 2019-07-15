@@ -354,7 +354,7 @@ SOCIALACCOUNT_PROVIDERS = {
 MIDDLEWARE += [
     'vires_oauth.middleware.access_logging_middleware',
     'vires_oauth.middleware.inactive_user_logout_middleware',
-    'vires_oauth.middleware.access_vires_admin_middleware',
+    'vires_oauth.middleware.oauth_user_permissions_middleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     # SessionAuthenticationMiddleware is only available in django 1.7
     # 'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
@@ -495,8 +495,11 @@ python "$MNGCMD" collectstatic -l --noinput
 # setup new database
 python "$MNGCMD" migrate --noinput
 
+# initialize user permissions
+python "$MNGCMD" auth_import_permissions --default
+
 # initialize user groups
-python "$MNGCMD" auth_load_groups --default
+python "$MNGCMD" auth_import_groups --default
 
 # set site name and domain
 python "$MNGCMD" auth_set_site --name "$VIRES_HOSTNAME" --domain "$VIRES_HOSTNAME"
@@ -504,7 +507,7 @@ python "$MNGCMD" auth_set_site --name "$VIRES_HOSTNAME" --domain "$VIRES_HOSTNAM
 # load the social providers
 if [ -n "$OAUTH_SOCIAL_PROVIDERS" ]
 then
-    python "$MNGCMD" auth_load_social_providers --file "$OAUTH_SOCIAL_PROVIDERS"
+    python "$MNGCMD" auth_import_social_providers --file "$OAUTH_SOCIAL_PROVIDERS"
 fi
 
 #-------------------------------------------------------------------------------
