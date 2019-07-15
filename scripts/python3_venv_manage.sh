@@ -16,4 +16,4 @@ fi
 
 [ -z "$USER" ] && { echo "ERROR: No user given!" >&2 ; exit 2 ; }
 
-sudo -u "$USER" `dirname $0`/virtualenv_execute.sh python "$VIRES_SERVER_HOME/manage.py" "$@"
+sudo -u "$USER" `dirname $0`/python3_venv_execute.sh python "$OAUTH_SERVER_HOME/manage.py" "$@"
