@@ -96,7 +96,7 @@ DATABASES = {
 $
 /^LOGGING\\s*=/
 .,/^}$/d
-a
+i
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False, # Set False to preserve Gunicorn access logging.
