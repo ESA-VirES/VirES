@@ -58,7 +58,7 @@ export VIRES_CACHE_DIR=${VIRES_CACHE_DIR:-$VIRES_ROOT/cache}
 export VIRES_UPLOAD_DIR=${VIRES_UPLOAD_DIR:-$VIRES_ROOT/upload}
 
 # directory where the PosgreSQL DB stores the files
-export VIRES_PGDATA_DIR=${VIRES_PGDATA_DIR:-/var/lib/pgsql/data}
+#export VIRES_PGDATA_DIR=${VIRES_PGDATA_DIR:-/var/lib/pgsql/data}
 
 # directory of the long-term data storage
 export VIRES_DATADIR=${VIRES_DATADIR:-/mnt/data}
@@ -76,6 +76,13 @@ export VIRES_INSTALL_USER=${VIRES_INSTALL_USER:-root}
 
 # location of the VirES Server home directory
 export VIRES_SERVER_HOME=${VIRES_SERVER_HOME:-$VIRES_ROOT/eoxs}
+# location of the OAuth2 Server home directory
+export OAUTH_SERVER_HOME=${OAUTH_SERVER_HOME:-$VIRES_ROOT/oauth}
+# location of the OAuth2 Server URL
+export OAUTH_SERVER_HOST=${OAUTH_SERVER_HOST:-127.0.0.1:8000}
+# OAuth2 server - service name
+export OAUTH_SERVICE_NAME=${OAUTH_SERVICE_NAME:-oauth}
+
 # WSGI daemon - number of processes to be used by the VirES EOxServer instances
 export EOXS_WSGI_NPROC=${EOXS_WSGI_NPROC:-4}
 # WSGI daemon - process group to be used by the VirES EOxServer instances
@@ -122,6 +129,9 @@ export ENABLE_VIRTUALENV=${ENABLE_VIRTUALENV:-YES}
 
 # pyhton virtualenv root
 export VIRTUALENV_ROOT=${VIRTUALENV_ROOT:-$VIRES_ROOT/virtualenv}
+
+# pyhton 3 venv root
+export P3_VENV_ROOT=${P3_VENV_ROOT:-$VIRES_ROOT/python3_venv}
 
 # Switch controlling wether the AllAuth gets configured or not.
 export CONFIGURE_ALLAUTH=${CONFIGURE_ALLAUTH:-NO}
