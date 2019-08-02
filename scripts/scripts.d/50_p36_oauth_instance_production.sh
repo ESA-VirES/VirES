@@ -319,30 +319,11 @@ INSTALLED_APPS += [
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
-    'allauth.socialaccount.providers.facebook',
-    'allauth.socialaccount.providers.twitter',
-    'allauth.socialaccount.providers.linkedin_oauth2',
-    'allauth.socialaccount.providers.google',
-    'allauth.socialaccount.providers.github',
     'django_countries',
     'oauth2_provider',
 ]
 
-SOCIALACCOUNT_PROVIDERS = {
-    'linkedin_oauth2': {
-        'SCOPE': [
-            'r_emailaddress',
-            'r_liteprofile',
-        ],
-       'PROFILE_FIELDS': [
-            'id',
-            'firstName',
-            'lastName',
-            'profilePicture',
-            'emailAddress',
-        ],
-    },
-}
+SOCIALACCOUNT_PROVIDERS = {}
 
 # OAUTH APPS - END - Do not edit or remove this line!
 .
