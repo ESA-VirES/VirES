@@ -1027,7 +1027,8 @@ class TestAsyncFetchFilteredDataCdfModelMIO2DSecondary(TestCase, MagneticModelMI
 class TestFetchDataCsvModelExpression(TestCase, MagneticModelTestMixIn, FetchDataCsvMixIn):
     model_name = "MODEL"
     model_expression = (
-        '+"CHAOS-6-Combined"(max_degree=30)'
+        '+"CHAOS-6-Core"(max_degree=30)'
+        '+"CHAOS-6-Static"(max_degree=30)'
         '+"CHAOS-6-MMA-Primary"'
         '+"CHAOS-6-MMA-Secondary"'
     )
@@ -1044,7 +1045,8 @@ class TestFetchDataCsvModelExpression(TestCase, MagneticModelTestMixIn, FetchDat
 class TestFetchFilteredDataCsvModelExpression(TestCase, MagneticModelTestMixIn, FetchFilteredDataCsvMixIn):
     model_name = "MODEL"
     model_expression = (
-        "+'CHAOS-6-Combined'(max_degree=30)"
+        '+"CHAOS-6-Core"(max_degree=30)'
+        '+"CHAOS-6-Static"(max_degree=30)'
         "+'CHAOS-6-MMA-Primary'"
         "+'CHAOS-6-MMA-Secondary'"
     )
@@ -1061,7 +1063,8 @@ class TestFetchFilteredDataCsvModelExpression(TestCase, MagneticModelTestMixIn, 
 class TestFetchFilteredDataCdfModelExpression(TestCase, MagneticModelTestMixIn, FetchFilteredDataCdfMixIn):
     model_name = "MODEL"
     model_expression = (
-        "+'CHAOS-6-Combined'(max_degree=30)"
+        '+"CHAOS-6-Core"(max_degree=30)'
+        '+"CHAOS-6-Static"(max_degree=30)'
         "+'CHAOS-6-MMA-Primary'"
         "+'CHAOS-6-MMA-Secondary'"
     )
@@ -1078,7 +1081,8 @@ class TestFetchFilteredDataCdfModelExpression(TestCase, MagneticModelTestMixIn, 
 class TestAsyncFetchFilteredDataCsvModelExpression(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataCsvMixIn):
     model_name = "MODEL"
     model_expression = (
-        "+'CHAOS-6-Combined'(max_degree=30)"
+        '+"CHAOS-6-Core"(max_degree=30)'
+        '+"CHAOS-6-Static"(max_degree=30)'
         "+'CHAOS-6-MMA-Primary'"
         "+'CHAOS-6-MMA-Secondary'"
     )
@@ -1095,7 +1099,8 @@ class TestAsyncFetchFilteredDataCsvModelExpression(TestCase, MagneticModelTestMi
 class TestAsyncFetchFilteredDataCdfModelExpression(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataCdfMixIn):
     model_name = "MODEL"
     model_expression = (
-        "+'CHAOS-6-Combined'(max_degree=30)"
+        '+"CHAOS-6-Core"(max_degree=30)'
+        '+"CHAOS-6-Static"(max_degree=30)'
         "+'CHAOS-6-MMA-Primary'"
         "+'CHAOS-6-MMA-Secondary'"
     )
