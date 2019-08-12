@@ -483,6 +483,7 @@ VIRES_SAT2COL = {
         "SW_OPER_TECATMS_2F",
         "SW_OPER_FACATMS_2F",
         "SW_OPER_EEFATMS_2F",
+        "SW_OPER_IPDAIRR_2F",
     ],
     'B': [
         "SW_OPER_MAGB_LR_1B",
@@ -492,6 +493,7 @@ VIRES_SAT2COL = {
         "SW_OPER_TECBTMS_2F",
         "SW_OPER_FACBTMS_2F",
         "SW_OPER_EEFBTMS_2F",
+        "SW_OPER_IPDBIRR_2F",
     ],
     'C': [
         "SW_OPER_MAGC_LR_1B",
@@ -501,6 +503,7 @@ VIRES_SAT2COL = {
         "SW_OPER_TECCTMS_2F",
         "SW_OPER_FACCTMS_2F",
         "SW_OPER_EEFCTMS_2F",
+        "SW_OPER_IPDCIRR_2F",
     ],
 }
 
