@@ -27,16 +27,26 @@
 #-------------------------------------------------------------------------------
 # pylint: disable=missing-docstring
 
+from __future__ import print_function
+import sys
 from time import sleep
 import xml.etree.ElementTree as ElementTree
 import json
-from string import maketrans
 from contextlib import closing
-from urllib2 import urlopen, Request, HTTPError
+try:
+    # Python 2.7 compatibility
+    from urllib2 import urlopen, Request, HTTPError
+except ImportError:
+    from urllib.request import urlopen, Request, HTTPError
 from jinja2 import Environment, FileSystemLoader
-#from time_util import parse_datetime
+from .csv import parse_csv
+from .cdf import parse_cdf, read_time_as_mjd2000
 
-SERVICE_URL = "http://127.0.0.1:8300/ows"
+try:
+    from service import SERVICE_URL, HEADERS
+except ImportError:
+    SERVICE_URL = "http://127.0.0.1:80/ows"
+    HEADERS = []
 
 JINJA2_ENVIRONMENT = Environment(loader=FileSystemLoader("./templates"))
 JINJA2_ENVIRONMENT.filters.update(
@@ -50,60 +60,6 @@ WPS_STATUS = {
     "{http://www.opengis.net/wps/1.0.0}ProcessFailed": "FAILED",
     "{http://www.opengis.net/wps/1.0.0}ProcessStarted": "STARTED",
     "{http://www.opengis.net/wps/1.0.0}ProcessSucceeded": "FINISHED",
-}
-
-def parse_array(value):
-    return json.loads(value.translate(maketrans("{;}", "[,]")))
-
-
-CSV_DEFAULT_TYPE = parse_array
-CSV_VARIABLE_TYPES = {
-    'id': str,
-    'Spacecraft': str,
-    #'Timestamp': float,
-    #'Latitude': float,
-    #'Longitude': float,
-    #'Radius': float,
-    #'Kp': float,
-    #'F': float,
-    #'B_NEC': parse_array,
-    #'B_VFM': parse_array,
-    #'B_error': parse_array,
-    #'F_error': float,
-    #'Att_error': float,
-    #'ASM_Freq_Dev': float,
-    #'dF_AOCS': float,
-    #'dB_AOCS': parse_array,
-    #'dF_other': float,
-    #'dB_other': parse_array,
-    #'dB_Sun': parse_array,
-    #'q_NEC_CRF': parse_array,
-    #'SyncStatus': int,
-    #'Flags_Platform': int,
-    #'Flags_B': int,
-    #'Flags_F': int,
-    #'Flags_q': int,
-    #'Dst': float,
-    #'AscendingNodeTime': float,
-    #'AscendingNodeLongitude': float,
-    #'OrbitNumber': int,
-    #'OrbitSource': int,
-    #'SunDeclination': float,
-    #'SunRightAscension': float,
-    #'SunHourAngle': float,
-    #'SunZenithAngle': float,
-    #'SunAzimuthAngle': float,
-    #'SunVector': parse_array,
-    #'DipoleAxisVector': parse_array,
-    #'DipoleTiltAngle': float,
-    #'MLT': float,
-    #'QDLat': float,
-    #'QDLon': float,
-    #'QDBasis': parse_array,
-    #'F10_INDEX': float,
-    #'IMF_BY_GSM': float,
-    #'IMF_BZ_GSM': float,
-    #'IMF_V': float,
 }
 
 
@@ -126,10 +82,16 @@ class HttpMixIn(object):
             print(error.read())
             raise
 
+    @staticmethod
+    def iter_decoded(source):
+        for line in source:
+            yield line.decode('UTF-8')
+
 
 class WpsPostRequestMixIn(HttpMixIn):
     url = SERVICE_URL
     headers = {"Content-Type": "application/xml"}
+    headers.update(HEADERS)
     template_source = None
     extra_template_params = {}
 
@@ -143,10 +105,12 @@ class WpsPostRequestMixIn(HttpMixIn):
 
     def get_request(self, **template_params):
         template_params.update(self.extra_template_params)
-        return self.template.render(**template_params)
+        return self.template.render(**template_params).encode('utf-8')
 
     def get_response(self, parser, request):
-        return self.retrieve(Request(self.url, request, self.headers), parser)
+        return self.retrieve(
+            Request(self.url, request, self.headers), parser
+        )
 
 
 class WpsAsyncPostRequestMixIn(WpsPostRequestMixIn):
@@ -184,7 +148,7 @@ class WpsAsyncPostRequestMixIn(WpsPostRequestMixIn):
             execute_response, self.output_name
         )
 
-        response = self.retrieve(Request(output_url), parser)
+        response = self.retrieve(Request(output_url, None, self.headers), parser)
         self.delete_all_async_jobs()
         return response
 
@@ -199,6 +163,7 @@ class WpsAsyncPostRequestMixIn(WpsPostRequestMixIn):
                     "./{http://www.opengis.net/wps/1.0.0}Reference"
                 )
                 return elm_reference.attrib["href"]
+        return None
 
     @staticmethod
     def raise_process_exception(xml):
@@ -231,6 +196,7 @@ class WpsAsyncPostRequestMixIn(WpsPostRequestMixIn):
 
     def list_async_jobs(self):
         request = self.get_template(self.template_list_jobs).render()
+        request = request.encode('utf-8')
         job_list = self.retrieve(
             Request(self.url, request, self.headers), json.load
         )
@@ -239,7 +205,7 @@ class WpsAsyncPostRequestMixIn(WpsPostRequestMixIn):
     def remove_async_job(self, job_id):
         request = self.get_template(self.template_remove_job).render(
             job_id=job_id
-        )
+        ).encode('utf-8')
         return self.retrieve(
             Request(self.url, request, self.headers), json.load
         )
@@ -247,40 +213,30 @@ class WpsAsyncPostRequestMixIn(WpsPostRequestMixIn):
 
 class CsvRequestMixIn(object):
     extra_template_params = {"response_type": "text/csv"}
+    csv_variable_parsers = {
+        'id': str,
+        'Spacecraft': str,
+    }
 
-    @staticmethod
-    def csv_parser(file_in):
-
-        def wrap(parser):
-            """ Wrap parser so that it catches exceptions and reports
-            more details about the failed item.
-            """
-            def _wrap(variable, value):
-                try:
-                    return parser(value)
-                except ValueError as exc:
-                    raise ValueError(
-                        "%s: %s\n%s" % (variable, value, exc)
-                    )
-            return _wrap
-
-        def parse(source):
-            header = source.next()
-            types = [
-                wrap(CSV_VARIABLE_TYPES.get(variable, CSV_DEFAULT_TYPE))
-                for variable in header
-            ]
-            data = {variable: [] for variable in header}
-            for record in source:
-                for variable, value, type_ in zip(header, record, types):
-                    data[variable].append(type_(variable, value))
-            return data
-
-        def split_records():
-            for line in file_in:
-                yield line.rstrip().split(",")
-
-        return parse(split_records())
+    @classmethod
+    def csv_parser(cls, file_in):
+        if sys.version_info[0]:
+            file_in = cls.iter_decoded(file_in)
+        return parse_csv(file_in, cls.csv_variable_parsers)
 
     def get_parsed_response(self, request):
         return self.get_response(self.csv_parser, request)
+
+
+class CdfRequestMixIn(object):
+    extra_template_params = {"response_type": "application/x-cdf"}
+    cdf_variable_readers = {
+        "Timestamp": read_time_as_mjd2000,
+    }
+
+    @classmethod
+    def cdf_reader(cls, file_in):
+        return parse_cdf(file_in, cls.cdf_variable_readers)
+
+    def get_parsed_response(self, request):
+        return self.get_response(self.cdf_reader, request)

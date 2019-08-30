@@ -40,8 +40,10 @@ CONFIG_JSON="${INSTALL_DIR}/scripts/config.json"
 [ -f "$CONFIG_JSON" ] || error "Client configuration file $CONFIG_JSON not found!"
 
 # replace OWS URLs
-OLD_URL="`jq -r '.mapConfig.products[].download.url | select(.)' "$CONFIG_JSON" | sort | uniq | grep '/ows$' | head -n 1`"
-[ -z "$OLD_URL" ] || sed -i -e "s#\"${OLD_URL}#\"${VIRES_SERVER_URL}/ows#g" "$CONFIG_JSON"
+OLD_URL="http://localhost:9000/vires00/"
+[ -z "$OLD_URL" ] || sed -i -e "s#\"${OLD_URL}#\"${VIRES_SERVER_URL}#g" "$CONFIG_JSON"
+#OLD_URL="`jq -r '.mapConfig.products[].download.url | select(.)' "$CONFIG_JSON" | sort | uniq | grep '/ows$' | head -n 1`"
+#[ -z "$OLD_URL" ] || sed -i -e "s#\"${OLD_URL}#\"${VIRES_SERVER_URL}/ows#g" "$CONFIG_JSON"
 
 #-------------------------------------------------------------------------------
 # Integration with the Apache web server

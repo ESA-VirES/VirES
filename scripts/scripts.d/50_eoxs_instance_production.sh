@@ -27,6 +27,7 @@ required_variables VIRES_LOGDIR VIRES_TMPDIR VIRES_CACHE_DIR
 required_variables VIRES_WPS_SERVICE_NAME VIRES_WPS_URL_PATH
 required_variables VIRES_WPS_TEMP_DIR VIRES_WPS_PERM_DIR VIRES_WPS_TASK_DIR
 required_variables VIRES_WPS_SOCKET VIRES_WPS_NPROC VIRES_WPS_MAX_JOBS
+required_variables VIRES_UPLOAD_DIR
 
 set_instance_variables
 
@@ -37,14 +38,10 @@ required_variables SETTINGS WSGI_FILE URLS WSGI MNGCMD EOXSCONF
 required_variables STATIC_URL_PATH OWS_URL
 required_variables EOXSLOG ACCESSLOG
 required_variables EOXSMAXSIZE EOXSMAXPAGE
-
-if [ -z "$DBENGINE" -o -z "$DBNAME" ]
-then
-    load_db_conf `dirname $0`/../db.conf
-fi
-required_variables DBENGINE DBNAME
-
+required_variables OAUTH_SERVER_HOST
+required_variables DBENGINE EOXS_DBNAME
 required_variables SMTP_HOSTNAME SMTP_DEFAULT_SENDER
+
 SMTP_USE_TLS=${SMTP_USE_TLS:-YES}
 SMTP_PORT=${SMTP_PORT:-25}
 
@@ -71,7 +68,7 @@ fi
 
 ex "$SETTINGS" <<END
 1,\$s/\('ENGINE'[	 ]*:[	 ]*\).*\(,\)/\1'$DBENGINE',/
-1,\$s/\('NAME'[	 ]*:[	 ]*\).*\(,\)/\1'$DBNAME',/
+1,\$s/\('NAME'[	 ]*:[	 ]*\).*\(,\)/\1'$EOXS_DBNAME',/
 1,\$s/\('USER'[	 ]*:[	 ]*\).*\(,\)/\1'$DBUSER',/
 1,\$s/\('PASSWORD'[	 ]*:[	 ]*\).*\(,\)/\1'$DBPASSWD',/
 1,\$s/\('HOST'[	 ]*:[	 ]*\).*\(,\)/\1'$DBHOST',/
@@ -114,6 +111,7 @@ do
     WSGIScriptAlias "${BASE_URL_PATH:-/}" "${INSTROOT}/${INSTANCE}/${INSTANCE}/wsgi.py"
     <Directory "${INSTROOT}/${INSTANCE}/${INSTANCE}">
         <Files "wsgi.py">
+            WSGIPassAuthorization On
             WSGIProcessGroup $EOXS_WSGI_PROCESS_GROUP
             WSGIApplicationGroup %{GLOBAL}
             Header set Access-Control-Allow-Origin "*"
@@ -386,6 +384,8 @@ END
 
 { ex "$URLS" || /bin/true ; } <<END
 /^# ALLAUTH URLS - BEGIN/,/^# ALLAUTH URLS - END/d
+/^# NOAUTH URLS - BEGIN/,/^# NOAUTH URLS - END/d
+/^# VIRES URLS - BEGIN/,/^# VIRES URLS - END/d
 wq
 END
 
@@ -405,9 +405,13 @@ else
     # remove unnecessary or conflicting component paths
     { ex "$SETTINGS" || /bin/true ; } <<END
 g/^COMPONENTS\s*=\s*(/,/^)/s/'eoxserver\.services\.ows\.wcs\.\*\*'/#&/
+g/^COMPONENTS\s*=\s*(/,/^)/s/'eoxserver\.services\.ows\.wms\.\*\*'/#&/
 g/^COMPONENTS\s*=\s*(/,/^)/s/'eoxserver\.services\.native\.\*\*'/#&/
 g/^COMPONENTS\s*=\s*(/,/^)/s/'eoxserver\.services\.gdal\.\*\*'/#&/
 g/^COMPONENTS\s*=\s*(/,/^)/s/'eoxserver\.services\.mapserver\.\*\*'/#&/
+g/^COMPONENTS\s*=\s*(/,/^)/s/'eoxserver\.services\.opensearch\.\*\*'/#&/
+g/^COMPONENTS\s*=\s*(/,/^)/s/'eoxserver\.resources\.coverages/#&/
+g/^COMPONENTS\s*=\s*(/,/^)/s/##\+/#/
 wq
 END
 
@@ -421,26 +425,50 @@ INSTALLED_APPS += (
     'vires',
 )
 
+VIRES_UPLOAD_DIR = "$VIRES_UPLOAD_DIR"
 VIRES_AUX_DB_DST = "$VIRES_CACHE_DIR/aux_dst.cdf"
 VIRES_AUX_DB_KP = "$VIRES_CACHE_DIR/aux_kp.cdf"
 VIRES_AUX_DB_IBIA = "$VIRES_CACHE_DIR/aux_ibia.cdf"
 VIRES_AUX_IMF_2__COLLECTION = "SW_OPER_AUX_IMF_2_"
-VIRES_ORBIT_COUNTER_DB = {
-    'A': "$VIRES_CACHE_DIR/SW_OPER_AUXAORBCNT.cdf",
-    'B': "$VIRES_CACHE_DIR/SW_OPER_AUXBORBCNT.cdf",
-    'C': "$VIRES_CACHE_DIR/SW_OPER_AUXCORBCNT.cdf",
-}
 VIRES_CACHED_PRODUCTS = {
+    "AUX_F10_2_": "$VIRES_CACHE_DIR/SW_OPER_AUX_F10_2_.cdf",
     "MCO_SHA_2C": "$VIRES_CACHE_DIR/SW_OPER_MCO_SHA_2C.shc",
     "MCO_SHA_2D": "$VIRES_CACHE_DIR/SW_OPER_MCO_SHA_2D.shc",
     "MCO_SHA_2F": "$VIRES_CACHE_DIR/SW_OPER_MCO_SHA_2F.shc",
+    "MCO_CHAOS6": "$VIRES_CACHE_DIR/SW_OPER_MCO_CHAOS6.shc",
     "MLI_SHA_2C": "$VIRES_CACHE_DIR/SW_OPER_MLI_SHA_2C.shc",
     "MLI_SHA_2D": "$VIRES_CACHE_DIR/SW_OPER_MLI_SHA_2D.shc",
     "MMA_SHA_2C": "$VIRES_CACHE_DIR/SW_OPER_MMA_SHA_2C.cdf",
     "MMA_SHA_2F": "$VIRES_CACHE_DIR/SW_OPER_MMA_SHA_2F.cdf",
     "MIO_SHA_2C": "$VIRES_CACHE_DIR/SW_OPER_MIO_SHA_2C.txt",
     "MIO_SHA_2D": "$VIRES_CACHE_DIR/SW_OPER_MIO_SHA_2D.txt",
+    "MMA_CHAOS6": "$VIRES_CACHE_DIR/SW_OPER_MMA_CHAOS6.cdf",
+    "AUXAORBCNT": "$VIRES_CACHE_DIR/SW_OPER_AUXAORBCNT.cdf",
+    "AUXBORBCNT": "$VIRES_CACHE_DIR/SW_OPER_AUXBORBCNT.cdf",
+    "AUXCORBCNT": "$VIRES_CACHE_DIR/SW_OPER_AUXCORBCNT.cdf",
+    "AUXAODBGEO": "$VIRES_CACHE_DIR/SW_VIRE_AUXAODBGEO.cdf",
+    "AUXBODBGEO": "$VIRES_CACHE_DIR/SW_VIRE_AUXBODBGEO.cdf",
+    "AUXCODBGEO": "$VIRES_CACHE_DIR/SW_VIRE_AUXCODBGEO.cdf",
+    "AUXAODBMAG": "$VIRES_CACHE_DIR/SW_VIRE_AUXAODBMAG.cdf",
+    "AUXBODBMAG": "$VIRES_CACHE_DIR/SW_VIRE_AUXBODBMAG.cdf",
+    "AUXCODBMAG": "$VIRES_CACHE_DIR/SW_VIRE_AUXCODBMAG.cdf",
 }
+VIRES_ORBIT_COUNTER_FILE = {
+    "A": VIRES_CACHED_PRODUCTS["AUXAORBCNT"],
+    "B": VIRES_CACHED_PRODUCTS["AUXBORBCNT"],
+    "C": VIRES_CACHED_PRODUCTS["AUXCORBCNT"],
+}
+VIRES_ORBIT_DIRECTION_GEO_FILE = {
+    "A": VIRES_CACHED_PRODUCTS["AUXAODBGEO"],
+    "B": VIRES_CACHED_PRODUCTS["AUXBODBGEO"],
+    "C": VIRES_CACHED_PRODUCTS["AUXCODBGEO"],
+}
+VIRES_ORBIT_DIRECTION_MAG_FILE = {
+    "A": VIRES_CACHED_PRODUCTS["AUXAODBMAG"],
+    "B": VIRES_CACHED_PRODUCTS["AUXBODBMAG"],
+    "C": VIRES_CACHED_PRODUCTS["AUXCODBMAG"],
+}
+VIRES_SPACECRAFTS = list(VIRES_ORBIT_COUNTER_FILE)
 
 # TODO: Find a better way how to map a collection to the satellite!
 #"SW_OPER_FAC_TMS_2F", ???
@@ -449,27 +477,33 @@ VIRES_CACHED_PRODUCTS = {
 VIRES_SAT2COL = {
     'A': [
         "SW_OPER_MAGA_LR_1B",
+        "SW_OPER_EFIA_LP_1B",
         "SW_OPER_EFIA_PL_1B",
         "SW_OPER_IBIATMS_2F",
         "SW_OPER_TECATMS_2F",
         "SW_OPER_FACATMS_2F",
         "SW_OPER_EEFATMS_2F",
+        "SW_OPER_IPDAIRR_2F",
     ],
     'B': [
         "SW_OPER_MAGB_LR_1B",
+        "SW_OPER_EFIB_LP_1B",
         "SW_OPER_EFIB_PL_1B",
         "SW_OPER_IBIBTMS_2F",
         "SW_OPER_TECBTMS_2F",
         "SW_OPER_FACBTMS_2F",
         "SW_OPER_EEFBTMS_2F",
+        "SW_OPER_IPDBIRR_2F",
     ],
     'C': [
         "SW_OPER_MAGC_LR_1B",
+        "SW_OPER_EFIC_LP_1B",
         "SW_OPER_EFIC_PL_1B",
         "SW_OPER_IBICTMS_2F",
         "SW_OPER_TECCTMS_2F",
         "SW_OPER_FACCTMS_2F",
         "SW_OPER_EEFCTMS_2F",
+        "SW_OPER_IPDCIRR_2F",
     ],
 }
 
@@ -479,6 +513,8 @@ for satellite, collections in VIRES_SAT2COL.items():
     VIRES_COL2SAT.update(
         (collection, satellite) for collection in collections
     )
+# custom data mapping
+VIRES_COL2SAT["USER_DATA"] = "U"
 
 # relations between range-type satellite collections
 VIRES_TYPE2COL = {
@@ -488,17 +524,28 @@ VIRES_TYPE2COL = {
     },
 }
 
+# extra sampled collections
+VIRES_EXTRA_SAMPLED_COLLECTIONS = {
+    "SW_OPER_EEFATMS_2F",
+    "SW_OPER_EEFBTMS_2F",
+    "SW_OPER_EEFCTMS_2F",
+}
+
+# collections requiring samples grouping
+VIRES_GROUPED_SAMPLES_COLLECTIONS = {
+    "SW_OPER_TECATMS_2F",
+    "SW_OPER_TECBTMS_2F",
+    "SW_OPER_TECCTMS_2F",
+}
+
 # VIRES APPS - END - Do not edit or remove this line!
 .
 /^COMPONENTS\s*=/
 /^)/a
 # VIRES COMPONENTS - BEGIN - Do not edit or remove this line!
 COMPONENTS += (
-    'eoxserver.services.mapserver.wms.*',
     'vires.processes.*',
-    'vires.ows.**',
-    'vires.forward_models.*',
-    'vires.mapserver.**',
+    'vires.ows.wms.*',
 )
 # VIRES COMPONENTS - END - Do not edit or remove this line!
 .
@@ -513,6 +560,53 @@ LOGGING['loggers']['vires'] = {
 .
 wq
 END
+
+    if [ "$CONFIGURE_ALLAUTH" == "YES" ]
+    then
+
+        # extending the EOxServer urls.py
+        ex "$URLS" <<END
+$ a
+# VIRES URLS - BEGIN - Do not edit or remove this line!
+from logging import INFO, WARNING
+from django.views.decorators.csrf import csrf_exempt
+from eoxs_allauth.decorators import log_access, authenticated_only
+import vires.views
+
+def allauth_wrapper(view):
+    view = csrf_exempt(view)
+    view = authenticated_only(view)
+    view = log_access(INFO, WARNING)(view)
+    return view
+
+urlpatterns += patterns('',
+    url(r'^custom_data/(?P<identifier>[0-9a-f-]{36,36})?$', allauth_wrapper(vires.views.custom_data)),
+    url(r'^custom_model/(?P<identifier>[0-9a-f-]{36,36})?$', allauth_wrapper(vires.views.custom_model)),
+    url(r'^client_state/(?P<identifier>[0-9a-f-]{36,36})?$', allauth_wrapper(vires.views.client_state)),
+)
+# VIRES URLS - END - Do not edit or remove this line!
+.
+wq
+END
+
+    else
+
+        # extending the EOxServer urls.py
+        ex "$URLS" <<END
+$ a
+# VIRES URLS - BEGIN - Do not edit or remove this line!
+import vires.views
+urlpatterns += patterns('',
+    url(r'^custom_data/(?P<identifier>[0-9a-f-]{36,36})?$', vires.views.custom_data),
+    url(r'^custom_model/(?P<identifier>[0-9a-f-]{36,36})?$', vires.views.custom_model),
+    url(r'^client_state/(?P<identifier>[0-9a-f-]{36,36})?$', vires.views.client_state),
+)
+# VIRES URLS - END - Do not edit or remove this line!
+.
+wq
+END
+
+    fi
 
 fi # end of VIRES configuration
 
@@ -549,32 +643,15 @@ INSTALLED_APPS += (
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
-    'allauth.socialaccount.providers.facebook',
-    'allauth.socialaccount.providers.twitter',
-    'allauth.socialaccount.providers.linkedin_oauth2',
-    'allauth.socialaccount.providers.google',
-    #'allauth.socialaccount.providers.github',
-    #'allauth.socialaccount.providers.dropbox_oauth2',
+    'eoxs_allauth.vires_oauth', # VirES-OAuth2 "social account provider"
     'django_countries',
 )
 
 SOCIALACCOUNT_PROVIDERS = {
-    'linkedin_oauth2': {
-        'SCOPE': [
-            'r_emailaddress',
-            'r_basicprofile',
-        ],
-       'PROFILE_FIELDS': [
-            'id',
-            'first-name',
-            'last-name',
-            'email-address',
-            'picture-url',
-            'public-profile-url',
-            'industry',
-            'positions',
-            'location',
-        ],
+    'vires': {
+        'SERVER_URL': '/oauth/',
+        'DIRECT_SERVER_URL': 'http://$OAUTH_SERVER_HOST',
+        'SCOPE': ['read_id', 'read_permissions'],
     },
 }
 
@@ -608,26 +685,12 @@ AUTHENTICATION_BACKENDS = (
 
 # Django allauth
 SITE_ID = 1 # ID from django.contrib.sites
-LOGIN_URL = "/accounts/login/"
-LOGIN_REDIRECT_URL = "${BASE_URL_PATH:-/}"
-ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
-ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
-ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 3
-ACCOUNT_UNIQUE_EMAIL = True
-#ACCOUNT_EMAIL_SUBJECT_PREFIX = [vires.services]
-ACCOUNT_CONFIRM_EMAIL_ON_GET = True
-ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
+LOGIN_REDIRECT_URL = "/"
+LOGIN_URL = "/accounts/vires/login/"
+SOCIALACCOUNT_AUTO_SIGNUP = True
+SOCIALACCOUNT_EMAIL_REQUIRED = False
 ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'https'
-ACCOUNT_PASSWORD_MIN_LENGTH = 8
-ACCOUNT_LOGIN_ON_PASSWORD_RESET = True
-ACCOUNT_USERNAME_REQUIRED = True
-SOCIALACCOUNT_AUTO_SIGNUP = False
-SOCIALACCOUNT_EMAIL_REQUIRED = True
-SOCIALACCOUNT_EMAIL_VERIFICATION = 'mandatory'
-SOCIALACCOUNT_QUERY_EMAIL = True
-ACCOUNT_SIGNUP_FORM_CLASS = 'eoxs_allauth.forms.ESASignupForm'
-ACCOUNT_SIGNUP_EMAIL_ENTER_TWICE = True
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 TEMPLATE_CONTEXT_PROCESSORS = (
     # Required by allauth template tags
@@ -637,9 +700,6 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 )
 
 # EOxServer AllAuth
-PROFILE_UPDATE_SUCCESS_URL = "/accounts/profile/"
-PROFILE_UPDATE_SUCCESS_MESSAGE = "Profile was updated successfully."
-PROFILE_UPDATE_TEMPLATE = "account/userprofile_update_form.html"
 WORKSPACE_TEMPLATE="vires/workspace.html"
 OWS11_EXCEPTION_XSL = join(STATIC_URL, "other/owserrorstyle.xsl")
 
@@ -675,10 +735,11 @@ END
 $ a
 # ALLAUTH URLS - BEGIN - Do not edit or remove this line!
 import eoxs_allauth.views
+from vires.client_state import parse_client_state
 from django.views.generic import TemplateView
 
 urlpatterns += patterns('',
-    url(r'^/?$', eoxs_allauth.views.workspace),
+    url(r'^/?$', eoxs_allauth.views.workspace(parse_client_state)),
     url(r'^ows$', eoxs_allauth.views.wrapped_ows),
     url(r'^openows$', eoxs_allauth.views.open_ows),
     url(r'^accounts/', include('eoxs_allauth.urls')),
@@ -879,11 +940,17 @@ python "$MNGCMD" collectstatic -l --noinput
 #       the apps' models dependencies and does not create the models
 #       in the right order.
 ##  setup this procedure to ensure that migrations run in the right order
-python "$MNGCMD" migrate sites
-python "$MNGCMD" migrate contenttypes
-python "$MNGCMD" migrate admin
-python "$MNGCMD" migrate auth
-python "$MNGCMD" migrate
+#python "$MNGCMD" migrate sites
+#python "$MNGCMD" migrate contenttypes
+#python "$MNGCMD" migrate admin
+#python "$MNGCMD" migrate auth
+python "$MNGCMD" migrate --noinput
+
+# load the social providers
+if [ -n "$EOXS_SOCIAL_PROVIDERS" ]
+then
+    python "$MNGCMD" auth_load_social_providers --file "$EOXS_SOCIAL_PROVIDERS"
+fi
 
 #-------------------------------------------------------------------------------
 # STEP 8: APP-SPECIFIC INITIALISATION
@@ -893,16 +960,6 @@ if [ "$CONFIGURE_VIRES" == "YES" ]
 then
     # load rangetypes
     python "$MNGCMD" vires_rangetype_load || true
-
-    # register models
-    python "$MNGCMD" vires_model_remove --all
-    python "$MNGCMD" vires_model_add \
-        "SIFM" "IGRF12" "CHAOS-6-Combined" "CHAOS-6-Core" "CHAOS-6-Static" \
-        "MCO_SHA_2C" "MCO_SHA_2D" "MCO_SHA_2F" "MLI_SHA_2C" "MLI_SHA_2D" \
-        "MMA_SHA_2C-Primary" "MMA_SHA_2C-Secondary" \
-        "MMA_SHA_2F-Primary" "MMA_SHA_2F-Secondary" \
-        "MIO_SHA_2C-Primary" "MIO_SHA_2C-Secondary" \
-        "MIO_SHA_2D-Primary" "MIO_SHA_2D-Secondary"
 fi
 
 #-------------------------------------------------------------------------------
