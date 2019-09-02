@@ -539,7 +539,7 @@ $ a
 # VIRES URLS - BEGIN - Do not edit or remove this line!
 from logging import INFO, WARNING
 from django.views.decorators.csrf import csrf_exempt
-from eoxs_allauth.decorators import log_access, authenticated_only
+from eoxs_allauth.decorators import log_access, authenticated_only, token_authentication
 import vires.views
 
 def allauth_wrapper(view):
@@ -548,8 +548,15 @@ def allauth_wrapper(view):
     view = log_access(INFO, WARNING)(view)
     return view
 
+def allauth_wrapper_with_token(view):
+    view = csrf_exempt(view)
+    view = authenticated_only(view)
+    view = token_authentication(view)
+    view = log_access(INFO, WARNING)(view)
+    return view
+
 urlpatterns += patterns('',
-    url(r'^custom_data/(?P<identifier>[0-9a-f-]{36,36})?$', allauth_wrapper(vires.views.custom_data)),
+    url(r'^custom_data/(?P<identifier>[0-9a-f-]{36,36})?$', allauth_wrapper_with_token(vires.views.custom_data)),
     url(r'^custom_model/(?P<identifier>[0-9a-f-]{36,36})?$', allauth_wrapper(vires.views.custom_model)),
     url(r'^client_state/(?P<identifier>[0-9a-f-]{36,36})?$', allauth_wrapper(vires.views.client_state)),
 )
