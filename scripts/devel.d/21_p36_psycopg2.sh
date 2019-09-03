@@ -1,0 +1,1 @@
+../scripts.d/21_p36_psycopg2.sh

@@ -39,6 +39,7 @@ SYSTEM_NAME="VirES"
 . `dirname $0`/lib_common.sh
 . `dirname $0`/lib_logging.sh
 . `dirname $0`/lib_virtualenv.sh
+. `dirname $0`/lib_python3_venv.sh
 
 {
     info "#"
@@ -93,6 +94,12 @@ SYSTEM_NAME="VirES"
     then
         is_virtualenv_root_set || exit 1
         _mkdir "$VIRES_INSTALL_USER:$VIRES_INSTALL_GROUP" 0755 "$VIRTUALENV_ROOT" "$SYSTEM_NAME python virtualenv directory"
+    fi
+
+    if is_venv_enabled
+    then
+        is_venv_root_set || exit 1
+        _mkdir "$VIRES_INSTALL_USER:$VIRES_INSTALL_GROUP" 0755 "$P3_VENV_ROOT" "$SYSTEM_NAME python3 venv directory"
     fi
 
     #-------------------------------------------------------------------------------

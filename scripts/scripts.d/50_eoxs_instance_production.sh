@@ -38,14 +38,10 @@ required_variables SETTINGS WSGI_FILE URLS WSGI MNGCMD EOXSCONF
 required_variables STATIC_URL_PATH OWS_URL
 required_variables EOXSLOG ACCESSLOG
 required_variables EOXSMAXSIZE EOXSMAXPAGE
-
-if [ -z "$DBENGINE" -o -z "$DBNAME" ]
-then
-    load_db_conf `dirname $0`/../db.conf
-fi
-required_variables DBENGINE DBNAME
-
+required_variables OAUTH_SERVER_HOST
+required_variables DBENGINE EOXS_DBNAME
 required_variables SMTP_HOSTNAME SMTP_DEFAULT_SENDER
+
 SMTP_USE_TLS=${SMTP_USE_TLS:-YES}
 SMTP_PORT=${SMTP_PORT:-25}
 
@@ -72,7 +68,7 @@ fi
 
 ex "$SETTINGS" <<END
 1,\$s/\('ENGINE'[	 ]*:[	 ]*\).*\(,\)/\1'$DBENGINE',/
-1,\$s/\('NAME'[	 ]*:[	 ]*\).*\(,\)/\1'$DBNAME',/
+1,\$s/\('NAME'[	 ]*:[	 ]*\).*\(,\)/\1'$EOXS_DBNAME',/
 1,\$s/\('USER'[	 ]*:[	 ]*\).*\(,\)/\1'$DBUSER',/
 1,\$s/\('PASSWORD'[	 ]*:[	 ]*\).*\(,\)/\1'$DBPASSWD',/
 1,\$s/\('HOST'[	 ]*:[	 ]*\).*\(,\)/\1'$DBHOST',/
@@ -487,6 +483,7 @@ VIRES_SAT2COL = {
         "SW_OPER_TECATMS_2F",
         "SW_OPER_FACATMS_2F",
         "SW_OPER_EEFATMS_2F",
+        "SW_OPER_IPDAIRR_2F",
     ],
     'B': [
         "SW_OPER_MAGB_LR_1B",
@@ -496,6 +493,7 @@ VIRES_SAT2COL = {
         "SW_OPER_TECBTMS_2F",
         "SW_OPER_FACBTMS_2F",
         "SW_OPER_EEFBTMS_2F",
+        "SW_OPER_IPDBIRR_2F",
     ],
     'C': [
         "SW_OPER_MAGC_LR_1B",
@@ -505,6 +503,7 @@ VIRES_SAT2COL = {
         "SW_OPER_TECCTMS_2F",
         "SW_OPER_FACCTMS_2F",
         "SW_OPER_EEFCTMS_2F",
+        "SW_OPER_IPDCIRR_2F",
     ],
 }
 
@@ -571,7 +570,7 @@ $ a
 # VIRES URLS - BEGIN - Do not edit or remove this line!
 from logging import INFO, WARNING
 from django.views.decorators.csrf import csrf_exempt
-from eoxs_allauth.decorators import log_access, authenticated_only
+from eoxs_allauth.decorators import log_access, authenticated_only, token_authentication
 import vires.views
 
 def allauth_wrapper(view):
@@ -580,8 +579,15 @@ def allauth_wrapper(view):
     view = log_access(INFO, WARNING)(view)
     return view
 
+def allauth_wrapper_with_token(view):
+    view = csrf_exempt(view)
+    view = authenticated_only(view)
+    view = token_authentication(view)
+    view = log_access(INFO, WARNING)(view)
+    return view
+
 urlpatterns += patterns('',
-    url(r'^custom_data/(?P<identifier>[0-9a-f-]{36,36})?$', allauth_wrapper(vires.views.custom_data)),
+    url(r'^custom_data/(?P<identifier>[0-9a-f-]{36,36})?$', allauth_wrapper_with_token(vires.views.custom_data)),
     url(r'^custom_model/(?P<identifier>[0-9a-f-]{36,36})?$', allauth_wrapper(vires.views.custom_model)),
     url(r'^client_state/(?P<identifier>[0-9a-f-]{36,36})?$', allauth_wrapper(vires.views.client_state)),
 )
@@ -629,32 +635,15 @@ INSTALLED_APPS += (
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
-    'allauth.socialaccount.providers.facebook',
-    'allauth.socialaccount.providers.twitter',
-    'allauth.socialaccount.providers.linkedin_oauth2',
-    'allauth.socialaccount.providers.google',
-    #'allauth.socialaccount.providers.github',
-    #'allauth.socialaccount.providers.dropbox_oauth2',
+    'eoxs_allauth.vires_oauth', # VirES-OAuth2 "social account provider"
     'django_countries',
 )
 
 SOCIALACCOUNT_PROVIDERS = {
-    'linkedin_oauth2': {
-        'SCOPE': [
-            'r_emailaddress',
-            'r_basicprofile',
-        ],
-       'PROFILE_FIELDS': [
-            'id',
-            'first-name',
-            'last-name',
-            'email-address',
-            'picture-url',
-            'public-profile-url',
-            'industry',
-            'positions',
-            'location',
-        ],
+    'vires': {
+        'SERVER_URL': '/oauth/',
+        'DIRECT_SERVER_URL': 'http://$OAUTH_SERVER_HOST',
+        'SCOPE': ['read_id', 'read_permissions'],
     },
 }
 
@@ -688,26 +677,12 @@ AUTHENTICATION_BACKENDS = (
 
 # Django allauth
 SITE_ID = 1 # ID from django.contrib.sites
-LOGIN_URL = "/accounts/login/"
-LOGIN_REDIRECT_URL = "${BASE_URL_PATH:-/}"
-ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
-ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
-ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 3
-ACCOUNT_UNIQUE_EMAIL = True
-#ACCOUNT_EMAIL_SUBJECT_PREFIX = [vires.services]
-ACCOUNT_CONFIRM_EMAIL_ON_GET = True
-ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
+LOGIN_REDIRECT_URL = "/"
+LOGIN_URL = "/accounts/vires/login/"
+SOCIALACCOUNT_AUTO_SIGNUP = True
+SOCIALACCOUNT_EMAIL_REQUIRED = False
 ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'https'
-ACCOUNT_PASSWORD_MIN_LENGTH = 8
-ACCOUNT_LOGIN_ON_PASSWORD_RESET = True
-ACCOUNT_USERNAME_REQUIRED = True
-SOCIALACCOUNT_AUTO_SIGNUP = False
-SOCIALACCOUNT_EMAIL_REQUIRED = True
-SOCIALACCOUNT_EMAIL_VERIFICATION = 'mandatory'
-SOCIALACCOUNT_QUERY_EMAIL = True
-ACCOUNT_SIGNUP_FORM_CLASS = 'eoxs_allauth.forms.ESASignupForm'
-ACCOUNT_SIGNUP_EMAIL_ENTER_TWICE = True
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 TEMPLATE_CONTEXT_PROCESSORS = (
     # Required by allauth template tags
@@ -717,9 +692,6 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 )
 
 # EOxServer AllAuth
-PROFILE_UPDATE_SUCCESS_URL = "/accounts/profile/"
-PROFILE_UPDATE_SUCCESS_MESSAGE = "Profile was updated successfully."
-PROFILE_UPDATE_TEMPLATE = "account/userprofile_update_form.html"
 WORKSPACE_TEMPLATE="vires/workspace.html"
 OWS11_EXCEPTION_XSL = join(STATIC_URL, "other/owserrorstyle.xsl")
 
@@ -755,10 +727,11 @@ END
 $ a
 # ALLAUTH URLS - BEGIN - Do not edit or remove this line!
 import eoxs_allauth.views
+from vires.client_state import parse_client_state
 from django.views.generic import TemplateView
 
 urlpatterns += patterns('',
-    url(r'^/?$', eoxs_allauth.views.workspace),
+    url(r'^/?$', eoxs_allauth.views.workspace(parse_client_state)),
     url(r'^ows$', eoxs_allauth.views.wrapped_ows),
     url(r'^accounts/', include('eoxs_allauth.urls')),
     url(
@@ -963,6 +936,12 @@ python "$MNGCMD" collectstatic -l --noinput
 #python "$MNGCMD" migrate admin
 #python "$MNGCMD" migrate auth
 python "$MNGCMD" migrate --noinput
+
+# load the social providers
+if [ -n "$EOXS_SOCIAL_PROVIDERS" ]
+then
+    python "$MNGCMD" auth_load_social_providers --file "$EOXS_SOCIAL_PROVIDERS"
+fi
 
 #-------------------------------------------------------------------------------
 # STEP 8: APP-SPECIFIC INITIALISATION

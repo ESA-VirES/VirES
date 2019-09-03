@@ -30,6 +30,7 @@
 from __future__ import print_function
 import sys
 import datetime
+from numpy.testing import assert_equal
 from spacepy import pycdf
 
 LINE = '-------------------------------------------------------------'
@@ -126,7 +127,7 @@ def main(argv):
     template = "{0:<20} | {1:^21} |  {2:<}"
     for key in sorted(one.keys()):
         try:
-            is_equal = (one[key][:] == two[key][:]).all()
+            is_equal = arrays_are_equal(one[key][:], two[key][:])
             print(template.format(key, "is equal -->", str(is_equal)))
         except AttributeError:
             is_equal = (one[key][:] == two[key][:])
@@ -166,7 +167,7 @@ def main(argv):
         try:
             two_dat = two[key][:]
             one_dat = one[key][:]
-            is_equal = (two_dat == one_dat).all()
+            is_equal = arrays_are_equal(two_dat, one_dat)
             print(template.format(key, "is equal -->", str(is_equal)))
         except AttributeError:
             is_equal = (two_dat == one_dat)
@@ -180,6 +181,15 @@ def main(argv):
     print()
     print(" **** D O N E **** ")
     print()
+
+
+def arrays_are_equal(array1, array2):
+    """ Comparing arrays. NaNs are treated as equal. """
+    try:
+        assert_equal(array1, array2)
+    except AssertionError:
+        return False
+    return True
 
 
 def now():
