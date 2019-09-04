@@ -35,7 +35,7 @@ activate_venv() {
         info "python3 venv initialization ..."
         is_venv_root_set || return 1
         does_venv_root_exist || return 1
-        python36 -m 'venv' "$P3_VENV_ROOT"
+        python3 -m 'venv' "$P3_VENV_ROOT"
     fi
     . "$ACTIVATE"
     info "python3 venv activated"
