@@ -8,6 +8,6 @@
 
 . `dirname $0`/../lib_logging.sh
 
-info "Installing Python 3.6 ..."
+info "Installing Python 3 ..."
 
-yum --assumeyes install install python36 python36-devel python36-pip
+yum --assumeyes install install python3 python3-devel python3-pip
