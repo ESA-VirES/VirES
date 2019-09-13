@@ -305,6 +305,7 @@ SOCIALACCOUNT_PROVIDERS = {
 
 # app specific middlewares
 MIDDLEWARE += [
+    'vires_oauth.middleware.session_idle_timeout',
     'vires_oauth.middleware.access_logging_middleware',
     'vires_oauth.middleware.inactive_user_logout_middleware',
     'vires_oauth.middleware.oauth_user_permissions_middleware',
