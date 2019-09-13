@@ -484,6 +484,10 @@ VIRES_SAT2COL = {
         "SW_OPER_FACATMS_2F",
         "SW_OPER_EEFATMS_2F",
         "SW_OPER_IPDAIRR_2F",
+        "SW_OPER_AEJALPL_2F",
+        "SW_OPER_AEJALPS_2F",
+        "SW_OPER_AEJAPBL_2F",
+        "SW_OPER_AOBAFAC_2F",
     ],
     'B': [
         "SW_OPER_MAGB_LR_1B",
@@ -494,6 +498,10 @@ VIRES_SAT2COL = {
         "SW_OPER_FACBTMS_2F",
         "SW_OPER_EEFBTMS_2F",
         "SW_OPER_IPDBIRR_2F",
+        "SW_OPER_AEJBLPL_2F",
+        "SW_OPER_AEJBLPS_2F",
+        "SW_OPER_AEJBPBL_2F",
+        "SW_OPER_AOBBFAC_2F",
     ],
     'C': [
         "SW_OPER_MAGC_LR_1B",
@@ -504,6 +512,10 @@ VIRES_SAT2COL = {
         "SW_OPER_FACCTMS_2F",
         "SW_OPER_EEFCTMS_2F",
         "SW_OPER_IPDCIRR_2F",
+        "SW_OPER_AEJCLPL_2F",
+        "SW_OPER_AEJCLPS_2F",
+        "SW_OPER_AEJCPBL_2F",
+        "SW_OPER_AOBCFAC_2F",
     ],
 }
 
@@ -529,6 +541,12 @@ VIRES_EXTRA_SAMPLED_COLLECTIONS = {
     "SW_OPER_EEFATMS_2F",
     "SW_OPER_EEFBTMS_2F",
     "SW_OPER_EEFCTMS_2F",
+    "SW_OPER_AEJAPBL_2F",
+    "SW_OPER_AEJBPBL_2F",
+    "SW_OPER_AEJCPBL_2F",
+    "SW_OPER_AOBAFAC_2F",
+    "SW_OPER_AOBBFAC_2F",
+    "SW_OPER_AOBCFAC_2F",
 }
 
 # collections requiring samples grouping
