@@ -456,6 +456,7 @@ VIRES_SAT2COL = {
         "SW_OPER_AEJALPL_2F",
         "SW_OPER_AEJALPS_2F",
         "SW_OPER_AEJAPBL_2F",
+        "SW_OPER_AEJAPBS_2F",
         "SW_OPER_AOBAFAC_2F",
     ],
     'B': [
@@ -470,6 +471,7 @@ VIRES_SAT2COL = {
         "SW_OPER_AEJBLPL_2F",
         "SW_OPER_AEJBLPS_2F",
         "SW_OPER_AEJBPBL_2F",
+        "SW_OPER_AEJBPBS_2F",
         "SW_OPER_AOBBFAC_2F",
     ],
     'C': [
@@ -484,6 +486,7 @@ VIRES_SAT2COL = {
         "SW_OPER_AEJCLPL_2F",
         "SW_OPER_AEJCLPS_2F",
         "SW_OPER_AEJCPBL_2F",
+        "SW_OPER_AEJCPBS_2F",
         "SW_OPER_AOBCFAC_2F",
     ],
 }
