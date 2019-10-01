@@ -212,6 +212,7 @@ def convert_cdf_aej_pbs_2f(cdf_dst, cdf_src):
     _update_creator(cdf_dst)
     cdf_dst.attrs["File_Type"] = str(cdf_dst.attrs["TITLE"])[8:18] + ":VirES"
     _convert_cdf_aej_pb_common(cdf_dst, cdf_src)
+    _convert_cdf_aej_pbs_b(cdf_dst, cdf_src)
 
 
 def convert_cdf_aej_pbl_2f(cdf_dst, cdf_src):
