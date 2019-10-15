@@ -138,11 +138,6 @@ LOGGING = {
         },
     },
     'loggers': {
-        'access': {
-            'handlers': ['access_log_file'],
-            'level': 'DEBUG' if DEBUG else 'INFO',
-            'propagate': False,
-        },
         'django.request': {
             'handlers': ['access_log_file'],
             'level': 'DEBUG' if DEBUG else 'INFO',
@@ -310,8 +305,6 @@ MIDDLEWARE += [
     'vires_oauth.middleware.inactive_user_logout_middleware',
     'vires_oauth.middleware.oauth_user_permissions_middleware',
     'django.middleware.csrf.CsrfViewMiddleware',
-    # SessionAuthenticationMiddleware is only available in django 1.7
-    # 'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
@@ -370,6 +363,21 @@ VIRES_OAUTH_DEFAULT_GROUP = "default"
 \$a
 # OAUTH LOGGING - BEGIN - Do not edit or remove this line!
 LOGGING['loggers'].update({
+    'vires_oauth.access': {
+        'handlers': ['access_log_file'],
+        'level': 'DEBUG' if DEBUG else 'INFO',
+        'propagate': False,
+    },
+    'vires_oauth.allauth': {
+        'handlers': ['access_log_file'],
+        'level': 'DEBUG' if DEBUG else 'INFO',
+        'propagate': False,
+    },
+    'vires_oauth.oauth2_provider': {
+        'handlers': ['access_log_file'],
+        'level': 'DEBUG' if DEBUG else 'INFO',
+        'propagate': False,
+    },
     'vires_oauth': {
         'handlers': ['server_log_file'],
         'level': 'DEBUG' if DEBUG else 'INFO',
