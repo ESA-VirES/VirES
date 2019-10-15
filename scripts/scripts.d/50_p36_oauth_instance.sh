@@ -373,6 +373,11 @@ LOGGING['loggers'].update({
         'level': 'DEBUG' if DEBUG else 'INFO',
         'propagate': False,
     },
+    'vires_oauth.oauth2_provider': {
+        'handlers': ['access_log_file'],
+        'level': 'DEBUG' if DEBUG else 'INFO',
+        'propagate': False,
+    },
     'vires_oauth': {
         'handlers': ['server_log_file'],
         'level': 'DEBUG' if DEBUG else 'INFO',
