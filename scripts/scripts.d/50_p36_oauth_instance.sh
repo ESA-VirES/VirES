@@ -356,7 +356,7 @@ SOCIALACCOUNT_QUERY_EMAIL = True
 ACCOUNT_SIGNUP_FORM_CLASS = 'vires_oauth.forms.SignupForm'
 ACCOUNT_SIGNUP_EMAIL_ENTER_TWICE = True
 
-VIRES_OAUTH_DEFAULT_GROUP = "default"
+VIRES_OAUTH_DEFAULT_GROUPS = ["default", "swarm_vre"]
 
 # OAUTH MIDDLEWARE - END - Do not edit or remove this line!
 .
