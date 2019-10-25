@@ -110,6 +110,9 @@ export VIRES_WPS_NPROC=${VIRES_WPS_NPROC:-4}
 # WPS configuration - maximum number of queued jobs
 export VIRES_WPS_MAX_JOBS=${VIRES_WPS_MAX_JOBS:-128}
 
+# optional VRE/JupyterHub base URL
+export VIRES_VRE_JHUB_URL
+
 # some apache configurations
 export SSL_CERTIFICATE_FILE=${SSL_CERTIFICATE_FILE:-/etc/pki/tls/certs/localhost.crt}
 export SSL_CERTIFICATE_KEYFILE=${SSL_CERTIFICATE_KEYFILE:-/etc/pki/tls/private/localhost.key}
