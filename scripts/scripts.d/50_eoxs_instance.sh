@@ -646,6 +646,8 @@ AUTHENTICATION_BACKENDS = (
 
 # Django allauth
 SITE_ID = 1 # ID from django.contrib.sites
+VIRES_VRE_JHUB_PERMISSION = "swarm_vre"
+VIRES_VRE_JHUB_URL = ${VIRES_VRE_JHUB_URL:+"'"}${VIRES_VRE_JHUB_URL:-None}${VIRES_VRE_JHUB_URL:+"'"}
 LOGIN_REDIRECT_URL = "/"
 LOGIN_URL = "/accounts/vires/login/"
 SOCIALACCOUNT_AUTO_SIGNUP = True
@@ -658,6 +660,8 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.request',
     'django.contrib.auth.context_processors.auth',
     'django.contrib.messages.context_processors.messages',
+    'eoxs_allauth.vires_oauth.context_processors.vires_oauth',
+    'eoxs_allauth.context_processors.vre_jhub', # required by VRE/JupyterHub integration
 )
 
 # EOxServer AllAuth
