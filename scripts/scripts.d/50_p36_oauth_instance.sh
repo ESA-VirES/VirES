@@ -364,12 +364,13 @@ VIRES_APPS = [
     app for app in [
         {
             "name": "VirES for Swarm",
-            "url": "/",
+            "required_permission": "swarm",
+            "url": "/accounts/vires/login/?process=login",
         },
         {
             "name": "VRE (JupyterLab)",
             "required_permission": "swarm_vre",
-            "url": ${VIRES_VRE_JHUB_URL:+"'"}${VIRES_VRE_JHUB_URL:-None}${VIRES_VRE_JHUB_URL:+"'"}
+            "url": ${VIRES_VRE_JHUB_URL:+"'"}${VIRES_VRE_JHUB_URL:-None}${VIRES_VRE_JHUB_URL:+"/hub/oauth_login'"}
         },
     ] if app["url"]
 ]
