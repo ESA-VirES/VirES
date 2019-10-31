@@ -388,6 +388,7 @@ ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 3
+ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = "/accounts/vires/login/?process=login"
 ACCOUNT_UNIQUE_EMAIL = True
 #ACCOUNT_EMAIL_SUBJECT_PREFIX = [vires.services]
 ACCOUNT_CONFIRM_EMAIL_ON_GET = True
@@ -411,17 +412,19 @@ DEFAULT_FROM_EMAIL = '$SMTP_DEFAULT_SENDER'
 SERVER_EMAIL = '$SERVER_EMAIL'
 
 VIRES_OAUTH_DEFAULT_GROUPS = ["default", "swarm_vre"]
+VIRES_SERVICE_TERMS_VERSION = "2019-10-23V2.0.0D1"
 
 VIRES_APPS = [
     app for app in [
         {
             "name": "VirES for Swarm",
-            "url": "/",
+            "required_permission": "swarm",
+            "url": "/accounts/vires/login/?process=login",
         },
         {
             "name": "VRE (JupyterLab)",
             "required_permission": "swarm_vre",
-            "url": ${VIRES_VRE_JHUB_URL:+"'"}${VIRES_VRE_JHUB_URL:-None}${VIRES_VRE_JHUB_URL:+"'"}
+            "url": ${VIRES_VRE_JHUB_URL:+"'"}${VIRES_VRE_JHUB_URL:-None}${VIRES_VRE_JHUB_URL:+"/hub/oauth_login'"}
         },
     ] if app["url"]
 ]

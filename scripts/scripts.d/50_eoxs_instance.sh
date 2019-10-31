@@ -647,7 +647,7 @@ AUTHENTICATION_BACKENDS = (
 # Django allauth
 SITE_ID = 1 # ID from django.contrib.sites
 VIRES_VRE_JHUB_PERMISSION = "swarm_vre"
-VIRES_VRE_JHUB_URL = ${VIRES_VRE_JHUB_URL:+"'"}${VIRES_VRE_JHUB_URL:-None}${VIRES_VRE_JHUB_URL:+"'"}
+VIRES_VRE_JHUB_URL = ${VIRES_VRE_JHUB_URL:+"'"}${VIRES_VRE_JHUB_URL:-None}${VIRES_VRE_JHUB_URL:+"/hub/oauth_login'"}
 LOGIN_REDIRECT_URL = "/"
 LOGIN_URL = "/accounts/vires/login/"
 SOCIALACCOUNT_AUTO_SIGNUP = True
@@ -700,6 +700,7 @@ END
 $ a
 # ALLAUTH URLS - BEGIN - Do not edit or remove this line!
 import eoxs_allauth.views
+import eoxs_allauth.urls
 from vires.client_state import parse_client_state
 from django.views.generic import TemplateView
 
@@ -707,21 +708,7 @@ urlpatterns += patterns('',
     url(r'^/?$', eoxs_allauth.views.workspace(parse_client_state)),
     url(r'^ows$', eoxs_allauth.views.wrapped_ows),
     url(r'^accounts/', include('eoxs_allauth.urls')),
-    url(
-        r'^accounts/faq$',
-        TemplateView.as_view(template_name='account/faq.html'),
-        name='faq'
-    ),
-    url(
-        r'^accounts/datatc$',
-        TemplateView.as_view(template_name='account/datatc.html'),
-        name='datatc'
-    ),
-    url(
-        r'^accounts/servicetc$',
-        TemplateView.as_view(template_name='account/servicetc.html'),
-        name='servicetc'
-    ),
+    *eoxs_allauth.urls.document_urlpatterns
 )
 # ALLAUTH URLS - END - Do not edit or remove this line!
 .
