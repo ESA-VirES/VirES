@@ -678,7 +678,7 @@ AUTHENTICATION_BACKENDS = (
 # Django allauth
 SITE_ID = 1 # ID from django.contrib.sites
 VIRES_VRE_JHUB_PERMISSION = "swarm_vre"
-VIRES_VRE_JHUB_URL = ${VIRES_VRE_JHUB_URL:+"'"}${VIRES_VRE_JHUB_URL:-None}${VIRES_VRE_JHUB_URL:+"/hub/oauth_login'"}
+VIRES_VRE_JHUB_URL = ${VIRES_VRE_JHUB_URL:+"'"}${VIRES_VRE_JHUB_URL:-None}${VIRES_VRE_JHUB_URL:+"'"}
 LOGIN_REDIRECT_URL = "/"
 LOGIN_URL = "/accounts/vires/login/"
 SOCIALACCOUNT_AUTO_SIGNUP = True
