@@ -17,6 +17,8 @@ info "Configuring Jupyter Hub ..."
 export P3_VENV_ROOT="$VIRES_ROOT/python3_jhub"
 activate_venv
 
+JHUB_SOURCE_PATH="${JHUB_SOURCE_PATH:-/usr/local/vires/vires_jhub}"
+
 JHUB_CLIENT_ID="vZuNuWKsT4FDl6XcHlUQJdD5idXcsTdCdgIr9fGh"
 JHUB_CLIENT_SECRET="vm5ucD1dsHIXOfOwAWCGFR9zfKO8P4sJDsvJ45SzxY2je4dDfJdKpFJGtFA9ZlBI7RgNY2gbQqK9toM9Q7YA9Kv3HDSOLXkqcQ9me9Ww4rSRAdnhWGMP4iCpJ05UfNDN"
 
@@ -89,6 +91,9 @@ ExecStart=${P3_VENV_ROOT}/bin/jupyterhub \\
     --JupyterHub.pid_file="/run/${JHUB_SERVICE_NAME}.pid" \\
     --JupyterHub.bind_url="http://$JHUB_SERVER_HOST" \\
     --JupyterHub.base_url="$JHUB_BASE_URL_PATH" \\
+    --JupyterHub.logo_file="${P3_VENV_ROOT}/share/jupyterhub/static/vires/images/vre_logo.svg" \\
+    --JupyterHub.template_paths=["$JHUB_SOURCE_PATH/share/vires_jhub/templates"] \\
+    --JupyterHub.template_vars={"vires_url":""} \\
     --ViresOAuthenticator.server_url="/oauth/" \\
     --ViresOAuthenticator.direct_server_url="http://$OAUTH_SERVER_HOST" \\
     --ViresOAuthenticator.client_id="$JHUB_CLIENT_ID" \\

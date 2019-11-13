@@ -14,4 +14,9 @@ info "Installing VirES Jupyter Hub Integration in the development mode ..."
 export P3_VENV_ROOT="$VIRES_ROOT/python3_jhub"
 activate_venv
 
-pip install -e "${JHUB_SOURCE_PATH:-/usr/local/vires/vires_jhub}"
+JHUB_SOURCE_PATH="${JHUB_SOURCE_PATH:-/usr/local/vires/vires_jhub}"
+
+pip install -e "$JHUB_SOURCE_PATH"
+
+# link VirES custom static assets
+ln -sf "${P3_VENV_ROOT}/share/jupyterhub/static/vires" "$JHUB_SOURCE_PATH/share/vires_jhub/static"
