@@ -42,10 +42,17 @@ do
     # JHUB_BEGIN - OAuth server instance - Do not edit or remove this line!
     # OAuth server instance configured by the automatic installation script
 
+    RewriteEngine On
+    RewriteCond %{HTTP:Connection} Upgrade [NC]
+    RewriteCond %{HTTP:Upgrade} websocket [NC]
+    RewriteRule $JHUB_BASE_URL_PATH/(.*) ws://$JHUB_SERVER_HOST$JHUB_BASE_URL_PATH/\$1 [P,L]
+
+    RewriteRule $JHUB_BASE_URL_PATH/(.*) http://$JHUB_SERVER_HOST$JHUB_BASE_URL_PATH/\$1 [P,L]
+
     <Location "$JHUB_BASE_URL_PATH">
         ProxyPreserveHost on
         ProxyPass "http://$JHUB_SERVER_HOST$JHUB_BASE_URL_PATH"
-        #ProxyPassReverse "http://$JHUB_SERVER_HOST$JHUB_BASE_URL_PATH"
+        ProxyPassReverse "http://$JHUB_SERVER_HOST$JHUB_BASE_URL_PATH"
         #RequestHeader set SCRIPT_NAME "$JHUB_BASE_URL_PATH"
     </Location>
 
