@@ -165,6 +165,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'vires_oauth.context_processors.vires_oauth',
             ],
             'debug': DEBUG,
         },
@@ -340,6 +341,7 @@ ACCOUNT_EMAIL_REQUIRED = True
 #ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 ACCOUNT_EMAIL_VERIFICATION = 'none'
 ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 3
+ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = "/accounts/vires/login/?process=login"
 ACCOUNT_UNIQUE_EMAIL = True
 #ACCOUNT_EMAIL_SUBJECT_PREFIX = [vires.services]
 ACCOUNT_CONFIRM_EMAIL_ON_GET = True
@@ -356,7 +358,23 @@ SOCIALACCOUNT_QUERY_EMAIL = True
 ACCOUNT_SIGNUP_FORM_CLASS = 'vires_oauth.forms.SignupForm'
 ACCOUNT_SIGNUP_EMAIL_ENTER_TWICE = True
 
-VIRES_OAUTH_DEFAULT_GROUP = "default"
+VIRES_OAUTH_DEFAULT_GROUPS = ["default", "swarm_vre"]
+VIRES_SERVICE_TERMS_VERSION = "2019-11-12V2.0.0"
+
+VIRES_APPS = [
+    app for app in [
+        {
+            "name": "VirES for Swarm",
+            "required_permission": "swarm",
+            "url": "/accounts/vires/login/?process=login",
+        },
+        {
+            "name": "VRE (JupyterLab)",
+            "required_permission": "swarm_vre",
+            "url": ${VIRES_VRE_JHUB_URL:+"'"}${VIRES_VRE_JHUB_URL:-None}${VIRES_VRE_JHUB_URL:+"/hub/oauth_login'"}
+        },
+    ] if app["url"]
+]
 
 # OAUTH MIDDLEWARE - END - Do not edit or remove this line!
 .
