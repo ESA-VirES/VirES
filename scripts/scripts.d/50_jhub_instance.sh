@@ -87,6 +87,7 @@ PIDFile=/run/${JHUB_SERVICE_NAME}.pid
 WorkingDirectory=${JHUB_WORK_DIR}
 Environment="PATH=${P3_VENV_ROOT}/bin:/usr/bin/"
 ExecStart=${P3_VENV_ROOT}/bin/jupyterhub \\
+    --Spawner.default_url="/lab" \\
     --JupyterHub.authenticator_class='vires_jhub.authenticator.LocalViresOAuthenticator' \\
     --JupyterHub.pid_file="/run/${JHUB_SERVICE_NAME}.pid" \\
     --JupyterHub.bind_url="http://$JHUB_SERVER_HOST" \\
