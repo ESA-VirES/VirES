@@ -19,4 +19,4 @@ JHUB_SOURCE_PATH="${JHUB_SOURCE_PATH:-/usr/local/vires/vires_jhub}"
 pip install -e "$JHUB_SOURCE_PATH"
 
 # link VirES custom static assets
-ln -sf "${P3_VENV_ROOT}/share/jupyterhub/static/vires" "$JHUB_SOURCE_PATH/share/vires_jhub/static"
+ln -sf "$JHUB_SOURCE_PATH/share/vires_jhub/static" "${P3_VENV_ROOT}/share/jupyterhub/static/vires"
