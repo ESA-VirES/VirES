@@ -112,6 +112,10 @@ SYSTEM_NAME="VirES"
     while [ "$#" -gt 0 ]
     do
         case "$1" in
+            -j | --jhub )
+                info "Development JupyterHub profile selected."
+                PROFILE="jhub.d"
+                ;;
             -d | --devel )
                 info "Development installation profile selected."
                 PROFILE="devel.d"
