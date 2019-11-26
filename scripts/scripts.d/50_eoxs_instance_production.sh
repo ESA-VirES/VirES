@@ -375,6 +375,7 @@ info "Application specific configuration ..."
 /^# WPSASYNC LOGGING - BEGIN/,/^# WPSASYNC LOGGING - END/d
 /^# ALLAUTH APPS - BEGIN/,/^# ALLAUTH APPS - END/d
 /^# ALLAUTH MIDDLEWARE_CLASSES - BEGIN/,/^# ALLAUTH MIDDLEWARE_CLASSES - END/d
+/^# ALLAUTH TEMPLATES - BEGIN/,/^# ALLAUTH TEMPLATES - END/d
 /^# ALLAUTH LOGGING - BEGIN/,/^# ALLAUTH LOGGING - END/d
 /^# REQUESTLOGGING APPS - BEGIN/,/^# REQUESTLOGGING APPS - END/d
 /^# REQUESTLOGGING MIDDLEWARE_CLASSES - BEGIN/,/^# REQUESTLOGGING MIDDLEWARE_CLASSES - END/d
@@ -685,21 +686,27 @@ SOCIALACCOUNT_AUTO_SIGNUP = True
 SOCIALACCOUNT_EMAIL_REQUIRED = False
 ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'https'
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+# ALLAUTH MIDDLEWARE_CLASSES - END - Do not edit or remove this line!
+.
+/^TEMPLATES\s*=/
+/^]/a
+# ALLAUTH TEMPLATES - BEGIN - Do not edit or remove this line!
 
-TEMPLATE_CONTEXT_PROCESSORS = (
+TEMPLATES[0]['OPTIONS']['context_processors'] = [
     # Required by allauth template tags
-    'django.core.context_processors.request',
+    'django.template.context_processors.debug',
+    'django.template.context_processors.request',
     'django.contrib.auth.context_processors.auth',
     'django.contrib.messages.context_processors.messages',
     'eoxs_allauth.vires_oauth.context_processors.vires_oauth',
     'eoxs_allauth.context_processors.vre_jhub', # required by VRE/JupyterHub integration
-)
+]
 
 # EOxServer AllAuth
 WORKSPACE_TEMPLATE="vires/workspace.html"
 OWS11_EXCEPTION_XSL = join(STATIC_URL, "other/owserrorstyle.xsl")
 
-# ALLAUTH MIDDLEWARE_CLASSES - END - Do not edit or remove this line!
+# ALLAUTH TEMPLATES - END - Do not edit or remove this line!
 .
 \$a
 # ALLAUTH LOGGING - BEGIN - Do not edit or remove this line!
