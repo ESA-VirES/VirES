@@ -555,11 +555,11 @@ def allauth_wrapper_with_token(view):
     view = log_access(INFO, WARNING)(view)
     return view
 
-urlpatterns += patterns('',
+urlpatterns += [
     url(r'^custom_data/(?P<identifier>[0-9a-f-]{36,36})?$', allauth_wrapper_with_token(vires.views.custom_data)),
     url(r'^custom_model/(?P<identifier>[0-9a-f-]{36,36})?$', allauth_wrapper(vires.views.custom_model)),
     url(r'^client_state/(?P<identifier>[0-9a-f-]{36,36})?$', allauth_wrapper(vires.views.client_state)),
-)
+]
 # VIRES URLS - END - Do not edit or remove this line!
 .
 wq
@@ -572,11 +572,11 @@ END
 $ a
 # VIRES URLS - BEGIN - Do not edit or remove this line!
 import vires.views
-urlpatterns += patterns('',
+urlpatterns += [
     url(r'^custom_data/(?P<identifier>[0-9a-f-]{36,36})?$', vires.views.custom_data),
     url(r'^custom_model/(?P<identifier>[0-9a-f-]{36,36})?$', vires.views.custom_model),
     url(r'^client_state/(?P<identifier>[0-9a-f-]{36,36})?$', vires.views.client_state),
-)
+]
 # VIRES URLS - END - Do not edit or remove this line!
 .
 wq
@@ -691,7 +691,8 @@ END
 
     # Remove original url patterns
     { ex "$URLS" || /bin/true ; } <<END
-/^urlpatterns = patterns(/,/^)/s/^\\s/# /
+/^from eoxserver\\.resources\\.processes import views/s/^/# /
+/^urlpatterns = \\[/,/^]/s/^\\s/#&/
 wq
 END
 
@@ -704,12 +705,11 @@ import eoxs_allauth.urls
 from vires.client_state import parse_client_state
 from django.views.generic import TemplateView
 
-urlpatterns += patterns('',
-    url(r'^/?$', eoxs_allauth.views.workspace(parse_client_state)),
+urlpatterns += [
+    url(r'^$', eoxs_allauth.views.workspace(parse_client_state)),
     url(r'^ows$', eoxs_allauth.views.wrapped_ows),
     url(r'^accounts/', include('eoxs_allauth.urls')),
-    *eoxs_allauth.urls.document_urlpatterns
-)
+] + eoxs_allauth.urls.document_urlpatterns
 # ALLAUTH URLS - END - Do not edit or remove this line!
 .
 wq
