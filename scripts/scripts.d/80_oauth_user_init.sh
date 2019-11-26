@@ -10,12 +10,7 @@
 . `dirname $0`/../lib_python3_venv.sh
 . `dirname $0`/../lib_oauth.sh
 
-info "Configuring Vagrant OAuth instance ... "
-
-# TODO: DRY - common JHub configuration
-JHUB_CALLBACK_URL="http://localhost:8300/jhub/hub/oauth_callback"
-JHUB_CLIENT_ID="vZuNuWKsT4FDl6XcHlUQJdD5idXcsTdCdgIr9fGh"
-JHUB_CLIENT_SECRET="vm5ucD1dsHIXOfOwAWCGFR9zfKO8P4sJDsvJ45SzxY2je4dDfJdKpFJGtFA9ZlBI7RgNY2gbQqK9toM9Q7YA9Kv3HDSOLXkqcQ9me9Ww4rSRAdnhWGMP4iCpJ05UfNDN"
+info "Initializing test user ... "
 
 activate_venv
 set_instance_variables
@@ -46,28 +41,6 @@ python "$MNGCMD" auth_import_users << END
         "primary": true
       }
     ]
-  }
-]
-END
-
-# JHub OAuth client initialization
-python "$MNGCMD" loaddata --format=json - << END
-[
-  {
-    "model": "oauth2_provider.application",
-    "pk": 1,
-    "fields": {
-      "client_id": "$JHUB_CLIENT_ID",
-      "user": 1,
-      "redirect_uris": "$JHUB_CALLBACK_URL",
-      "client_type": "confidential",
-      "authorization_grant_type": "authorization-code",
-      "client_secret": "$JHUB_CLIENT_SECRET",
-      "name": "VRE - JupyterHub - Vagrant",
-      "skip_authorization": false,
-      "created": "2016-05-01T00:00:00.000Z",
-      "updated": "2016-05-01T00:00:00.000Z"
-    }
   }
 ]
 END

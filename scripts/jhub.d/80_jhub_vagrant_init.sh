@@ -1,1 +1,0 @@
-../scripts.d/80_jhub_vagrant_init.sh
