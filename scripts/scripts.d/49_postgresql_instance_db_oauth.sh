@@ -51,11 +51,10 @@ fi
 
 # create new users
 sudo -u postgres psql -q -c "CREATE USER $DBUSER WITH ENCRYPTED PASSWORD '$DBPASSWD' NOSUPERUSER NOCREATEDB NOCREATEROLE ;"
-sudo -u postgres psql -q -c "CREATE DATABASE $DBNAME WITH OWNER $DBUSER TEMPLATE template_postgis ENCODING 'UTF-8' ;"
+sudo -u postgres psql -q -c "CREATE DATABASE $DBNAME WITH OWNER $DBUSER ENCODING 'UTF-8' ;"
 
 # prepend to the beginning of the acess list
 PG_HBA="`sudo -u postgres psql -qA -c "SHOW hba_file;" | grep -m 1 "^/"`"
-echo PG_HBA="$PG_HBA"
 { sudo -u postgres ex "$PG_HBA" || /bin/true ; } <<END
 g/# OAuth instance:.*\/$INSTANCE/d
 g/^\s*local\s*$DBNAME/d

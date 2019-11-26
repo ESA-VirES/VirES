@@ -18,7 +18,7 @@ PG_DATA_DIR="${VIRES_PGDATA_DIR:-$PG_DATA_DIR_DEFAULT}"
 if [ -n "`systemctl | grep $PG_SERVICE_NAME`" ]
 then
     info "Stopping running PostgreSQL server ..."
-    PG_DATA_DIR_LAST=`sudo -u postgres psql -c 'SHOW data_directory;' | grep -m 1 '/'`
+    PG_DATA_DIR_LAST=`sudo -u postgres psql -qA -c 'SHOW data_directory;' | grep -m 1 '^/'`
     systemctl stop $PG_SERVICE_NAME
 else
     [ -f "$CONF_FILE" ] && PG_DATA_DIR_LAST="`head -n 1 "$CONF_FILE"`"
@@ -31,9 +31,11 @@ yum --assumeyes --setopt=obsoletes=0 install postgis2_96
 # Check if the database location changed since the last run.
 [ -f "$CONF_FILE" -a -z "$PG_DATA_DIR_LAST" ] && PG_DATA_DIR_LAST="`head -n 1 "$CONF_FILE"`"
 
-if [ "$PG_DATA_DIR" == "$PG_DATA_DIR_LAST" -a -z "$RESET" ]
+# set RESET_DB variable to YES to remove the existing database
+if [ "$PG_DATA_DIR" == "$PG_DATA_DIR_LAST" -a -z "$RESET_DB" ]
 then
     info "PostgreSQL data location already set to $PG_DATA_DIR"
+    info "Preserving the existing PosgreSQL DB cluster ..."
 
     systemctl start $PG_SERVICE_NAME
     systemctl status $PG_SERVICE_NAME
@@ -44,7 +46,7 @@ info "Removing the existing PosgreSQL DB cluster ..."
 rm -fR "$PG_DATA_DIR_DEFAULT"
 rm -fR "$PG_DATA_DIR"
 rm -fR "$PG_DATA_DIR_LAST"
-rm -f "`dirname $0`/../db_*.conf"
+rm -fv "`dirname $0`/../"db_*.conf
 
 info "Setting the PostgreSQL data location to: $PG_DATA_DIR"
 cat >/etc/systemd/system/$PG_SERVICE_NAME <<END
@@ -66,16 +68,3 @@ systemctl disable $PG_SERVICE_NAME # DO NOT REMOVE!
 systemctl enable $PG_SERVICE_NAME
 systemctl start $PG_SERVICE_NAME
 systemctl status $PG_SERVICE_NAME
-
-## Setup postgis database template.
-if [ -z "`sudo -u postgres psql --list | grep template_postgis`" ]
-then
-    sudo -u postgres createdb template_postgis
-    #sudo -u postgres createlang plpgsql template_postgis
-
-    sudo -u postgres psql -q -d template_postgis -f "$PGIS_TEMPLATES/postgis.sql"
-    sudo -u postgres psql -q -d template_postgis -f "$PGIS_TEMPLATES/spatial_ref_sys.sql"
-    sudo -u postgres psql -q -d template_postgis -c "GRANT ALL ON geometry_columns TO PUBLIC;"
-    sudo -u postgres psql -q -d template_postgis -c "GRANT ALL ON geography_columns TO PUBLIC;"
-    sudo -u postgres psql -q -d template_postgis -c "GRANT ALL ON spatial_ref_sys TO PUBLIC;"
-fi

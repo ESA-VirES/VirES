@@ -11,7 +11,8 @@
 
 info "Installing psycopg2 (Python-PostgreSQL Database Adapter) ... """
 
-yum --assumeyes install postgresql-devel
+yum --assumeyes install ${PG_DEVEL_PACKAGE:-postgresql-devel}
 
+[ -n "PG_PATH" ] && export export PATH="$PG_PATH:$PATH"
 activate_virtualenv
 pip install --force-reinstall --no-binary :all: psycopg2
