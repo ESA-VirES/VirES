@@ -34,6 +34,7 @@ DBUSER="oauth_admin_${INSTANCE}"
 DBPASSWD="${INSTANCE}_admin_admin_`head -c 24 < /dev/urandom | base64 | tr '/' '_'`"
 DBHOST=""
 DBPORT=""
+PG_HBA="`sudo -u postgres psql -qA -c "SHOW hba_file;" | grep -m 1 "^/"`"
 
 save_db_conf "$DB_CONF"
 
@@ -53,8 +54,7 @@ fi
 sudo -u postgres psql -q -c "CREATE USER $DBUSER WITH ENCRYPTED PASSWORD '$DBPASSWD' NOSUPERUSER NOCREATEDB NOCREATEROLE ;"
 sudo -u postgres psql -q -c "CREATE DATABASE $DBNAME WITH OWNER $DBUSER ENCODING 'UTF-8' ;"
 
-# prepend to the beginning of the acess list
-PG_HBA="`sudo -u postgres psql -qA -c "SHOW hba_file;" | grep -m 1 "^/"`"
+# make the DB accessible for the dedicated user only
 { sudo -u postgres ex "$PG_HBA" || /bin/true ; } <<END
 g/# OAuth instance:.*\/$INSTANCE/d
 g/^\s*local\s*$DBNAME/d
@@ -65,6 +65,4 @@ local	$DBNAME	all	reject
 .
 wq
 END
-
-systemctl restart $PG_SERVICE_NAME
-systemctl status $PG_SERVICE_NAME
+sudo -u postgres psql -q -c "SELECT pg_reload_conf();" >/dev/null
