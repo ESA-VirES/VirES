@@ -729,8 +729,8 @@ END
 
     # Remove original url patterns
     { ex "$URLS" || /bin/true ; } <<END
-/^from eoxserver\.resources\.processes import views/s/^/# /
-/^urlpatterns = [/,/^]/s/^\\s/# /
+/^from eoxserver\\.resources\\.processes import views/s/^/# /
+/^urlpatterns = \\[/,/^]/s/^\\s/#&/
 wq
 END
 
@@ -938,7 +938,7 @@ python "$MNGCMD" migrate --noinput
 # load the social providers
 if [ -n "$EOXS_SOCIAL_PROVIDERS" ]
 then
-    python "$MNGCMD" auth_load_social_providers --file "$EOXS_SOCIAL_PROVIDERS"
+    python "$MNGCMD" auth_import_social_providers --file "$EOXS_SOCIAL_PROVIDERS"
 fi
 
 #-------------------------------------------------------------------------------
