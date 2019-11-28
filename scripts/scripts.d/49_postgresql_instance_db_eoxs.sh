@@ -34,19 +34,19 @@ DBUSER="eoxs_admin_${INSTANCE}"
 DBPASSWD="${INSTANCE}_admin_eoxs_`head -c 24 < /dev/urandom | base64 | tr '/' '_'`"
 DBHOST=""
 DBPORT=""
-PG_HBA="`sudo -u postgres psql -qA -c "SHOW hba_file;" | grep -m 1 "^/"`"
+PG_HBA="`psql -qA -c "SHOW hba_file;" | grep -m 1 "^/"`"
 
 save_db_conf "$DB_CONF"
 
 # deleting any previously existing database
-sudo -u postgres psql -q -c "DROP DATABASE $DBNAME ;" 2>/dev/null \
+psql -q -c "DROP DATABASE $DBNAME ;" 2>/dev/null \
   && warn " The already existing database '$DBNAME' was removed." || /bin/true
 
 # deleting any previously existing user
-TMP=`sudo -u postgres psql -tAc "SELECT 1 FROM pg_roles WHERE rolname='$DBUSER' ;"`
+TMP=`psql -tAc "SELECT 1 FROM pg_roles WHERE rolname='$DBUSER' ;"`
 if [ 1 == "$TMP" ]
 then
-    sudo -u postgres psql -q -c "DROP USER $DBUSER ;"
+    psql -q -c "DROP USER $DBUSER ;"
     warn " The alredy existing database user '$DBUSER' was removed"
 fi
 
@@ -58,12 +58,12 @@ g/^\s*local\s*$DBNAME/d
 .
 wq
 END
-sudo -u postgres psql -q -c "SELECT pg_reload_conf();" >/dev/null
+psql -q -c "SELECT pg_reload_conf();" >/dev/null
 
 # create new users
-sudo -u postgres psql -q -c "CREATE USER $DBUSER WITH ENCRYPTED PASSWORD '$DBPASSWD' NOSUPERUSER NOCREATEDB NOCREATEROLE ;"
-sudo -u postgres psql -q -c "CREATE DATABASE $DBNAME WITH OWNER $DBUSER ENCODING 'UTF-8' ;"
-sudo -u postgres psql -q -d "$DBNAME" -c "CREATE EXTENSION IF NOT EXISTS postgis ;"
+psql -q -c "CREATE USER $DBUSER WITH ENCRYPTED PASSWORD '$DBPASSWD' NOSUPERUSER NOCREATEDB NOCREATEROLE ;"
+psql -q -c "CREATE DATABASE $DBNAME WITH OWNER $DBUSER ENCODING 'UTF-8' ;"
+psql -q -d "$DBNAME" -c "CREATE EXTENSION IF NOT EXISTS postgis ;"
 
 # make the DB accessible for the dedicated user only
 { sudo -u postgres ex "$PG_HBA" || /bin/true ; } <<END
@@ -76,4 +76,4 @@ local	$DBNAME	all	reject
 .
 wq
 END
-sudo -u postgres psql -q -c "SELECT pg_reload_conf();" >/dev/null
+psql -q -c "SELECT pg_reload_conf();" >/dev/null

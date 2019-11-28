@@ -160,5 +160,7 @@ export CONFIGURE_HTTPS
 
 export PIP_OPTIONS="--upgrade --upgrade-strategy=only-if-needed"
 
-export PG_PATH="${PG_PATH:-/usr/pgsql-9.6/bin/}"
-export PG_DEVEL_PACKAGE="${PG_DEVEL_PACKAGE:-postgresql96-devel}"
+export PG_VERSION="${PG_VERSION:-9.6}"
+export PG_REPO="${PG_REPO:-pgdg96}"
+export PG_PREFIX="${PG_PREFIX:-postgresql96}"
+export PGIS_PACKAGE="${PGIS_PACKAGE:-postgis2_96}"

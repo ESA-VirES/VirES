@@ -1,0 +1,1 @@
+../scripts.d/11_rpm_repos_postgresql.sh

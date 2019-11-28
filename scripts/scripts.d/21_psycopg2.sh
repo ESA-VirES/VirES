@@ -8,11 +8,11 @@
 
 . `dirname $0`/../lib_logging.sh
 . `dirname $0`/../lib_virtualenv.sh
+. `dirname $0`/../lib_postgres.sh
 
 info "Installing psycopg2 (Python-PostgreSQL Database Adapter) ... """
 
-yum --assumeyes install ${PG_DEVEL_PACKAGE:-postgresql-devel}
+yum --assumeyes install $PG_DEVEL_PACKAGE
 
-[ -n "PG_PATH" ] && export export PATH="$PG_PATH:$PATH"
 activate_virtualenv
 pip install --force-reinstall --no-binary :all: psycopg2

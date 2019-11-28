@@ -9,27 +9,23 @@
 . `dirname $0`/../lib_logging.sh
 . `dirname $0`/../lib_postgres.sh
 
-CONF_FILE="$HOME/.pg_data_dir"
+info "Installing PosgreSQL $PG_VERSION RDBMS ... "
 
-info "Installing PosgreSQL RDBMS ... "
-
-PG_DATA_DIR="${VIRES_PGDATA_DIR:-$PG_DATA_DIR_DEFAULT}"
+# Install RPM packages
+yum --assumeyes install $PG_PACKAGE $PG_SERVER_PACKAGE
+yum --assumeyes --setopt=obsoletes=0 install $PGIS_PACKAGE
 
 if [ -n "`systemctl | grep $PG_SERVICE_NAME`" ]
 then
     info "Stopping running PostgreSQL server ..."
-    PG_DATA_DIR_LAST=`sudo -u postgres psql -qA -c 'SHOW data_directory;' | grep -m 1 '^/'`
+    PG_DATA_DIR_LAST=`psql -qA -c 'SHOW data_directory;' | grep -m 1 '^/'`
     systemctl stop $PG_SERVICE_NAME
 else
-    [ -f "$CONF_FILE" ] && PG_DATA_DIR_LAST="`head -n 1 "$CONF_FILE"`"
+    [ -f "$PG_CONF_FILE" ] && PG_DATA_DIR_LAST="`head -n 1 "$PG_CONF_FILE"`"
 fi
 
-# Install RPM packages
-yum --assumeyes install postgresql96 postgresql96-server
-yum --assumeyes --setopt=obsoletes=0 install postgis2_96
-
 # Check if the database location changed since the last run.
-[ -f "$CONF_FILE" -a -z "$PG_DATA_DIR_LAST" ] && PG_DATA_DIR_LAST="`head -n 1 "$CONF_FILE"`"
+[ -f "$PG_CONF_FILE" -a -z "$PG_DATA_DIR_LAST" ] && PG_DATA_DIR_LAST="`head -n 1 "$PG_CONF_FILE"`"
 
 # set RESET_DB variable to YES to remove the existing database
 if [ "$PG_DATA_DIR" == "$PG_DATA_DIR_LAST" -a -z "$RESET_DB" ]
@@ -62,7 +58,7 @@ info "New database initialisation ... "
 postgresql-setup initdb
 
 # Store current data location.
-echo "$PG_DATA_DIR" > "$CONF_FILE"
+echo "$PG_DATA_DIR" > "$PG_CONF_FILE"
 
 systemctl disable $PG_SERVICE_NAME # DO NOT REMOVE!
 systemctl enable $PG_SERVICE_NAME
