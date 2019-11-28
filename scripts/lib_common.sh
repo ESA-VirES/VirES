@@ -159,3 +159,8 @@ export CONFIGURE_HTTP
 export CONFIGURE_HTTPS
 
 export PIP_OPTIONS="--upgrade --upgrade-strategy=only-if-needed"
+
+export PG_VERSION="${PG_VERSION:-9.6}"
+export PG_REPO="${PG_REPO:-pgdg96}"
+export PG_PREFIX="${PG_PREFIX:-postgresql96}"
+export PGIS_PACKAGE="${PGIS_PACKAGE:-postgis2_96}"

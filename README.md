@@ -106,10 +106,10 @@ git clone git@github.com:ESA-VirES/VirES-Server.git
 git clone git@github.com:EOxServer/eoxserver.git
 ```
 
-Switch to `0.4` branch of the `eoxserver`
+Switch to `0.4-d1.11` branch of the `eoxserver`
 ```bash
 cd eoxserver
-git checkout 0.4
+git checkout 0.4-d1.11
 git pull
 ```
 
