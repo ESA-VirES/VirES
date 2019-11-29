@@ -11,7 +11,7 @@
 
 info "Installing VirES Jupyter Hub Integration in the development mode ..."
 
-export P3_VENV_ROOT="$VIRES_ROOT/python3_jhub"
+export P3_VENV_ROOT="$PYTHON_VENV_JHUB"
 activate_venv
 
 JHUB_SOURCE_PATH="${JHUB_SOURCE_PATH:-/usr/local/vires/vires_jhub}"

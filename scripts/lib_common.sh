@@ -130,11 +130,20 @@ export DBPORT=${DBPORT:-}
 # are we using virtualenv
 export ENABLE_VIRTUALENV=${ENABLE_VIRTUALENV:-YES}
 
+# EOxServer/VirES-Server virtual environment
+export PYTHON_VENV_EOXS="${PYTHON_VENV_EOXS:-$VIRES_ROOT/venv_p27_eoxs}"
+
+# OAuth server virtual environment
+export PYTHON_VENV_OAUTH="${PYTHON_VENV_OAUTH:-$VIRES_ROOT/venv_p36_oauth}"
+
+# Jupyter Hub virtual environment
+export PYTHON_VENV_JHUB="${PYTHON_VENV_JHUB:-$VIRES_ROOT/venv_p36_jhub}"
+
 # pyhton virtualenv root
-export VIRTUALENV_ROOT=${VIRTUALENV_ROOT:-$VIRES_ROOT/virtualenv}
+export VIRTUALENV_ROOT=${VIRTUALENV_ROOT:-$PYTHON_VENV_EOXS}
 
 # pyhton 3 venv root
-export P3_VENV_ROOT=${P3_VENV_ROOT:-$VIRES_ROOT/python3_venv}
+export P3_VENV_ROOT=${P3_VENV_ROOT:-$PYTHON_VENV_OAUTH}
 
 # Switch controlling wether the AllAuth gets configured or not.
 export CONFIGURE_ALLAUTH=${CONFIGURE_ALLAUTH:-NO}
