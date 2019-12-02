@@ -34,27 +34,38 @@ DBUSER="eoxs_admin_${INSTANCE}"
 DBPASSWD="${INSTANCE}_admin_eoxs_`head -c 24 < /dev/urandom | base64 | tr '/' '_'`"
 DBHOST=""
 DBPORT=""
+PG_HBA="`psql -qA -c "SHOW hba_file;" | grep -m 1 "^/"`"
 
 save_db_conf "$DB_CONF"
 
 # deleting any previously existing database
-sudo -u postgres psql -q -c "DROP DATABASE $DBNAME ;" 2>/dev/null \
+psql -q -c "DROP DATABASE $DBNAME ;" 2>/dev/null \
   && warn " The already existing database '$DBNAME' was removed." || /bin/true
 
 # deleting any previously existing user
-TMP=`sudo -u postgres psql -tAc "SELECT 1 FROM pg_roles WHERE rolname='$DBUSER' ;"`
+TMP=`psql -tAc "SELECT 1 FROM pg_roles WHERE rolname='$DBUSER' ;"`
 if [ 1 == "$TMP" ]
 then
-    sudo -u postgres psql -q -c "DROP USER $DBUSER ;"
+    psql -q -c "DROP USER $DBUSER ;"
     warn " The alredy existing database user '$DBUSER' was removed"
 fi
 
-# create new users
-sudo -u postgres psql -q -c "CREATE USER $DBUSER WITH ENCRYPTED PASSWORD '$DBPASSWD' NOSUPERUSER NOCREATEDB NOCREATEROLE ;"
-sudo -u postgres psql -q -c "CREATE DATABASE $DBNAME WITH OWNER $DBUSER TEMPLATE template_postgis ENCODING 'UTF-8' ;"
+# enable access to the DB to allow creation of the extension
+{ sudo -u postgres ex "$PG_HBA" || /bin/true ; } <<END
+g/# EOxServer instance:.*\/$INSTANCE/d
+g/^\s*local\s*$DBNAME/d
+/#\s*TYPE\s*DATABASE\s*USER\s*.*ADDRESS\s*METHOD/a
+.
+wq
+END
+psql -q -c "SELECT pg_reload_conf();" >/dev/null
 
-# prepend to the beginning of the acess list
-PG_HBA="`sudo -u postgres psql -qA -d template_postgis -c "SHOW data_directory;" | grep -m 1 "^/"`/pg_hba.conf"
+# create new users
+psql -q -c "CREATE USER $DBUSER WITH ENCRYPTED PASSWORD '$DBPASSWD' NOSUPERUSER NOCREATEDB NOCREATEROLE ;"
+psql -q -c "CREATE DATABASE $DBNAME WITH OWNER $DBUSER ENCODING 'UTF-8' ;"
+psql -q -d "$DBNAME" -c "CREATE EXTENSION IF NOT EXISTS postgis ;"
+
+# make the DB accessible for the dedicated user only
 { sudo -u postgres ex "$PG_HBA" || /bin/true ; } <<END
 g/# EOxServer instance:.*\/$INSTANCE/d
 g/^\s*local\s*$DBNAME/d
@@ -65,6 +76,4 @@ local	$DBNAME	all	reject
 .
 wq
 END
-
-systemctl restart $PG_SERVICE_NAME
-systemctl status $PG_SERVICE_NAME
+psql -q -c "SELECT pg_reload_conf();" >/dev/null

@@ -344,6 +344,7 @@ info "Application specific configuration ..."
 /^# WPSASYNC LOGGING - BEGIN/,/^# WPSASYNC LOGGING - END/d
 /^# ALLAUTH APPS - BEGIN/,/^# ALLAUTH APPS - END/d
 /^# ALLAUTH MIDDLEWARE_CLASSES - BEGIN/,/^# ALLAUTH MIDDLEWARE_CLASSES - END/d
+/^# ALLAUTH TEMPLATES - BEGIN/,/^# ALLAUTH TEMPLATES - END/d
 /^# ALLAUTH LOGGING - BEGIN/,/^# ALLAUTH LOGGING - END/d
 /^# REQUESTLOGGING APPS - BEGIN/,/^# REQUESTLOGGING APPS - END/d
 /^# REQUESTLOGGING MIDDLEWARE_CLASSES - BEGIN/,/^# REQUESTLOGGING MIDDLEWARE_CLASSES - END/d
@@ -579,11 +580,11 @@ def allauth_wrapper_with_token(view):
     view = log_access(INFO, WARNING)(view)
     return view
 
-urlpatterns += patterns('',
+urlpatterns += [
     url(r'^custom_data/(?P<identifier>[0-9a-f-]{36,36})?$', allauth_wrapper_with_token(vires.views.custom_data)),
     url(r'^custom_model/(?P<identifier>[0-9a-f-]{36,36})?$', allauth_wrapper(vires.views.custom_model)),
     url(r'^client_state/(?P<identifier>[0-9a-f-]{36,36})?$', allauth_wrapper(vires.views.client_state)),
-)
+]
 # VIRES URLS - END - Do not edit or remove this line!
 .
 wq
@@ -596,11 +597,11 @@ END
 $ a
 # VIRES URLS - BEGIN - Do not edit or remove this line!
 import vires.views
-urlpatterns += patterns('',
+urlpatterns += [
     url(r'^custom_data/(?P<identifier>[0-9a-f-]{36,36})?$', vires.views.custom_data),
     url(r'^custom_model/(?P<identifier>[0-9a-f-]{36,36})?$', vires.views.custom_model),
     url(r'^client_state/(?P<identifier>[0-9a-f-]{36,36})?$', vires.views.client_state),
-)
+]
 # VIRES URLS - END - Do not edit or remove this line!
 .
 wq
@@ -685,25 +686,35 @@ AUTHENTICATION_BACKENDS = (
 
 # Django allauth
 SITE_ID = 1 # ID from django.contrib.sites
+VIRES_VRE_JHUB_PERMISSION = "swarm_vre"
+VIRES_VRE_JHUB_URL = ${VIRES_VRE_JHUB_URL:+"'"}${VIRES_VRE_JHUB_URL:-None}${VIRES_VRE_JHUB_URL:+"'"}
 LOGIN_REDIRECT_URL = "/"
 LOGIN_URL = "/accounts/vires/login/"
 SOCIALACCOUNT_AUTO_SIGNUP = True
 SOCIALACCOUNT_EMAIL_REQUIRED = False
 ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'http'
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+# ALLAUTH MIDDLEWARE_CLASSES - END - Do not edit or remove this line!
+.
+/^TEMPLATES\s*=/
+/^]/a
+# ALLAUTH TEMPLATES - BEGIN - Do not edit or remove this line!
 
-TEMPLATE_CONTEXT_PROCESSORS = (
+TEMPLATES[0]['OPTIONS']['context_processors'] = [
     # Required by allauth template tags
-    'django.core.context_processors.request',
+    'django.template.context_processors.debug',
+    'django.template.context_processors.request',
     'django.contrib.auth.context_processors.auth',
     'django.contrib.messages.context_processors.messages',
-)
+    'eoxs_allauth.vires_oauth.context_processors.vires_oauth',
+    'eoxs_allauth.context_processors.vre_jhub', # required by VRE/JupyterHub integration
+]
 
 # EOxServer AllAuth
 WORKSPACE_TEMPLATE="vires/workspace.html"
 OWS11_EXCEPTION_XSL = join(STATIC_URL, "other/owserrorstyle.xsl")
 
-# ALLAUTH MIDDLEWARE_CLASSES - END - Do not edit or remove this line!
+# ALLAUTH TEMPLATES - END - Do not edit or remove this line!
 .
 \$a
 # ALLAUTH LOGGING - BEGIN - Do not edit or remove this line!
@@ -726,7 +737,8 @@ END
 
     # Remove original url patterns
     { ex "$URLS" || /bin/true ; } <<END
-/^urlpatterns = patterns(/,/^)/s/^\\s/# /
+/^from eoxserver\\.resources\\.processes import views/s/^/# /
+/^urlpatterns = \\[/,/^]/s/^\\s/#&/
 wq
 END
 
@@ -735,30 +747,16 @@ END
 $ a
 # ALLAUTH URLS - BEGIN - Do not edit or remove this line!
 import eoxs_allauth.views
+import eoxs_allauth.urls
 from vires.client_state import parse_client_state
 from django.views.generic import TemplateView
 
-urlpatterns += patterns('',
-    url(r'^/?$', eoxs_allauth.views.workspace(parse_client_state)),
+urlpatterns += [
+    url(r'^$', eoxs_allauth.views.workspace(parse_client_state)),
     url(r'^ows$', eoxs_allauth.views.wrapped_ows),
     url(r'^openows$', eoxs_allauth.views.open_ows),
     url(r'^accounts/', include('eoxs_allauth.urls')),
-    url(
-        r'^accounts/faq$',
-        TemplateView.as_view(template_name='account/faq.html'),
-        name='faq'
-    ),
-    url(
-        r'^accounts/datatc$',
-        TemplateView.as_view(template_name='account/datatc.html'),
-        name='datatc'
-    ),
-    url(
-        r'^accounts/servicetc$',
-        TemplateView.as_view(template_name='account/servicetc.html'),
-        name='servicetc'
-    ),
-)
+] + eoxs_allauth.urls.document_urlpatterns
 # ALLAUTH URLS - END - Do not edit or remove this line!
 .
 wq
