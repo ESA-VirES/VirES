@@ -13,5 +13,5 @@ info "Installing Django ..."
 
 activate_venv
 
-pip install $PIP_OPTIONS 'Django>=2.2.2,<2.3a0'
+pip install $PIP_OPTIONS 'Django>=2.2.2,<3.0'
 pip install $PIP_OPTIONS django-requestlogging
