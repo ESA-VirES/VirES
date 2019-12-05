@@ -69,13 +69,13 @@ fi
 # STEP 2: SETUP DJANGO DB BACKEND
 
 ex "$SETTINGS" <<END
-1,\$s/\('ENGINE'[	 ]*:[	 ]*\).*\(,\)/\1'$DBENGINE',/
-1,\$s/\('NAME'[	 ]*:[	 ]*\).*\(,\)/\1'$DBNAME',/
-1,\$s/\('USER'[	 ]*:[	 ]*\).*\(,\)/\1'$DBUSER',/
-1,\$s/\('PASSWORD'[	 ]*:[	 ]*\).*\(,\)/\1'$DBPASSWD',/
-1,\$s/\('HOST'[	 ]*:[	 ]*\).*\(,\)/\1'$DBHOST',/
-1,\$s/\('PORT'[	 ]*:[	 ]*\).*\(,\)/\1'$DBPORT',/
-1,\$s:\(STATIC_URL[	 ]*=[	 ]*\).*:\1'$STATIC_URL_PATH/':
+1,\$s/\('ENGINE'\s*:\s*\).*\(,\)/\1'$DBENGINE',/
+1,\$s/\('NAME'\s*:\s*\).*\(,\)/\1'$DBNAME',/
+1,\$s/\('USER'\s*:\s*\).*\(,\)/\1'$DBUSER',/
+1,\$s/\('PASSWORD'\s*:\s*\).*\(,\)/\1'$DBPASSWD',/
+1,\$s/\('HOST'\s*:\s*\).*\(,\)/\1'$DBHOST',/
+1,\$s/\('PORT'\s*:\s*\).*\(,\)/\1'$DBPORT',/
+1,\$s:\(STATIC_URL\s*=\s*\).*:\1'$STATIC_URL_PATH/':
 wq
 END
 
@@ -162,7 +162,7 @@ END
 
 # set the new configuration
 ex "$EOXSCONF" <<END
-/^[	 ]*http_service_url[	 ]*=/s;\(^[	 ]*http_service_url[	 ]*=\).*;\1${OWS_URL};
+/^\s*http_service_url\s*=/s;\(^\s*http_service_url\s*=\).*;\1${OWS_URL};
 g/^#.*supported_crs/,/^$/d
 /\[services\.ows\.wms\]/a
 # WMS_SUPPORTED_CRS - BEGIN - Do not edit or remove this line!
@@ -213,8 +213,8 @@ g/^[ 	#]*maxsize[ 	]/d
 /\[services\.ows\.wcs\]/a
 maxsize = $EOXSMAXSIZE
 .
-/^[	 ]*source_to_native_format_map[	 ]*=/s#\(^[	 ]*source_to_native_format_map[	 ]*=\).*#\1application/x-esa-envisat,application/x-esa-envisat#
-/^[	 ]*paging_count_default[	 ]*=/s/\(^[	 ]*paging_count_default[	 ]*=\).*/\1${EOXSMAXPAGE}/
+/^\s*source_to_native_format_map\s*=/s#\(^\s*source_to_native_format_map\s*=\).*#\1application/x-esa-envisat,application/x-esa-envisat#
+/^\s*paging_count_default\s*=/s/\(^\s*paging_count_default\s*=\).*/\1${EOXSMAXPAGE}/
 
 wq
 END
