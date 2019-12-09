@@ -538,28 +538,13 @@ END
         ex "$URLS" <<END
 $ a
 # VIRES URLS - BEGIN - Do not edit or remove this line!
-from logging import INFO, WARNING
-from django.views.decorators.csrf import csrf_exempt
-from eoxs_allauth.decorators import log_access, authenticated_only, token_authentication
+from eoxs_allauth.views import wrap_protected_api
 import vires.views
 
-def allauth_wrapper(view):
-    view = csrf_exempt(view)
-    view = authenticated_only(view)
-    view = log_access(INFO, WARNING)(view)
-    return view
-
-def allauth_wrapper_with_token(view):
-    view = csrf_exempt(view)
-    view = authenticated_only(view)
-    view = token_authentication(view)
-    view = log_access(INFO, WARNING)(view)
-    return view
-
 urlpatterns += [
-    url(r'^custom_data/(?P<identifier>[0-9a-f-]{36,36})?$', allauth_wrapper_with_token(vires.views.custom_data)),
-    url(r'^custom_model/(?P<identifier>[0-9a-f-]{36,36})?$', allauth_wrapper(vires.views.custom_model)),
-    url(r'^client_state/(?P<identifier>[0-9a-f-]{36,36})?$', allauth_wrapper(vires.views.client_state)),
+    url(r'^custom_data/(?P<identifier>[0-9a-f-]{36,36})?$', wrap_protected_api(vires.views.custom_data)),
+    #url(r'^custom_model/(?P<identifier>[0-9a-f-]{36,36})?$', wrap_protected_api(vires.views.custom_model)),
+    #url(r'^client_state/(?P<identifier>[0-9a-f-]{36,36})?$', wrap_protected_api(vires.views.client_state)),
 ]
 # VIRES URLS - END - Do not edit or remove this line!
 .
@@ -575,8 +560,8 @@ $ a
 import vires.views
 urlpatterns += [
     url(r'^custom_data/(?P<identifier>[0-9a-f-]{36,36})?$', vires.views.custom_data),
-    url(r'^custom_model/(?P<identifier>[0-9a-f-]{36,36})?$', vires.views.custom_model),
-    url(r'^client_state/(?P<identifier>[0-9a-f-]{36,36})?$', vires.views.client_state),
+    #url(r'^custom_model/(?P<identifier>[0-9a-f-]{36,36})?$', vires.views.custom_model),
+    #url(r'^client_state/(?P<identifier>[0-9a-f-]{36,36})?$', vires.views.client_state),
 ]
 # VIRES URLS - END - Do not edit or remove this line!
 .
@@ -707,14 +692,15 @@ END
     ex "$URLS" <<END
 $ a
 # ALLAUTH URLS - BEGIN - Do not edit or remove this line!
-import eoxs_allauth.views
+from django.views.generic import TemplateView
+from eoxserver.services.views import ows
+from eoxs_allauth.views import wrap_protected_api, wrap_open_api, workspace
 import eoxs_allauth.urls
 from vires.client_state import parse_client_state
-from django.views.generic import TemplateView
 
 urlpatterns += [
-    url(r'^$', eoxs_allauth.views.workspace(parse_client_state)),
-    url(r'^ows$', eoxs_allauth.views.wrapped_ows),
+    url(r'^$', workspace(parse_client_state), name="workspace"),
+    url(r'^ows$', wrap_protected_api(ows)),
     url(r'^accounts/', include('eoxs_allauth.urls')),
 ] + eoxs_allauth.urls.document_urlpatterns
 # ALLAUTH URLS - END - Do not edit or remove this line!
