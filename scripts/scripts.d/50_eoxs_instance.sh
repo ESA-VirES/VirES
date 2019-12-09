@@ -15,6 +15,8 @@ info "Configuring EOxServer instance ... "
 
 activate_virtualenv
 
+VIRES_PERMISSION=${VIRES_PERMISSION:-swarm}
+
 # Configuration switches - all default to YES
 CONFIGURE_VIRES=${CONFIGURE_VIRES:-YES}
 CONFIGURE_ALLAUTH=${CONFIGURE_ALLAUTH:-YES}
@@ -599,6 +601,7 @@ SOCIALACCOUNT_PROVIDERS = {
         'SERVER_URL': '/oauth/',
         'DIRECT_SERVER_URL': 'http://$OAUTH_SERVER_HOST',
         'SCOPE': ['read_id', 'read_permissions'],
+        'PERMISSION': '$VIRES_PERMISSION',
     },
 }
 
