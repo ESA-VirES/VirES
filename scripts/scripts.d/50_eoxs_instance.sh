@@ -15,6 +15,8 @@ info "Configuring EOxServer instance ... "
 
 activate_virtualenv
 
+VIRES_PERMISSION=${VIRES_PERMISSION:-swarm}
+
 # Configuration switches - all default to YES
 CONFIGURE_VIRES=${CONFIGURE_VIRES:-YES}
 CONFIGURE_ALLAUTH=${CONFIGURE_ALLAUTH:-YES}
@@ -69,13 +71,13 @@ fi
 # STEP 2: SETUP DJANGO DB BACKEND
 
 ex "$SETTINGS" <<END
-1,\$s/\('ENGINE'[	 ]*:[	 ]*\).*\(,\)/\1'$DBENGINE',/
-1,\$s/\('NAME'[	 ]*:[	 ]*\).*\(,\)/\1'$DBNAME',/
-1,\$s/\('USER'[	 ]*:[	 ]*\).*\(,\)/\1'$DBUSER',/
-1,\$s/\('PASSWORD'[	 ]*:[	 ]*\).*\(,\)/\1'$DBPASSWD',/
-1,\$s/\('HOST'[	 ]*:[	 ]*\).*\(,\)/\1'$DBHOST',/
-1,\$s/\('PORT'[	 ]*:[	 ]*\).*\(,\)/\1'$DBPORT',/
-1,\$s:\(STATIC_URL[	 ]*=[	 ]*\).*:\1'$STATIC_URL_PATH/':
+1,\$s/\('ENGINE'\s*:\s*\).*\(,\)/\1'$DBENGINE',/
+1,\$s/\('NAME'\s*:\s*\).*\(,\)/\1'$DBNAME',/
+1,\$s/\('USER'\s*:\s*\).*\(,\)/\1'$DBUSER',/
+1,\$s/\('PASSWORD'\s*:\s*\).*\(,\)/\1'$DBPASSWD',/
+1,\$s/\('HOST'\s*:\s*\).*\(,\)/\1'$DBHOST',/
+1,\$s/\('PORT'\s*:\s*\).*\(,\)/\1'$DBPORT',/
+1,\$s:\(STATIC_URL\s*=\s*\).*:\1'$STATIC_URL_PATH/':
 wq
 END
 
@@ -162,7 +164,7 @@ END
 
 # set the new configuration
 ex "$EOXSCONF" <<END
-/^[	 ]*http_service_url[	 ]*=/s;\(^[	 ]*http_service_url[	 ]*=\).*;\1${OWS_URL};
+/^\s*http_service_url\s*=/s;\(^\s*http_service_url\s*=\).*;\1${OWS_URL};
 g/^#.*supported_crs/,/^$/d
 /\[services\.ows\.wms\]/a
 # WMS_SUPPORTED_CRS - BEGIN - Do not edit or remove this line!
@@ -213,8 +215,8 @@ g/^[ 	#]*maxsize[ 	]/d
 /\[services\.ows\.wcs\]/a
 maxsize = $EOXSMAXSIZE
 .
-/^[	 ]*source_to_native_format_map[	 ]*=/s#\(^[	 ]*source_to_native_format_map[	 ]*=\).*#\1application/x-esa-envisat,application/x-esa-envisat#
-/^[	 ]*paging_count_default[	 ]*=/s/\(^[	 ]*paging_count_default[	 ]*=\).*/\1${EOXSMAXPAGE}/
+/^\s*source_to_native_format_map\s*=/s#\(^\s*source_to_native_format_map\s*=\).*#\1application/x-esa-envisat,application/x-esa-envisat#
+/^\s*paging_count_default\s*=/s/\(^\s*paging_count_default\s*=\).*/\1${EOXSMAXPAGE}/
 
 wq
 END
@@ -562,28 +564,13 @@ END
         ex "$URLS" <<END
 $ a
 # VIRES URLS - BEGIN - Do not edit or remove this line!
-from logging import INFO, WARNING
-from django.views.decorators.csrf import csrf_exempt
-from eoxs_allauth.decorators import log_access, authenticated_only, token_authentication
+from eoxs_allauth.views import wrap_protected_api
 import vires.views
 
-def allauth_wrapper(view):
-    view = csrf_exempt(view)
-    view = authenticated_only(view)
-    view = log_access(INFO, WARNING)(view)
-    return view
-
-def allauth_wrapper_with_token(view):
-    view = csrf_exempt(view)
-    view = authenticated_only(view)
-    view = token_authentication(view)
-    view = log_access(INFO, WARNING)(view)
-    return view
-
 urlpatterns += [
-    url(r'^custom_data/(?P<identifier>[0-9a-f-]{36,36})?$', allauth_wrapper_with_token(vires.views.custom_data)),
-    url(r'^custom_model/(?P<identifier>[0-9a-f-]{36,36})?$', allauth_wrapper(vires.views.custom_model)),
-    url(r'^client_state/(?P<identifier>[0-9a-f-]{36,36})?$', allauth_wrapper(vires.views.client_state)),
+    url(r'^custom_data/(?P<identifier>[0-9a-f-]{36,36})?$', wrap_protected_api(vires.views.custom_data)),
+    #url(r'^custom_model/(?P<identifier>[0-9a-f-]{36,36})?$', wrap_protected_api(vires.views.custom_model)),
+    #url(r'^client_state/(?P<identifier>[0-9a-f-]{36,36})?$', wrap_protected_api(vires.views.client_state)),
 ]
 # VIRES URLS - END - Do not edit or remove this line!
 .
@@ -599,8 +586,8 @@ $ a
 import vires.views
 urlpatterns += [
     url(r'^custom_data/(?P<identifier>[0-9a-f-]{36,36})?$', vires.views.custom_data),
-    url(r'^custom_model/(?P<identifier>[0-9a-f-]{36,36})?$', vires.views.custom_model),
-    url(r'^client_state/(?P<identifier>[0-9a-f-]{36,36})?$', vires.views.client_state),
+    #url(r'^custom_model/(?P<identifier>[0-9a-f-]{36,36})?$', vires.views.custom_model),
+    #url(r'^client_state/(?P<identifier>[0-9a-f-]{36,36})?$', vires.views.client_state),
 ]
 # VIRES URLS - END - Do not edit or remove this line!
 .
@@ -653,6 +640,7 @@ SOCIALACCOUNT_PROVIDERS = {
         'SERVER_URL': '/oauth/',
         'DIRECT_SERVER_URL': 'http://$OAUTH_SERVER_HOST',
         'SCOPE': ['read_id', 'read_permissions'],
+        'PERMISSION': '$VIRES_PERMISSION',
     },
 }
 
@@ -746,15 +734,16 @@ END
     ex "$URLS" <<END
 $ a
 # ALLAUTH URLS - BEGIN - Do not edit or remove this line!
-import eoxs_allauth.views
+from django.views.generic import TemplateView
+from eoxserver.services.views import ows
+from eoxs_allauth.views import wrap_protected_api, wrap_open_api, workspace
 import eoxs_allauth.urls
 from vires.client_state import parse_client_state
-from django.views.generic import TemplateView
 
 urlpatterns += [
-    url(r'^$', eoxs_allauth.views.workspace(parse_client_state)),
-    url(r'^ows$', eoxs_allauth.views.wrapped_ows),
-    url(r'^openows$', eoxs_allauth.views.open_ows),
+    url(r'^$', workspace(parse_client_state), name="workspace"),
+    url(r'^ows$', wrap_protected_api(ows)),
+    url(r'^openows$', wrap_open_api(ows)),
     url(r'^accounts/', include('eoxs_allauth.urls')),
 ] + eoxs_allauth.urls.document_urlpatterns
 # ALLAUTH URLS - END - Do not edit or remove this line!
