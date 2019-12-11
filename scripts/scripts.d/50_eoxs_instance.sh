@@ -15,6 +15,8 @@ info "Configuring EOxServer instance ... "
 
 activate_virtualenv
 
+VIRES_PERMISSION=${VIRES_PERMISSION:-swarm}
+
 # Configuration switches - all default to YES
 CONFIGURE_VIRES=${CONFIGURE_VIRES:-YES}
 CONFIGURE_ALLAUTH=${CONFIGURE_ALLAUTH:-YES}
@@ -69,13 +71,13 @@ fi
 # STEP 2: SETUP DJANGO DB BACKEND
 
 ex "$SETTINGS" <<END
-1,\$s/\('ENGINE'[	 ]*:[	 ]*\).*\(,\)/\1'$DBENGINE',/
-1,\$s/\('NAME'[	 ]*:[	 ]*\).*\(,\)/\1'$DBNAME',/
-1,\$s/\('USER'[	 ]*:[	 ]*\).*\(,\)/\1'$DBUSER',/
-1,\$s/\('PASSWORD'[	 ]*:[	 ]*\).*\(,\)/\1'$DBPASSWD',/
-1,\$s/\('HOST'[	 ]*:[	 ]*\).*\(,\)/\1'$DBHOST',/
-1,\$s/\('PORT'[	 ]*:[	 ]*\).*\(,\)/\1'$DBPORT',/
-1,\$s:\(STATIC_URL[	 ]*=[	 ]*\).*:\1'$STATIC_URL_PATH/':
+1,\$s/\('ENGINE'\s*:\s*\).*\(,\)/\1'$DBENGINE',/
+1,\$s/\('NAME'\s*:\s*\).*\(,\)/\1'$DBNAME',/
+1,\$s/\('USER'\s*:\s*\).*\(,\)/\1'$DBUSER',/
+1,\$s/\('PASSWORD'\s*:\s*\).*\(,\)/\1'$DBPASSWD',/
+1,\$s/\('HOST'\s*:\s*\).*\(,\)/\1'$DBHOST',/
+1,\$s/\('PORT'\s*:\s*\).*\(,\)/\1'$DBPORT',/
+1,\$s:\(STATIC_URL\s*=\s*\).*:\1'$STATIC_URL_PATH/':
 wq
 END
 
@@ -162,7 +164,7 @@ END
 
 # set the new configuration
 ex "$EOXSCONF" <<END
-/^[	 ]*http_service_url[	 ]*=/s;\(^[	 ]*http_service_url[	 ]*=\).*;\1${OWS_URL};
+/^\s*http_service_url\s*=/s;\(^\s*http_service_url\s*=\).*;\1${OWS_URL};
 g/^#.*supported_crs/,/^$/d
 /\[services\.ows\.wms\]/a
 # WMS_SUPPORTED_CRS - BEGIN - Do not edit or remove this line!
@@ -213,8 +215,8 @@ g/^[ 	#]*maxsize[ 	]/d
 /\[services\.ows\.wcs\]/a
 maxsize = $EOXSMAXSIZE
 .
-/^[	 ]*source_to_native_format_map[	 ]*=/s#\(^[	 ]*source_to_native_format_map[	 ]*=\).*#\1application/x-esa-envisat,application/x-esa-envisat#
-/^[	 ]*paging_count_default[	 ]*=/s/\(^[	 ]*paging_count_default[	 ]*=\).*/\1${EOXSMAXPAGE}/
+/^\s*source_to_native_format_map\s*=/s#\(^\s*source_to_native_format_map\s*=\).*#\1application/x-esa-envisat,application/x-esa-envisat#
+/^\s*paging_count_default\s*=/s/\(^\s*paging_count_default\s*=\).*/\1${EOXSMAXPAGE}/
 
 wq
 END
@@ -344,6 +346,7 @@ info "Application specific configuration ..."
 /^# WPSASYNC LOGGING - BEGIN/,/^# WPSASYNC LOGGING - END/d
 /^# ALLAUTH APPS - BEGIN/,/^# ALLAUTH APPS - END/d
 /^# ALLAUTH MIDDLEWARE_CLASSES - BEGIN/,/^# ALLAUTH MIDDLEWARE_CLASSES - END/d
+/^# ALLAUTH TEMPLATES - BEGIN/,/^# ALLAUTH TEMPLATES - END/d
 /^# ALLAUTH LOGGING - BEGIN/,/^# ALLAUTH LOGGING - END/d
 /^# REQUESTLOGGING APPS - BEGIN/,/^# REQUESTLOGGING APPS - END/d
 /^# REQUESTLOGGING MIDDLEWARE_CLASSES - BEGIN/,/^# REQUESTLOGGING MIDDLEWARE_CLASSES - END/d
@@ -537,29 +540,14 @@ END
         ex "$URLS" <<END
 $ a
 # VIRES URLS - BEGIN - Do not edit or remove this line!
-from logging import INFO, WARNING
-from django.views.decorators.csrf import csrf_exempt
-from eoxs_allauth.decorators import log_access, authenticated_only, token_authentication
+from eoxs_allauth.views import wrap_protected_api
 import vires.views
 
-def allauth_wrapper(view):
-    view = csrf_exempt(view)
-    view = authenticated_only(view)
-    view = log_access(INFO, WARNING)(view)
-    return view
-
-def allauth_wrapper_with_token(view):
-    view = csrf_exempt(view)
-    view = authenticated_only(view)
-    view = token_authentication(view)
-    view = log_access(INFO, WARNING)(view)
-    return view
-
-urlpatterns += patterns('',
-    url(r'^custom_data/(?P<identifier>[0-9a-f-]{36,36})?$', allauth_wrapper_with_token(vires.views.custom_data)),
-    url(r'^custom_model/(?P<identifier>[0-9a-f-]{36,36})?$', allauth_wrapper(vires.views.custom_model)),
-    url(r'^client_state/(?P<identifier>[0-9a-f-]{36,36})?$', allauth_wrapper(vires.views.client_state)),
-)
+urlpatterns += [
+    url(r'^custom_data/(?P<identifier>[0-9a-f-]{36,36})?$', wrap_protected_api(vires.views.custom_data)),
+    #url(r'^custom_model/(?P<identifier>[0-9a-f-]{36,36})?$', wrap_protected_api(vires.views.custom_model)),
+    #url(r'^client_state/(?P<identifier>[0-9a-f-]{36,36})?$', wrap_protected_api(vires.views.client_state)),
+]
 # VIRES URLS - END - Do not edit or remove this line!
 .
 wq
@@ -572,11 +560,11 @@ END
 $ a
 # VIRES URLS - BEGIN - Do not edit or remove this line!
 import vires.views
-urlpatterns += patterns('',
+urlpatterns += [
     url(r'^custom_data/(?P<identifier>[0-9a-f-]{36,36})?$', vires.views.custom_data),
-    url(r'^custom_model/(?P<identifier>[0-9a-f-]{36,36})?$', vires.views.custom_model),
-    url(r'^client_state/(?P<identifier>[0-9a-f-]{36,36})?$', vires.views.client_state),
-)
+    #url(r'^custom_model/(?P<identifier>[0-9a-f-]{36,36})?$', vires.views.custom_model),
+    #url(r'^client_state/(?P<identifier>[0-9a-f-]{36,36})?$', vires.views.client_state),
+]
 # VIRES URLS - END - Do not edit or remove this line!
 .
 wq
@@ -613,6 +601,7 @@ SOCIALACCOUNT_PROVIDERS = {
         'SERVER_URL': '/oauth/',
         'DIRECT_SERVER_URL': 'http://$OAUTH_SERVER_HOST',
         'SCOPE': ['read_id', 'read_permissions'],
+        'PERMISSION': '$VIRES_PERMISSION',
     },
 }
 
@@ -654,21 +643,27 @@ SOCIALACCOUNT_AUTO_SIGNUP = True
 SOCIALACCOUNT_EMAIL_REQUIRED = False
 ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'http'
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+# ALLAUTH MIDDLEWARE_CLASSES - END - Do not edit or remove this line!
+.
+/^TEMPLATES\s*=/
+/^]/a
+# ALLAUTH TEMPLATES - BEGIN - Do not edit or remove this line!
 
-TEMPLATE_CONTEXT_PROCESSORS = (
+TEMPLATES[0]['OPTIONS']['context_processors'] = [
     # Required by allauth template tags
-    'django.core.context_processors.request',
+    'django.template.context_processors.debug',
+    'django.template.context_processors.request',
     'django.contrib.auth.context_processors.auth',
     'django.contrib.messages.context_processors.messages',
     'eoxs_allauth.vires_oauth.context_processors.vires_oauth',
     'eoxs_allauth.context_processors.vre_jhub', # required by VRE/JupyterHub integration
-)
+]
 
 # EOxServer AllAuth
 WORKSPACE_TEMPLATE="vires/workspace.html"
 OWS11_EXCEPTION_XSL = join(STATIC_URL, "other/owserrorstyle.xsl")
 
-# ALLAUTH MIDDLEWARE_CLASSES - END - Do not edit or remove this line!
+# ALLAUTH TEMPLATES - END - Do not edit or remove this line!
 .
 \$a
 # ALLAUTH LOGGING - BEGIN - Do not edit or remove this line!
@@ -691,7 +686,8 @@ END
 
     # Remove original url patterns
     { ex "$URLS" || /bin/true ; } <<END
-/^urlpatterns = patterns(/,/^)/s/^\\s/# /
+/^from eoxserver\\.resources\\.processes import views/s/^/# /
+/^urlpatterns = \\[/,/^]/s/^\\s/#&/
 wq
 END
 
@@ -699,17 +695,17 @@ END
     ex "$URLS" <<END
 $ a
 # ALLAUTH URLS - BEGIN - Do not edit or remove this line!
-import eoxs_allauth.views
+from django.views.generic import TemplateView
+from eoxserver.services.views import ows
+from eoxs_allauth.views import wrap_protected_api, wrap_open_api, workspace
 import eoxs_allauth.urls
 from vires.client_state import parse_client_state
-from django.views.generic import TemplateView
 
-urlpatterns += patterns('',
-    url(r'^/?$', eoxs_allauth.views.workspace(parse_client_state)),
-    url(r'^ows$', eoxs_allauth.views.wrapped_ows),
+urlpatterns += [
+    url(r'^$', workspace(parse_client_state), name="workspace"),
+    url(r'^ows$', wrap_protected_api(ows)),
     url(r'^accounts/', include('eoxs_allauth.urls')),
-    *eoxs_allauth.urls.document_urlpatterns
-)
+] + eoxs_allauth.urls.document_urlpatterns
 # ALLAUTH URLS - END - Do not edit or remove this line!
 .
 wq

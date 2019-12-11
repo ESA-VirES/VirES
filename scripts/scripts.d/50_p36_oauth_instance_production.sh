@@ -537,6 +537,12 @@ then
     python "$MNGCMD" auth_import_social_providers --file "$OAUTH_SOCIAL_PROVIDERS"
 fi
 
+# load the apps
+if [ -n "$OAUTH_APPS" ]
+then
+    python "$MNGCMD" auth_import_apps --file "$OAUTH_APPS"
+fi
+
 #-------------------------------------------------------------------------------
 # STEP 9: CHANGE OWNERSHIP OF THE CONFIGURATION FILES
 

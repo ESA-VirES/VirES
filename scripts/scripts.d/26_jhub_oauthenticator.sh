@@ -11,7 +11,7 @@
 
 info "Installing Jupyter Hub OAuth2 Autheticator ..."
 
-export P3_VENV_ROOT="$VIRES_ROOT/python3_jhub"
+export P3_VENV_ROOT="$PYTHON_VENV_JHUB"
 activate_venv
 
 pip install $PIP_OPTIONS oauthenticator

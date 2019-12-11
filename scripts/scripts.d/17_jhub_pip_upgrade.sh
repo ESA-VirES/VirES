@@ -11,7 +11,7 @@
 
 info "Upgrading PIP Python package manager ..."
 
-export P3_VENV_ROOT="$VIRES_ROOT/python3_jhub"
+export P3_VENV_ROOT="$PYTHON_VENV_JHUB"
 [ -d "$P3_VENV_ROOT" ] || {
     sudo -u root mkdir -m 0755 -p "$P3_VENV_ROOT"
 }
