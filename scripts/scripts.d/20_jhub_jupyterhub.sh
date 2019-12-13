@@ -11,10 +11,10 @@
 
 info "Installing Jupyter Hub ..."
 
-export P3_VENV_ROOT="$VIRES_ROOT/python3_jhub"
+export P3_VENV_ROOT="$PYTHON_VENV_JHUB"
 activate_venv
 
-# Note: upgrade once jupyterhub>1.0.0 avaiable.
-pip install $PIP_OPTIONS 'jupyterhub<1.0.0'
+pip install $PIP_OPTIONS jupyterhub
 npm install -g configurable-http-proxy
 pip install $PIP_OPTIONS notebook
+pip install $PIP_OPTIONS jupyterlab

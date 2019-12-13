@@ -1,10 +1,9 @@
 #!/bin/sh
 #-------------------------------------------------------------------------------
 #
-# Project: VirES
-# Purpose: EOxServer utility scripts
-# Authors: Martin Paces <martin.paces@eox.at>
+# Common PostgreSQL server and client settings.
 #
+# Authors: Martin Paces <martin.paces@eox.at>
 #-------------------------------------------------------------------------------
 # Copyright (C) 2019 EOX IT Services GmbH
 #
@@ -27,13 +26,23 @@
 # THE SOFTWARE.
 #-------------------------------------------------------------------------------
 
-PG_VERSION=9.6
-PGIS_VERSION=2.3
+# following commented variables are set externally
+#PG_VERSION="9.6"
+#PG_PREFIX="postgresql96"
+#PGIS_PACKAGE="postgis2_96"
+
+PG_PACKAGE="$PG_PREFIX"
+PG_SERVER_PACKAGE="$PG_PREFIX-server"
+PG_DEVEL_PACKAGE="$PG_PREFIX-devel"
+
 PG_DATA_DIR_DEFAULT="/var/lib/pgsql/$PG_VERSION/data"
 PG_SERVICE_NAME="postgresql-$PG_VERSION.service"
-PG_BIN="/usr/pgsql-$PG_VERSION/bin"
-PGIS_TEMPLATES="/usr/pgsql-$PG_VERSION/share/contrib/postgis-$PGIS_VERSION"
+PG_PATH="/usr/pgsql-$PG_VERSION/bin"
 
-export PATH=$PG_BIN:$PATH
+PG_CONF_FILE="$HOME/.pg_data_dir"
+PG_DATA_DIR="${VIRES_PGDATA_DIR:-$PG_DATA_DIR_DEFAULT}"
 
-alias postgresql-setup="$PG_BIN/postgresql96-setup"
+alias postgresql-setup="$PG_PATH/$PG_PREFIX-setup"
+alias psql="sudo -u postgres $PG_PATH/psql"
+
+[ -n "PG_PATH" ] && export PATH="$PG_PATH:$PATH"

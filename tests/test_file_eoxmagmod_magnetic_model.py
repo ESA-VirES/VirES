@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 #-------------------------------------------------------------------------------
 #
-# Test Sun ephemeris and magnetic coordinates calculated by the VirES for Swarm
-# server. The values are compared with the values calculated by the eoxmagmod
+# Test magnetic field calculated by the VirES for Swarm server.
+# The values are compared with the values calculated by the eoxmagmod
 # package.
 #
 # Author: Martin Paces <martin.paces@eox.at>
@@ -67,7 +67,6 @@ CSV_VALUE_PARSERS = {
 
 MCO_SHA_2C = "./data/SW_OPER_MCO_SHA_2C.shc"
 MCO_SHA_2D = "./data/SW_OPER_MCO_SHA_2D.shc"
-MCO_SHA_2F = "./data/SW_OPER_MCO_SHA_2F.shc"
 MCO_CHAOS6 = "./data/SW_OPER_MCO_CHAOS6.shc"
 MLI_SHA_2C = "./data/SW_OPER_MLI_SHA_2C.shc"
 MLI_SHA_2D = "./data/SW_OPER_MLI_SHA_2D.shc"
@@ -105,7 +104,6 @@ MODELS = {
     "Custom": {"loader": load_model_shc, "files": None},
     "MCO_SHA_2C": {"loader": load_model_shc, "files": [MCO_SHA_2C]},
     "MCO_SHA_2D": {"loader": load_model_shc, "files": [MCO_SHA_2D]},
-    "MCO_SHA_2F": {"loader": load_model_shc, "files": [MCO_SHA_2F]},
     "MLI_SHA_2C": {"loader": load_model_shc, "files": [MLI_SHA_2C]},
     "MLI_SHA_2D": {"loader": load_model_shc, "files": [MLI_SHA_2D]},
     "MIO_SHA_2C-Primary": {

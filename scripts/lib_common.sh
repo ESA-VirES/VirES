@@ -110,6 +110,9 @@ export VIRES_WPS_NPROC=${VIRES_WPS_NPROC:-4}
 # WPS configuration - maximum number of queued jobs
 export VIRES_WPS_MAX_JOBS=${VIRES_WPS_MAX_JOBS:-128}
 
+# optional VRE/JupyterHub base URL
+export VIRES_VRE_JHUB_URL
+
 # some apache configurations
 export SSL_CERTIFICATE_FILE=${SSL_CERTIFICATE_FILE:-/etc/pki/tls/certs/localhost.crt}
 export SSL_CERTIFICATE_KEYFILE=${SSL_CERTIFICATE_KEYFILE:-/etc/pki/tls/private/localhost.key}
@@ -127,11 +130,20 @@ export DBPORT=${DBPORT:-}
 # are we using virtualenv
 export ENABLE_VIRTUALENV=${ENABLE_VIRTUALENV:-YES}
 
+# EOxServer/VirES-Server virtual environment
+export PYTHON_VENV_EOXS="${PYTHON_VENV_EOXS:-$VIRES_ROOT/venv_p27_eoxs}"
+
+# OAuth server virtual environment
+export PYTHON_VENV_OAUTH="${PYTHON_VENV_OAUTH:-$VIRES_ROOT/venv_p36_oauth}"
+
+# Jupyter Hub virtual environment
+export PYTHON_VENV_JHUB="${PYTHON_VENV_JHUB:-$VIRES_ROOT/venv_p36_jhub}"
+
 # pyhton virtualenv root
-export VIRTUALENV_ROOT=${VIRTUALENV_ROOT:-$VIRES_ROOT/virtualenv}
+export VIRTUALENV_ROOT=${VIRTUALENV_ROOT:-$PYTHON_VENV_EOXS}
 
 # pyhton 3 venv root
-export P3_VENV_ROOT=${P3_VENV_ROOT:-$VIRES_ROOT/python3_venv}
+export P3_VENV_ROOT=${P3_VENV_ROOT:-$PYTHON_VENV_OAUTH}
 
 # Switch controlling wether the AllAuth gets configured or not.
 export CONFIGURE_ALLAUTH=${CONFIGURE_ALLAUTH:-NO}
@@ -156,3 +168,8 @@ export CONFIGURE_HTTP
 export CONFIGURE_HTTPS
 
 export PIP_OPTIONS="--upgrade --upgrade-strategy=only-if-needed"
+
+export PG_VERSION="${PG_VERSION:-9.6}"
+export PG_REPO="${PG_REPO:-pgdg96}"
+export PG_PREFIX="${PG_PREFIX:-postgresql96}"
+export PGIS_PACKAGE="${PGIS_PACKAGE:-postgis2_96}"
