@@ -26,12 +26,16 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #-------------------------------------------------------------------------------
-#pylint: disable=missing-docstring
+#pylint: disable=missing-docstring,too-many-arguments
 
 from datetime import datetime, timedelta
 from numpy import nan, stack, empty, asarray
 from pyamps import AMPS, get_B_space
-from eoxmagmod import mjd2000_to_decimal_year
+from eoxmagmod import (
+    mjd2000_to_decimal_year, convert,
+    GEOCENTRIC_SPHERICAL, GEODETIC_ABOVE_WGS84,
+)
+
 
 EARTH_RADIUS = 6371.2 # reference radius Earth(km)
 DT2000 = datetime(2000, 1, 1)
@@ -51,24 +55,34 @@ def round_to_seconds(dtobj):
         timedelta(seconds=int(dtobj.microsecond >= 500000))
     )
 
+
 def eval_associated_magnetic_model(epoch, time, latitude, longitude, radius,
                                    v_imf, by_imf, bz_imf, tilt, f107):
     timestamp = asarray([
         round_to_seconds(mjd2000_to_datetime(t)) for t in time
     ])
-    if time.size > 0:
-        b_nec = stack(get_B_space(
+
+    geodetic_coordinates = convert(
+        stack((latitude, longitude, radius), axis=-1),
+        GEOCENTRIC_SPHERICAL, GEODETIC_ABOVE_WGS84
+    )
+
+    if time.size:
+        b_e, b_n, b_u = get_B_space( #pylint: disable=unbalanced-tuple-unpacking
             time=timestamp,
-            epoch=float(mjd2000_to_decimal_year(epoch)),
-            glat=latitude,
-            glon=longitude,
-            height=(radius - EARTH_RADIUS),
+            glat=geodetic_coordinates[:, 0],
+            glon=geodetic_coordinates[:, 1],
+            height=geodetic_coordinates[:, 2],
             v=v_imf,
             By=by_imf,
             Bz=bz_imf,
             tilt=tilt,
             f107=f107,
-        ), axis=-1)
+            epoch=float(mjd2000_to_decimal_year(epoch)),
+            h_R=110,
+            chunksize=1000,
+        )
+        b_nec = stack((b_n, b_e, -b_u), axis=-1)
     else:
         b_nec = empty((0, 3))
 

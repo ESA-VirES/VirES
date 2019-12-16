@@ -111,7 +111,7 @@ class AsyncFetchFilteredDataCdfMixIn(CdfRequestMixIn, WpsAsyncPostRequestMixIn):
 
 #-------------------------------------------------------------------------------
 
-class AMPSIonosphericCurrentTestMixIn(object):
+class AMPSCurrentTestMixIn(object):
     variables = [
         "IMF_V", "IMF_BY_GSM", "IMF_BZ_GSM", "DipoleTiltAngle", "F10_INDEX",
         "QDLat", "MLT", "QDBasis",
@@ -167,21 +167,25 @@ class AMPSIonosphericCurrentTestMixIn(object):
         assert_allclose(upward_current, upward_current_ref, atol=1e-6)
 
 
-class TestFetchDataAMPSIonosphericCurrent(TestCase, AMPSIonosphericCurrentTestMixIn, FetchDataMixIn):
+class TestFetchDataCsvAMPSCurrent(TestCase, AMPSCurrentTestMixIn, FetchDataCsvMixIn):
     pass
 
-
-class TestFetchFilteredDataAMPSIonosphericCurrent(TestCase, AMPSIonosphericCurrentTestMixIn, FetchFilteredDataMixIn):
+class TestFetchFilteredDataCsvAMPSCurrent(TestCase, AMPSCurrentTestMixIn, FetchFilteredDataCsvMixIn):
     pass
 
+class TestFetchFilteredDataCdfAMPSCurrent(TestCase, AMPSCurrentTestMixIn, FetchFilteredDataCdfMixIn):
+    pass
 
-class TestAsyncFetchFilteredDataAMPSIonosphericCurrent(TestCase, AMPSIonosphericCurrentTestMixIn, AsyncFetchFilteredDataMixIn):
+class TestAsyncFetchFilteredDataCsvAMPSCurrent(TestCase, AMPSCurrentTestMixIn, AsyncFetchFilteredDataCdfMixIn):
+    pass
+
+class TestAsyncFetchFilteredDataCdfAMPSCurrent(TestCase, AMPSCurrentTestMixIn, AsyncFetchFilteredDataCsvMixIn):
     pass
 
 #-------------------------------------------------------------------------------
 
 
-class AMPSAssociatedMagneticFieldTestMixIn(object):
+class AMPSMagneticFieldTestMixIn(object):
     variables = [
         'IMF_V', 'IMF_BY_GSM', 'IMF_BZ_GSM', 'DipoleTiltAngle', 'F10_INDEX',
         "F_AMPS", "B_NEC_AMPS"
@@ -192,6 +196,7 @@ class AMPSAssociatedMagneticFieldTestMixIn(object):
             begin_time=self.begin_time,
             end_time=self.end_time,
             variables=self.variables,
+            model_ids=["AMPS"],
             collection_ids={"Alpha": ["SW_OPER_MAGA_LR_1B"]},
         )
         response = self.get_parsed_response(request)
@@ -210,9 +215,10 @@ class AMPSAssociatedMagneticFieldTestMixIn(object):
         b_amps = array(response["B_NEC_AMPS"])
 
         if times.size > 0:
-            idx = times.size // 2
+            #mean_time = times[times.size // 2]
+            mean_time = 0.5 * (times.min() + times.max())
             b_amps_ref = eval_associated_magnetic_model(
-                times[idx], times, lats, lons, rads,
+                mean_time, times, lats, lons, rads,
                 v_imf, by_gsm_imf, bz_gsm_imf, tilt_angle, f107
             )
         else:
@@ -220,19 +226,27 @@ class AMPSAssociatedMagneticFieldTestMixIn(object):
 
         f_amps_ref = vnorm(b_amps_ref)
 
-        assert_allclose(b_amps, b_amps_ref, atol=2e-6)
-        assert_allclose(f_amps, f_amps_ref, atol=1e-6)
+        assert_allclose(b_amps, b_amps_ref, atol=1e-2)
+        assert_allclose(f_amps, f_amps_ref, atol=1e-2)
 
 
-class TestFetchDataAMPSAssociatedMagneticField(TestCase, AMPSAssociatedMagneticFieldTestMixIn, FetchDataMixIn):
+class TestFetchDataCsvAMPSMagneticField(TestCase, AMPSMagneticFieldTestMixIn, FetchDataCsvMixIn):
     pass
 
 
-class TestFetchFilteredDataAMPSAssociatedMagneticField(TestCase, AMPSAssociatedMagneticFieldTestMixIn, FetchFilteredDataMixIn):
+class TestFetchFilteredDataCsvAMPSMagneticField(TestCase, AMPSMagneticFieldTestMixIn, FetchFilteredDataCsvMixIn):
     pass
 
 
-class TestAsyncFetchFilteredDataAMPSAssociatedMagneticField(TestCase, AMPSAssociatedMagneticFieldTestMixIn, AsyncFetchFilteredDataMixIn):
+class TestFetchFilteredDataCdfAMPSMagneticField(TestCase, AMPSMagneticFieldTestMixIn, FetchFilteredDataCdfMixIn):
+    pass
+
+
+class TestAsyncFetchFilteredDataCsvAMPSMagneticField(TestCase, AMPSMagneticFieldTestMixIn, AsyncFetchFilteredDataCsvMixIn):
+    pass
+
+
+class TestAsyncFetchFilteredDataCdfAMPSMagneticField(TestCase, AMPSMagneticFieldTestMixIn, AsyncFetchFilteredDataCdfMixIn):
     pass
 
 
