@@ -1,4 +1,5 @@
 #!/bin/sh
+#-------------------------------------------------------------------------------
 #
 # Purpose: pyAPMS installation
 # Author(s): Martin Paces <martin.paces@eox.at>
@@ -9,5 +10,7 @@
 . `dirname $0`/../lib_virtualenv.sh
 
 info "Installing pyAMPS from PyPI"
+
 activate_virtualenv
-pip install pyamps
+
+pip install $PIP_OPTIONS pyamps
