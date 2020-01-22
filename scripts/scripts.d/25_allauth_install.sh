@@ -15,5 +15,5 @@ activate_virtualenv
 
 pip install $PIP_OPTIONS python-openid
 pip install $PIP_OPTIONS requests-oauthlib
-pip install $PIP_OPTIONS django-allauth #"django-allauth==0.40.0"
+pip install $PIP_OPTIONS "django-allauth==0.40.0"
 pip install $PIP_OPTIONS django-countries #"django-countries==5.5"
