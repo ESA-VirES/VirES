@@ -1,1 +1,0 @@
-../scripts.d/26_p36_django_allauth.sh

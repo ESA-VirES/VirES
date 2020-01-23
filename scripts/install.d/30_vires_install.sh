@@ -1,1 +1,0 @@
-../scripts.d/30_vires_install.sh
