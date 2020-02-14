@@ -76,6 +76,11 @@ export VIRES_INSTALL_USER=${VIRES_INSTALL_USER:-root}
 
 # location of the VirES Server home directory
 export VIRES_SERVER_HOME=${VIRES_SERVER_HOME:-$VIRES_ROOT/eoxs}
+# location of the VirES Server URL
+export VIRES_SERVER_HOST=${VIRES_SERVER_HOST:-127.0.0.1:8001}
+# VirES server - service name
+export VIRES_SERVICE_NAME=${VIRES_SERVICE_NAME:-eoxs}
+
 # location of the OAuth2 Server home directory
 export OAUTH_SERVER_HOME=${OAUTH_SERVER_HOME:-$VIRES_ROOT/oauth}
 # location of the OAuth2 Server URL
@@ -83,10 +88,10 @@ export OAUTH_SERVER_HOST=${OAUTH_SERVER_HOST:-127.0.0.1:8000}
 # OAuth2 server - service name
 export OAUTH_SERVICE_NAME=${OAUTH_SERVICE_NAME:-oauth}
 
-# WSGI daemon - number of processes to be used by the VirES EOxServer instances
-export EOXS_WSGI_NPROC=${EOXS_WSGI_NPROC:-4}
-# WSGI daemon - process group to be used by the VirES EOxServer instances
-export EOXS_WSGI_PROCESS_GROUP=${EOXS_WSGI_PROCESS_GROUP:-vires_eoxs_ows}
+# number of processes to be used by the VirES EOxServer instances
+export VIRES_SERVER_NPROC=${VIRES_SERVER_NPROC:-4}
+# number of threads per process to be used by the VirES EOxServer instances
+export VIRES_SERVER_NTHREAD=${VIRES_SERVER_NTHREAD:-1}
 
 # location of the VirES Client home directory
 export VIRES_CLIENT_HOME=${VIRES_CLIENT_HOME:-$VIRES_ROOT/eoxc}

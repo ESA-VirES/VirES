@@ -48,6 +48,8 @@ set_instance_variables() {
 
     EOXSLOG="${VIRES_LOGDIR}/eoxserver/${INSTANCE}/eoxserver.log"
     ACCESSLOG="${VIRES_LOGDIR}/eoxserver/${INSTANCE}/access.log"
+    GUNICORN_ACCESS_LOG="${VIRES_LOGDIR}/eoxserver/${INSTANCE}/gunicorn_access.log"
+    GUNICORN_ERROR_LOG="${VIRES_LOGDIR}/eoxserver/${INSTANCE}/gunicorn_error.log"
     EOXSCONF="${INSTROOT}/${INSTANCE}/${INSTANCE}/conf/eoxserver.conf"
     OWS_URL="${VIRES_URL_ROOT}${BASE_URL_PATH}/ows"
     EOXSMAXSIZE="20480"

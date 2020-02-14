@@ -6,7 +6,7 @@
 #-------------------------------------------------------------------------------
 # Copyright (C) 2019 EOX IT Services GmbH
 
-# NOTE: To drop the existing database remove the db.conf file in the scritps directory.
+# NOTE: To drop the existing database remove the db.conf file in the scripts directory.
 
 . `dirname $0`/../lib_logging.sh
 . `dirname $0`/../lib_postgres.sh
@@ -47,7 +47,7 @@ TMP=`psql -tAc "SELECT 1 FROM pg_roles WHERE rolname='$DBUSER' ;"`
 if [ 1 == "$TMP" ]
 then
     psql -q -c "DROP USER $DBUSER ;"
-    warn " The alredy existing database user '$DBUSER' was removed"
+    warn " The already existing database user '$DBUSER' was removed"
 fi
 
 # create new users
