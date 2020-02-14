@@ -480,6 +480,7 @@ VIRES_SPACECRAFTS = list(VIRES_ORBIT_COUNTER_FILE)
 VIRES_SAT2COL = {
     'A': [
         "SW_OPER_MAGA_LR_1B",
+        "SW_OPER_MAGA_HR_1B",
         "SW_OPER_EFIA_LP_1B",
         "SW_OPER_EFIA_PL_1B",
         "SW_OPER_IBIATMS_2F",
@@ -500,6 +501,7 @@ VIRES_SAT2COL = {
     ],
     'C': [
         "SW_OPER_MAGC_LR_1B",
+        "SW_OPER_MAGC_HR_1B",
         "SW_OPER_EFIC_LP_1B",
         "SW_OPER_EFIC_PL_1B",
         "SW_OPER_IBICTMS_2F",
@@ -524,6 +526,10 @@ VIRES_TYPE2COL = {
     "SWARM_MAG": {
         "A": "SW_OPER_MAGA_LR_1B",
         "C": "SW_OPER_MAGC_LR_1B",
+    },
+    "SWARM_MAG_HR": {
+        "A": "SW_OPER_MAGA_HR_1B",
+        "C": "SW_OPER_MAGC_HR_1B",
     },
 }
 
