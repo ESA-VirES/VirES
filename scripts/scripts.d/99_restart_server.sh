@@ -28,11 +28,10 @@ list_services() {
         echo "${VIRES_SERVICE_NAME}.service"
     fi
 
-    #if [ "${CONFIGURE_WPSASYNC:-YES}" = "YES" ]
-    #then
-    #    [ -z "$VIRES_WPS_SERVICE_NAME" ] && error "Missing the required VIRES_WPS_SERVICE_NAME variable!"
-    #    echo "${VIRES_WPS_SERVICE_NAME}.service"
-    #fi
+    if [ -n "${VIRES_WPS_SERVICE_NAME}" ]
+    then
+        echo "${VIRES_WPS_SERVICE_NAME}.service"
+    fi
 }
 
 list_services
