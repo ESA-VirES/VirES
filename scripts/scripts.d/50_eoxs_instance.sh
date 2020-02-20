@@ -186,9 +186,6 @@ LOGGING = {
         'require_debug_false': {
             '()': 'django.utils.log.RequireDebugFalse'
         },
-#        'request_filter': {
-#            '()': 'django_requestlogging.logging_filters.RequestFilter'
-#        },
     },
     'formatters': {
         'default': {
@@ -208,13 +205,13 @@ LOGGING = {
             'formatter': 'default',
             'filters': [],
         },
-#        'access_file': {
-#            'level': 'DEBUG',
-#            'class': 'logging.handlers.WatchedFileHandler',
-#            'filename': '${ACCESSLOG}',
-#            'formatter': 'access',
-#            'filters': ['request_filter'],
-#        },
+        'access_file': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.WatchedFileHandler',
+            'filename': '${ACCESSLOG}',
+            'formatter': 'access',
+            'filters': [],
+        },
         'stderr_stream': {
             'level': 'INFO',
             'class': 'logging.StreamHandler',
@@ -233,11 +230,11 @@ LOGGING = {
             'level': 'DEBUG' if DEBUG else 'INFO',
             'propagate': False,
         },
-#        'access': {
-#            'handlers': ['access_file'],
-#            'level': 'DEBUG' if DEBUG else 'INFO',
-#            'propagate': False,
-#        },
+        'access': {
+            'handlers': ['access_file'],
+            'level': 'DEBUG' if DEBUG else 'INFO',
+            'propagate': False,
+        },
         '': {
             'handlers': ['eoxserver_file'],
             'level': 'INFO' if DEBUG else 'WARNING',
