@@ -40,7 +40,7 @@ required_variables SETTINGS WSGI_FILE URLS WSGI MNGCMD EOXSCONF
 required_variables STATIC_URL_PATH OWS_URL
 required_variables EOXSLOG ACCESSLOG
 required_variables EOXSMAXSIZE EOXSMAXPAGE
-required_variables OAUTH_SERVER_HOST
+required_variables OAUTH_SERVER_URL
 required_variables DBENGINE EOXS_DBNAME
 required_variables SMTP_HOSTNAME SMTP_DEFAULT_SENDER
 
@@ -674,8 +674,7 @@ INSTALLED_APPS += (
 
 SOCIALACCOUNT_PROVIDERS = {
     'vires': {
-        'SERVER_URL': '/oauth/',
-        'DIRECT_SERVER_URL': 'http://$OAUTH_SERVER_HOST',
+        'SERVER_URL': '$OAUTH_SERVER_URL',
         'SCOPE': ['read_id', 'read_permissions'],
         'PERMISSION': '$VIRES_PERMISSION',
     },
