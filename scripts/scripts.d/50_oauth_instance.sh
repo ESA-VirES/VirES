@@ -209,6 +209,7 @@ do
 
     # static content
     Alias "$STATIC_URL_PATH" "$STATIC_DIR"
+    ProxyPass "$STATIC_URL_PATH" !
     <Directory "$STATIC_DIR">
         Options -MultiViews +FollowSymLinks
         Header set Access-Control-Allow-Origin "*"

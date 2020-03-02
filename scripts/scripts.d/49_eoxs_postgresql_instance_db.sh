@@ -39,7 +39,8 @@ PG_HBA="`psql -qA -c "SHOW hba_file;" | grep -m 1 "^/"`"
 save_db_conf "$DB_CONF"
 
 # deleting any previously existing database
-psql -q -c "DROP DATABASE $DBNAME ;" 2>/dev/null \
+psql -q -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '$DBNAME' ;" >/dev/null \
+  && psql -q -c "DROP DATABASE $DBNAME ;" \
   && warn " The already existing database '$DBNAME' was removed." || /bin/true
 
 # deleting any previously existing user

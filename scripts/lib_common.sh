@@ -77,14 +77,14 @@ export VIRES_INSTALL_USER=${VIRES_INSTALL_USER:-root}
 # location of the VirES Server home directory
 export VIRES_SERVER_HOME=${VIRES_SERVER_HOME:-$VIRES_ROOT/eoxs}
 # location of the VirES Server URL
-export VIRES_SERVER_HOST=${VIRES_SERVER_HOST:-127.0.0.1:8001}
+export VIRES_SERVER_HOST=${VIRES_SERVER_HOST:-127.0.0.1:8011}
 # VirES server - service name
 export VIRES_SERVICE_NAME=${VIRES_SERVICE_NAME:-eoxs}
 
 # location of the OAuth2 Server home directory
 export OAUTH_SERVER_HOME=${OAUTH_SERVER_HOME:-$VIRES_ROOT/oauth}
 # location of the OAuth2 Server URL
-export OAUTH_SERVER_HOST=${OAUTH_SERVER_HOST:-127.0.0.1:8000}
+export OAUTH_SERVER_HOST=${OAUTH_SERVER_HOST:-127.0.0.1:8010}
 # OAuth2 server - service name
 export OAUTH_SERVICE_NAME=${OAUTH_SERVICE_NAME:-oauth}
 
