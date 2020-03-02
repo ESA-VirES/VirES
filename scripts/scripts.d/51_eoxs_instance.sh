@@ -368,12 +368,12 @@ END
 # Django-Allauth settings
 
 INSTALLED_APPS += [
-    #'django_countries',
+    'eoxs_allauth',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
-    'eoxs_allauth',
     'eoxs_allauth.vires_oauth', # VirES-OAuth2 "social account provider"
+    'django_countries',
 ]
 
 SOCIALACCOUNT_PROVIDERS = {
