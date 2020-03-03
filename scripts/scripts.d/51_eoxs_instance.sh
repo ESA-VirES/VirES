@@ -188,7 +188,7 @@ LOGGING = {
         },
     },
     'handlers': {
-        'eoxserver_file': {
+        'vires_file': {
             'level': 'DEBUG',
             'class': 'logging.handlers.WatchedFileHandler',
             'filename': '${EOXSLOG}',
@@ -211,17 +211,17 @@ LOGGING = {
     },
     'loggers': {
         'eoxserver': {
-            'handlers': ['eoxserver_file'],
+            'handlers': ['vires_file'],
             'level': 'DEBUG' if DEBUG else 'INFO',
             'propagate': False,
         },
         'vires': {
-            'handlers': ['eoxserver_file'],
+            'handlers': ['vires_file'],
             'level': 'DEBUG' if DEBUG else 'INFO',
             'propagate': False,
         },
         'eoxs_wps_async': {
-            'handlers': ['eoxserver_file'],
+            'handlers': ['vires_file'],
             'level': 'DEBUG' if DEBUG else 'INFO',
             'propagate': False,
         },
@@ -231,7 +231,7 @@ LOGGING = {
             'propagate': False,
         },
         '': {
-            'handlers': ['eoxserver_file'],
+            'handlers': ['vires_file'],
             'level': 'INFO' if DEBUG else 'WARNING',
             'propagate': False,
         },
@@ -427,14 +427,9 @@ OWS11_EXCEPTION_XSL = join(STATIC_URL, "other/owserrorstyle.xsl")
 
 LOGGING['loggers'].update({
     'eoxs_allauth': {
-        'handlers': ['access_file'],
+        'handlers': ['vires_file'],
         'level': 'DEBUG' if DEBUG else 'INFO',
         'propagate': False,
-    },
-    'django.request': {
-        'handlers': ['access_file'],
-        'level': 'DEBUG' if DEBUG else 'INFO',
-        'propagate': True,
     },
 })
 END
