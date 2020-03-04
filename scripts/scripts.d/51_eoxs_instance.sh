@@ -67,11 +67,14 @@ then
 fi
 
 # WPS directories
-for D in "$VIRES_WPS_TEMP_DIR" "$VIRES_WPS_PERM_DIR" "$VIRES_WPS_TASK_DIR" "`dirname "$VIRES_WPS_SOCKET"`"
+for DIR in "$VIRES_WPS_TEMP_DIR" "$VIRES_WPS_PERM_DIR" "$VIRES_WPS_TASK_DIR" "`dirname "$VIRES_WPS_SOCKET"`"
 do
-    mkdir -p "$D"
-    chown -v "$VIRES_USER:$VIRES_GROUP" "$D"
-    chmod -v 0755 "$D"
+    if [ ! -d "$DIR" ]
+    then
+        mkdir -p "$DIR"
+        chown -v "$VIRES_USER:$VIRES_GROUP" "$DIR"
+        chmod -v 0755 "$DIR"
+    fi
 done
 
 #-------------------------------------------------------------------------------

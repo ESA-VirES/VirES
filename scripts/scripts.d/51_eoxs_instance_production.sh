@@ -68,7 +68,7 @@ fi
 # create WPS directories if missing
 for DIR in "$VIRES_WPS_TEMP_DIR" "$VIRES_WPS_PERM_DIR" "$VIRES_WPS_TASK_DIR" "`dirname "$VIRES_WPS_SOCKET"`"
 do
-    if [ ! -d "$DIR"]
+    if [ ! -d "$DIR" ]
     then
         mkdir -p "$DIR"
         chown -v "$VIRES_USER:$VIRES_GROUP" "$DIR"
