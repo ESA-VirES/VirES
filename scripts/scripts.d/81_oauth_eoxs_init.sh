@@ -28,7 +28,7 @@ activate_venv "$OAUTH_VENV_ROOT"
 set_instance_variables
 required_variables MNGCMD
 
-# JHub OAuth client initialization
+# VirES-Server OAuth client initialization
 python "$MNGCMD" auth_import_apps << END
 [
   {
@@ -53,7 +53,7 @@ set_instance_variables
 required_variables MNGCMD
 
 # initial user (vagrant/vagrant)
-python "$MNGCMD" auth_import_social_providers << END
+python "$MNGCMD" social_provider import <<END
 [
   {
     "provider": "vires",

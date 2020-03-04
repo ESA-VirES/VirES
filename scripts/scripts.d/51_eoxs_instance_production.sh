@@ -577,7 +577,7 @@ python "$MNGCMD" migrate --noinput
 # initialize social providers
 if [ -n "$EOXS_SOCIAL_PROVIDERS" ]
 then
-    python "$MNGCMD" auth_import_social_providers --file "$EOXS_SOCIAL_PROVIDERS"
+    python "$MNGCMD" social_provider import --file "$EOXS_SOCIAL_PROVIDERS"
 fi
 
 # initialize product types and collections
