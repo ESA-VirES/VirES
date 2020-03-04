@@ -1,8 +1,7 @@
 #!/bin/sh
 #-------------------------------------------------------------------------------
 #
-# Project: VirES
-# Purpose: EOxServer utility scripts
+# VirES-Server utility scripts
 # Authors: Martin Paces <martin.paces@eox.at>
 #
 #-------------------------------------------------------------------------------
@@ -29,7 +28,7 @@
 
 set_instance_variables() {
     required_variables VIRES_SERVER_HOME VIRES_LOGDIR
- 
+
     HOSTNAME="$VIRES_HOSTNAME"
     INSTANCE="`basename "$VIRES_SERVER_HOME"`"
     INSTROOT="`dirname "$VIRES_SERVER_HOME"`"
@@ -46,17 +45,14 @@ set_instance_variables() {
     BASE_URL_PATH=""
     STATIC_URL_PATH="/${INSTANCE}_static" # DO NOT USE THE TRAILING SLASH!!!
 
-    EOXSLOG="${VIRES_LOGDIR}/eoxserver/${INSTANCE}/eoxserver.log"
-    ACCESSLOG="${VIRES_LOGDIR}/eoxserver/${INSTANCE}/access.log"
-    GUNICORN_ACCESS_LOG="${VIRES_LOGDIR}/eoxserver/${INSTANCE}/gunicorn_access.log"
-    GUNICORN_ERROR_LOG="${VIRES_LOGDIR}/eoxserver/${INSTANCE}/gunicorn_error.log"
+    VIRESLOG="${VIRES_LOGDIR}/swarm/${INSTANCE}/vires.log"
+    ACCESSLOG="${VIRES_LOGDIR}/swarm/${INSTANCE}/access.log"
+
+    GUNICORN_ACCESS_LOG="${VIRES_LOGDIR}/swarm/${INSTANCE}/gunicorn_access.log"
+    GUNICORN_ERROR_LOG="${VIRES_LOGDIR}/swarm/${INSTANCE}/gunicorn_error.log"
+
     EOXSCONF="${INSTROOT}/${INSTANCE}/${INSTANCE}/conf/eoxserver.conf"
     OWS_URL="${VIRES_URL_ROOT}${BASE_URL_PATH}/ows"
-    EOXSMAXSIZE="20480"
-    EOXSMAXPAGE="200"
-
-    # process group label
-    EOXS_WSGI_PROCESS_GROUP=${EOXS_WSGI_PROCESS_GROUP:-eoxs_ows}
 }
 
 load_db_conf () {
@@ -87,5 +83,5 @@ required_variables()
         then
             error "Missing the required ${__VARIABLE___} variable!"
         fi
-    done 
+    done
 }

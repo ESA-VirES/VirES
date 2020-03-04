@@ -13,7 +13,7 @@ SOURCE="${EOXMAGMOD_SOURCE_PATH:-/usr/local/eoxmagmod}"
 
 info "Installing EOxMagMod from a local source directory ..."
 
-activate_venv "$EOXS_VENV_ROOT"
+activate_venv "$VIRES_VENV_ROOT"
 
 # requires spacepy + cdf to be installed
 yum --assumeyes install qdipole qdipole-devel

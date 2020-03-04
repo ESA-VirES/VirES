@@ -11,6 +11,6 @@
 
 info "Installing VirES for Swarm server packages from sources ..."
 
-activate_venv "$EOXS_VENV_ROOT"
+activate_venv "$VIRES_VENV_ROOT"
 
 pip install $PIP_OPTIONS "${VIRES_SOURCE_PATH:-/usr/local/vires/vires}"

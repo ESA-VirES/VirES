@@ -15,7 +15,7 @@ info "Installing mapserver packages ..."
 [ -z "`rpm -qa | grep swig-2`" ] || yum --assumeyes remove swig
 yum --assumeyes install mapserver mapserver-devel gdal-devel proj-devel libxml2-devel swig3
 
-activate_venv "$EOXS_VENV_ROOT"
+activate_venv "$VIRES_VENV_ROOT"
 
 [ -z "$CONTRIB_DIR" ] && error "Missing the required CONTRIB_DIR variable!"
 PACKAGE="`lookup_package "$CONTRIB_DIR/python-mapscript-*.tar.gz"`"

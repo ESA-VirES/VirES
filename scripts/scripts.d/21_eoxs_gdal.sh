@@ -14,7 +14,7 @@ info "Installing GDAL library ... "
 
 yum --assumeyes install gdal gdal-libs proj-epsg gdal-devel
 
-activate_venv "$EOXS_VENV_ROOT"
+activate_venv "$VIRES_VENV_ROOT"
 
 # NOTE: gdal-python virenv installation requires numpy installed!!!
 [ -z "$CONTRIB_DIR" ] && error "Missing the required CONTRIB_DIR variable!"

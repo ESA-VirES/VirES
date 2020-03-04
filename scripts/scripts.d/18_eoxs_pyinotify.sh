@@ -37,6 +37,6 @@
 
 info "Installing pyinotify ..."
 
-activate_venv "$EOXS_VENV_ROOT"
+activate_venv "$VIRES_VENV_ROOT"
 
 pip install pyinotify

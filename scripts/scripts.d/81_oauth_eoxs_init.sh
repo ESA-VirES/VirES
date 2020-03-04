@@ -19,7 +19,7 @@ then
     exit
 fi
 
-VIRES_CALLBACK_URL="http://localhost:8300/accounts/vires/login/callback/"
+VIRES_CALLBACK_URL="${LOCAL_URL:-http://localhost:8300}/accounts/vires/login/callback/"
 VIRES_CLIENT_ID="7UhX9fRNrQW8mbSS33qHO7V6hmLLa4ZXvuL4C86q"
 VIRES_CLIENT_SECRET="`base64 /dev/urandom | tr -d '+/\n' | head -c '128'`"
 
@@ -47,8 +47,8 @@ END
 
 deactivate
 
-. `dirname $0`/../lib_eoxserver.sh
-activate_venv "$EOXS_VENV_ROOT"
+. `dirname $0`/../lib_vires.sh
+activate_venv "$VIRES_VENV_ROOT"
 set_instance_variables
 required_variables MNGCMD
 

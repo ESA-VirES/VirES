@@ -11,7 +11,7 @@
 
 info "Installing SpacePy package and its dependencies ..."
 
-activate_venv "$EOXS_VENV_ROOT"
+activate_venv "$VIRES_VENV_ROOT"
 
 yum --assumeyes install cdf
 

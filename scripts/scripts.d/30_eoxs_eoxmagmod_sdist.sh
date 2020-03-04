@@ -13,7 +13,7 @@ SOURCE="https://github.com/ESA-VirES/MagneticModel/releases/download/eoxmagmod-0
 
 info "Installing EOxMagMod from a source distribution package ..."
 
-activate_venv "$EOXS_VENV_ROOT"
+activate_venv "$VIRES_VENV_ROOT"
 
 # requires spacepy + cdf to be installed
 yum --assumeyes install qdipole qdipole-devel

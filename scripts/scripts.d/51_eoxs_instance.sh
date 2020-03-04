@@ -1,7 +1,7 @@
 #!/bin/sh
 #-------------------------------------------------------------------------------
 #
-# Purpose: EOxServer instance configuration
+# Purpose: VirES-Server instance configuration
 # Author(s): Martin Paces <martin.paces@eox.at>
 #-------------------------------------------------------------------------------
 # Copyright (C) 2015 EOX IT Services GmbH
@@ -9,11 +9,11 @@
 . `dirname $0`/../lib_logging.sh
 . `dirname $0`/../lib_apache.sh
 . `dirname $0`/../lib_python_venv.sh
-. `dirname $0`/../lib_eoxserver.sh
+. `dirname $0`/../lib_vires.sh
 
-info "Configuring EOxServer instance ... "
+info "Configuring VirES-Server instance ... "
 
-activate_venv "$EOXS_VENV_ROOT"
+activate_venv "$VIRES_VENV_ROOT"
 
 SECRET_KEY="`python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())'`"
 
@@ -42,8 +42,7 @@ required_variables INSTANCE INSTROOT
 required_variables FIXTURES_DIR STATIC_DIR
 required_variables SETTINGS WSGI_FILE URLS WSGI MNGCMD EOXSCONF
 required_variables STATIC_URL_PATH OWS_URL
-required_variables EOXSLOG ACCESSLOG
-required_variables EOXSMAXSIZE EOXSMAXPAGE
+required_variables VIRESLOG ACCESSLOG
 required_variables OAUTH_SERVER_HOST
 
 if [ -z "$DBENGINE" -o -z "$DBNAME" ]
@@ -55,7 +54,7 @@ required_variables DBENGINE DBNAME
 #-------------------------------------------------------------------------------
 # STEP 1: CREATE INSTANCE (if not already present)
 
-info "Creating EOxServer instance '${INSTANCE}' in '$INSTROOT/$INSTANCE' ..."
+info "Creating VirES-Server instance '${INSTANCE}' in '$INSTROOT/$INSTANCE' ..."
 
 # check availability of the EOxServer
 #HINT: Does python complain that the apparently installed EOxServer
@@ -191,7 +190,7 @@ LOGGING = {
         'vires_file': {
             'level': 'DEBUG',
             'class': 'logging.handlers.WatchedFileHandler',
-            'filename': '${EOXSLOG}',
+            'filename': '${VIRESLOG}',
             'formatter': 'default',
             'filters': [],
         },
@@ -421,7 +420,7 @@ TEMPLATES[0]['OPTIONS']['context_processors'] = [
     'eoxs_allauth.context_processors.vre_jhub', # required by VRE/JupyterHub integration
 ]
 
-# EOxServer AllAuth
+# VirES-Server AllAuth settings
 WORKSPACE_TEMPLATE="vires/workspace.html"
 OWS11_EXCEPTION_XSL = join(STATIC_URL, "other/owserrorstyle.xsl")
 
@@ -437,7 +436,7 @@ END
 #-------------------------------------------------------------------------------
 # STEP 3: APACHE WEB SERVER INTEGRATION
 
-info "Mapping EOxServer instance '${INSTANCE}' to URL path '${INSTANCE}' ..."
+info "Mapping VirES-Server instance '${INSTANCE}' to URL path '${INSTANCE}' ..."
 
 # locate proper configuration file (see also apache configuration)
 {
@@ -448,9 +447,9 @@ do
     { ex "$CONF" || /bin/true ; } <<END
 /EOXS00_BEGIN/,/EOXS00_END/de
 /^\s*<\/VirtualHost>/i
-    # EOXS00_BEGIN - EOxServer instance - Do not edit or remove this line!
+    # EOXS00_BEGIN - VirES-Server instance - Do not edit or remove this line!
 
-    # EOxServer instance configured by the automatic installation script
+    # VirES-Server instance configured by the automatic installation script
 
     # static content
     Alias "$STATIC_URL_PATH" "$STATIC_DIR"
@@ -493,14 +492,14 @@ _create_log_file() {
     chown "$VIRES_USER:$VIRES_GROUP" "$1"
     chmod 0664 "$1"
 }
-_create_log_file "$EOXSLOG"
+_create_log_file "$VIRESLOG"
 _create_log_file "$ACCESSLOG"
 _create_log_file "$GUNICORN_ACCESS_LOG"
 _create_log_file "$GUNICORN_ERROR_LOG"
 
 #setup logrotate configuration
-cat >"/etc/logrotate.d/vires_eoxserver_${INSTANCE}" <<END
-$EOXSLOG {
+cat >"/etc/logrotate.d/vires_server_${INSTANCE}" <<END
+$VIRESLOG {
     copytruncate
     weekly
     minsize 1M
@@ -540,7 +539,7 @@ chown -R "$VIRES_INSTALL_USER:$VIRES_INSTALL_GROUP" "$INSTROOT/$INSTANCE"
 
 #-------------------------------------------------------------------------------
 # STEP 6: DJANGO INITIALISATION
-info "Initializing EOxServer instance '${INSTANCE}' ..."
+info "Initializing VirES-Server instance '${INSTANCE}' ..."
 
 # collect static files
 python "$MNGCMD" collectstatic -l --noinput
@@ -558,7 +557,7 @@ python "$MNGCMD" product_collection import
 info "Setting up ${VIRES_SERVICE_NAME}.service"
 cat > "/etc/systemd/system/${VIRES_SERVICE_NAME}.service" <<END
 [Unit]
-Description=VirES EOxServer instance
+Description=VirES-Server instance
 After=network.target
 Before=httpd.service
 
@@ -566,7 +565,7 @@ Before=httpd.service
 PIDFile=/run/${VIRES_SERVICE_NAME}.pid
 Type=simple
 WorkingDirectory=$INSTROOT/$INSTANCE
-ExecStart=${EOXS_VENV_ROOT}/bin/gunicorn \\
+ExecStart=${VIRES_VENV_ROOT}/bin/gunicorn \\
     --preload \\
     --name ${VIRES_SERVICE_NAME} \\
     --user $VIRES_USER \\
@@ -599,7 +598,7 @@ Before=httpd.service
 Type=simple
 User=$VIRES_USER
 ExecStartPre=/usr/bin/rm -fv $VIRES_WPS_SOCKET
-ExecStart=${EOXS_VENV_ROOT}/bin/python -EsOm eoxs_wps_async.daemon ${INSTANCE}.settings $INSTROOT/$INSTANCE
+ExecStart=${VIRES_VENV_ROOT}/bin/python -EsOm eoxs_wps_async.daemon ${INSTANCE}.settings $INSTROOT/$INSTANCE
 
 [Install]
 WantedBy=multi-user.target

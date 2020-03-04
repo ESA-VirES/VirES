@@ -11,6 +11,6 @@
 
 info "Installing scipy ..."
 
-activate_venv "$EOXS_VENV_ROOT"
+activate_venv "$VIRES_VENV_ROOT"
 
 pip install $PIP_OPTIONS 'scipy>=1.4.0,<1.5a0'

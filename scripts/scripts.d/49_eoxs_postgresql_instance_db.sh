@@ -10,11 +10,11 @@
 
 . `dirname $0`/../lib_logging.sh
 . `dirname $0`/../lib_postgres.sh
-. `dirname $0`/../lib_eoxserver.sh
+. `dirname $0`/../lib_vires.sh
 
 DB_CONF="`dirname $0`/../db_eoxs.conf"
 
-info "Creating EOxServer instance's Postgres database ..."
+info "Creating VirES-Server instance's Postgres database ..."
 
 # check if the database is already configured and if so skip the creation ...
 load_db_conf "$DB_CONF"
@@ -53,7 +53,7 @@ fi
 
 # enable access to the DB to allow creation of the extension
 { sudo -u postgres ex "$PG_HBA" || /bin/true ; } <<END
-g/# EOxServer instance:.*\/$INSTANCE/d
+g/# VirES-Server instance:.*\/$INSTANCE/d
 g/^\s*local\s*$DBNAME/d
 /#\s*TYPE\s*DATABASE\s*USER\s*.*ADDRESS\s*METHOD/a
 .
@@ -68,10 +68,10 @@ psql -q -d "$DBNAME" -c "CREATE EXTENSION IF NOT EXISTS postgis ;"
 
 # make the DB accessible for the dedicated user only
 { sudo -u postgres ex "$PG_HBA" || /bin/true ; } <<END
-g/# EOxServer instance:.*\/$INSTANCE/d
+g/# VirES-Server instance:.*\/$INSTANCE/d
 g/^\s*local\s*$DBNAME/d
 /#\s*TYPE\s*DATABASE\s*USER\s*.*ADDRESS\s*METHOD/a
-# EOxServer instance: $INSTROOT/$INSTANCE
+# VirES-Server instance: $INSTROOT/$INSTANCE
 local	$DBNAME	$DBUSER	md5
 local	$DBNAME	all	reject
 .

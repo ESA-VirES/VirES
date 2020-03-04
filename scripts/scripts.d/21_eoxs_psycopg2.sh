@@ -14,5 +14,5 @@ info "Installing psycopg2 (Python-PostgreSQL Database Adapter) ... """
 
 yum --assumeyes install $PG_DEVEL_PACKAGE
 
-activate_venv "$EOXS_VENV_ROOT"
+activate_venv "$VIRES_VENV_ROOT"
 pip install --force-reinstall --no-binary :all: psycopg2

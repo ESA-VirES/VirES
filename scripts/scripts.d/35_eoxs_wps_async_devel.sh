@@ -11,6 +11,6 @@
 
 info "Installing EOxServer asynchronous WPS backend in development mode."
 
-activate_venv "$EOXS_VENV_ROOT"
+activate_venv "$VIRES_VENV_ROOT"
 
 pip install -e "${EOXS_WPS_ASYNC_SOURCE_PATH:-/usr/local/eoxs_wps_async}"

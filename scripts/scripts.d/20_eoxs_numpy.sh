@@ -11,6 +11,6 @@
 
 info "Installing numpy ..."
 
-activate_venv "$EOXS_VENV_ROOT"
+activate_venv "$VIRES_VENV_ROOT"
 
 pip install $PIP_OPTIONS 'numpy>=1.16.0,<1.17a0'

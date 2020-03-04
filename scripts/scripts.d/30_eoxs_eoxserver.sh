@@ -11,7 +11,7 @@
 
 info "Installing EOxServer from sources ..."
 
-activate_venv "$EOXS_VENV_ROOT"
+activate_venv "$VIRES_VENV_ROOT"
 
 pip install $PIP_OPTIONS lxml
 pip install $PIP_OPTIONS "${EOXSERVER_SOURCE_PATH:-/usr/local/eoxserver}"

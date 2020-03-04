@@ -6,5 +6,5 @@
 info() { true ; }
 error() { echo "ERROR: $1" ; exit 1; }
 
-activate_venv "$EOXS_VENV_ROOT"
+activate_venv "$VIRES_VENV_ROOT"
 "$@"

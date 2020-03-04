@@ -11,7 +11,7 @@
 
 info "Installing Gunicorn ..."
 
-activate_venv "$EOXS_VENV_ROOT"
+activate_venv "$VIRES_VENV_ROOT"
 
 pip install $PIP_OPTIONS setproctitle
 pip install $PIP_OPTIONS gunicorn

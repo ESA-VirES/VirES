@@ -6,7 +6,7 @@
 #
 cd "`dirname "$0"`"
 #MNG="sudo -u vires python ${VIRES_INSTANCE_DIR:-/var/www/vires/eoxs}/manage.py"
-MNG="../scripts/venv_eoxs_manage"
+MNG="../scripts/venv_vires_manage"
 DATA_DIR="${DATA_DIR:-/mnt/data}"
 chmod 0755 ~/
 
