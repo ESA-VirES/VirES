@@ -41,7 +41,7 @@ do
 /JHUB_BEGIN/,/JHUB_END/de
 /^[ 	]*<\/VirtualHost>/i
     # JHUB_BEGIN - OAuth server instance - Do not edit or remove this line!
-    # OAuth server instance configured by the automatic installation script
+    # JupyterHub server instance configured by the automatic installation script
 
     RewriteEngine On
     RewriteCond %{HTTP:Connection} Upgrade [NC]

@@ -505,7 +505,7 @@ do
     #ProxyPassReverse "${BASE_URL_PATH:-/}" "http://$VIRES_SERVER_HOST${BASE_URL_PATH:-/}"
     #RequestHeader set SCRIPT_NAME "${BASE_URL_PATH:-/}"
 
-    # EOXS00_END - EOxServer instance - Do not edit or remove this line!
+    # EOXS00_END - VirES-Server instance - Do not edit or remove this line!
 .
 wq
 END
