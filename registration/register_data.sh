@@ -53,13 +53,13 @@ done
 
 COLLECTION="SW_OPER_AUX_IMF_2_"
 find "$DATA_DIR" -type f -name "SW_OPER_AUX_IMF_2_*.DBL" | sort \
-| $MNG product register -c "$COLLECTION" -f - --conflict=UPDATE
+| $MNG product register -c "$COLLECTION" -f - --update
 
 for SAT in A B C
 do
     COLLECTION="SW_OPER_MAG${SAT}_HR_1B"
     find "$DATA_DIR" -type f -name "SW_OPER_MAG${SAT}*MDR_MAG_HR.cdf" | sort \
-    | $MNG product register -c "$COLLECTION" -f - --conflict=UPDATE
+    | $MNG product register -c "$COLLECTION" -f - --update
 done
 
 # re-build orbit direction lookup tables
@@ -70,7 +70,7 @@ do
     COLLECTION="SW_OPER_MAG${SAT}_LR_1B"
     # product registration including update of the orbit direction lookup tables
     find "$DATA_DIR" -type f -name "SW_OPER_MAG${SAT}*MDR_MAG_LR.cdf" | sort \
-    | $MNG product --traceback register -c "$COLLECTION" -f - --conflict=UPDATE
+    | $MNG product --traceback register -c "$COLLECTION" -f - --update
 done
 
 for SAT in A B C
@@ -78,14 +78,14 @@ do
     COLLECTION="SW_OPER_EFI${SAT}_LP_1B"
     [ -f "./ERROR" ] && break
     find "$DATA_DIR" -type f -name "SW_OPER_EFI${SAT}*MDR_EFI_LP.cdf" | sort \
-    | $MNG product register -c "$COLLECTION" -f - --conflict=UPDATE
+    | $MNG product register -c "$COLLECTION" -f - --update
 done
 
 for SAT in A B C
 do
     COLLECTION="SW_OPER_IBI${SAT}TMS_2F"
     find "$DATA_DIR" -type f -name "SW_OPER_IBI${SAT}TMS_2F*.cdf" | sort \
-    | $MNG product register -c "$COLLECTION" -f - --conflict=UPDATE --overlap=IGNORE
+    | $MNG product register -c "$COLLECTION" -f - --update --ignore-overlaps
 done
 
 for SAT in A B C
@@ -93,7 +93,7 @@ do
     COLLECTION="SW_OPER_TEC${SAT}TMS_2F"
     [ -f "./ERROR" ] && break
     find "$DATA_DIR" -type f -name "${COLLECTION}_*.cdf" | sort \
-    | $MNG product register -c "$COLLECTION" -f - --conflict=UPDATE
+    | $MNG product register -c "$COLLECTION" -f - --update
 done
 
 for SAT in _ A B C
@@ -101,21 +101,21 @@ do
     COLLECTION="SW_OPER_FAC${SAT}TMS_2F"
     [ -f "./ERROR" ] && break
     find "$DATA_DIR" -type f -name "${COLLECTION}_*.cdf" | sort \
-    | $MNG product register -c "$COLLECTION" -f - --conflict=UPDATE
+    | $MNG product register -c "$COLLECTION" -f - --update
 done
 
 for SAT in A B
 do
     COLLECTION="SW_OPER_EEF${SAT}TMS_2F"
     find "$DATA_DIR" -type f -name "SW_OPER_EEF${SAT}TMS_2F*.DBL" | sort \
-    | $MNG product register -c "$COLLECTION" -f - --conflict=UPDATE --overlap=IGNORE
+    | $MNG product register -c "$COLLECTION" -f - --update --ignore-overlaps
 done
 
 for SAT in A B C
 do
     COLLECTION="SW_OPER_IPD${SAT}IRR_2F"
     find "$DATA_DIR" -type f -name "SW_OPER_IPD${SAT}IRR_2F*.cdf" | sort \
-    | $MNG product register -c "$COLLECTION" -f - --conflict=UPDATE
+    | $MNG product register -c "$COLLECTION" -f - --update
 done
 
 #for SAT in A B C
@@ -124,7 +124,7 @@ done
 #    $MNG product deregister -c "$COLLECTION" --all
 #    set -x
 #    find "$DATA_DIR" -type f -name "SW_OPER_AEJ${SAT}LPL_2F_20*.cdf" | sort \
-#    | $MNG product register -c "$COLLECTION" -f - --conflict=UPDATE
+#    | $MNG product register -c "$COLLECTION" -f - --update
 #done
 
 #for SAT in A B C
@@ -133,7 +133,7 @@ done
 #    $MNG product deregister -c "$COLLECTION" --all
 #    set -x
 #    find "$DATA_DIR" -type f -name "SW_OPER_AEJ${SAT}PBL_2F_20*.cdf" | sort \
-#    | $MNG product register -c "$COLLECTION" -f - --conflict=UPDATE
+#    | $MNG product register -c "$COLLECTION" -f - --update
 #done
 
 #for SAT in A B C
@@ -142,7 +142,7 @@ done
 #    $MNG product deregister -c "$COLLECTION" --all
 #    set -x
 #    find "$DATA_DIR" -type f -name "SW_OPER_AEJ${SAT}LPS_2F_20*.cdf" | sort \
-#    | $MNG product register -c "$COLLECTION" -f - --conflict=UPDATE
+#    | $MNG product register -c "$COLLECTION" -f - --update
 #done
 
 #for SAT in A B C
@@ -151,7 +151,7 @@ done
 #    $MNG product deregister -c "$COLLECTION" --all
 #    set -x
 #    find "$DATA_DIR" -type f -name "SW_OPER_AEJ${SAT}PBS_2F_20*.cdf" | sort \
-#    | $MNG product register -c "$COLLECTION" -f - --conflict=UPDATE
+#    | $MNG product register -c "$COLLECTION" -f - --update
 #done
 
 #for SAT in A B C
@@ -160,7 +160,7 @@ done
 #    $MNG product deregister -c "$COLLECTION" --all
 #    set -x
 #    find "$DATA_DIR" -type f -name "SW_OPER_AEJ${SAT}PBS_2F_20*.cdf" | sort \
-#    | $MNG product register -c "$COLLECTION" -f - --conflict=UPDATE
+#    | $MNG product register -c "$COLLECTION" -f - --update
 #done
 
 #for SAT in A B C
@@ -169,5 +169,5 @@ done
 #    $MNG product deregister -c "$COLLECTION" --all
 #    set -x
 #    find "$DATA_DIR" -type f -name "SW_OPER_AOB${SAT}FAC_2F_20*.cdf" | sort \
-#    | $MNG product register -c "$COLLECTION" -f - --conflict=UPDATE
+#    | $MNG product register -c "$COLLECTION" -f - --update
 #done
