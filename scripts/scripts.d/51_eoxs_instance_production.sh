@@ -268,6 +268,7 @@ EOXS_SERVICE_HANDLERS = [
 EOXS_PROCESSES = [
     'vires.processes.get_time_data.GetTimeDataProcess',
     'vires.processes.get_model_info.GetModelInfo',
+    'vires.processes.get_collection_info.GetCollectionInfo',
     'vires.processes.get_indices.GetIndices',
     'vires.processes.get_orbit_timerange.GetOrbitTimeRange',
     'vires.processes.eval_model.EvalModel',
