@@ -107,7 +107,7 @@ done
 for SAT in A B
 do
     COLLECTION="SW_OPER_EEF${SAT}TMS_2F"
-    find "$DATA_DIR" -type f -name "SW_OPER_EEF${SAT}TMS_2F*.DBL" | sort \
+    find "$DATA_DIR" -type f -name "SW_OPER_EEF${SAT}TMS_2F*_010[1-9].DBL" | sort \
     | $MNG product register -c "$COLLECTION" -f - --update --ignore-overlaps
 done
 
