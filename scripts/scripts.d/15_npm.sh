@@ -11,4 +11,3 @@
 info "Installing NPM package manager ..."
 
 yum --assumeyes install npm
-

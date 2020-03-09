@@ -7,12 +7,12 @@
 # Copyright (C) 2019 EOX IT Services GmbH
 
 . `dirname $0`/../lib_logging.sh
-. `dirname $0`/../lib_python3_venv.sh
+. `dirname $0`/../lib_python_venv.sh
 . `dirname $0`/../lib_oauth.sh
 
 info "Initializing test user ... "
 
-activate_venv
+activate_venv "$OAUTH_VENV_ROOT"
 set_instance_variables
 required_variables MNGCMD
 
