@@ -56,7 +56,6 @@ _locate_virtal_host_conf()
         [ -z "$_HOST" ] || [ -n "`_find_host "$_FILE" "$_HOST"`" ] || continue
         echo $_FILE
     done
-    return 1
 }
 
 locate_apache_conf()
