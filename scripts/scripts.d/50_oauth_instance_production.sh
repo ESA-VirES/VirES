@@ -24,7 +24,7 @@ DEBUG="False"
 required_variables OAUTH_VENV_ROOT
 activate_venv "$OAUTH_VENV_ROOT"
 
-required_variables HOSTNAME VIRES_HOSTNAME VIRES_HOSTNAME_INTERNAL VIRES_IP_ADDRESS
+required_variables HOSTNAME VIRES_HOSTNAME VIRES_IP_ADDRESS
 required_variables VIRES_USER VIRES_GROUP VIRES_INSTALL_USER VIRES_INSTALL_GROUP
 
 set_instance_variables
@@ -98,6 +98,9 @@ wq
 END
 fi
 
+ALLOWED_HOSTS="'${VIRES_IP_ADDRESS}', '${HOSTNAME}'"
+[ -z "$VIRES_HOSTNAME_INTERNAL" ] || ALLOWED_HOSTS="'${VIRES_HOSTNAME_INTERNAL}', $ALLOWED_HOSTS"
+
 # enter new settings
 { ex "$SETTINGS" || /bin/true ; } <<END
 /BASE_DIR/
@@ -109,7 +112,7 @@ g/^DEBUG\s*=/s#\(^DEBUG\s*=\s*\).*#\1$DEBUG#
 i
 STATIC_ROOT = os.path.join(PROJECT_DIR, 'static')
 .
-1,\$s/\(^ALLOWED_HOSTS\s*=\s*\).*/\1['${VIRES_HOSTNAME_INTERNAL}','${VIRES_IP_ADDRESS}','${HOSTNAME}','127.0.0.1','::1']/
+1,\$s/\(^ALLOWED_HOSTS\s*=\s*\).*/\1[${ALLOWED_HOSTS}, '127.0.0.1','::1']/
 a
 USE_X_FORWARDED_HOST = True
 .
@@ -239,7 +242,7 @@ _PORT=443 # HTTPS only
 [ -z `locate_apache_conf $_PORT $HOSTNAME` ] && error "Failed to locate Apache virtual host $HOSTNAME:$_PORT configuration!"
 {
     locate_apache_conf $_PORT $HOSTNAME
-    locate_apache_conf $_PORT $VIRES_HOSTNAME_INTERNAL
+    [ -z "$VIRES_HOSTNAME_INTERNAL" ] || locate_apache_conf $_PORT $VIRES_HOSTNAME_INTERNAL
 } | while read CONF
 do
     { ex "$CONF" || /bin/true ; } <<END
