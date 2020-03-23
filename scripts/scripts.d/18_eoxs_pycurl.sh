@@ -39,5 +39,5 @@ info "Installing pyCURL ..."
 
 activate_venv "$VIRES_VENV_ROOT"
 
-yum install libcurl-devel
+yum --assumeyes install libcurl-devel
 pip install $PIP_OPTIONS pycurl --global-option="--with-nss"
