@@ -9,7 +9,7 @@
 . `dirname $0`/../lib_logging.sh
 . `dirname $0`/../lib_python_venv.sh
 
-info "Installing PLY (Pyhton Lex-Yacc) ..."
+info "Installing PLY (Python Lex-Yacc) ..."
 
 activate_venv "$VIRES_VENV_ROOT"
 
