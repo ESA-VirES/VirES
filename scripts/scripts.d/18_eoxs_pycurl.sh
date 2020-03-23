@@ -33,8 +33,11 @@
 #-------------------------------------------------------------------------------
 
 . `dirname $0`/../lib_logging.sh
+. `dirname $0`/../lib_python_venv.sh
 
 info "Installing pyCURL ..."
 
-# Should we activate virtualenv?
-pip install pycurl
+activate_venv "$VIRES_VENV_ROOT"
+
+yum install libcurl-devel
+pip install $PIP_OPTIONS pycurl --global-option="--with-nss"
