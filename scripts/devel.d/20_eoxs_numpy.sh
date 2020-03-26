@@ -1,0 +1,1 @@
+../scripts.d/20_eoxs_numpy.sh

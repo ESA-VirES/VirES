@@ -8,14 +8,13 @@
 
 . `dirname $0`/../lib_logging.sh
 . `dirname $0`/../lib_apache.sh
-. `dirname $0`/../lib_python3_venv.sh
+. `dirname $0`/../lib_python_venv.sh
 
 info "Configuring Jupyter Hub ..."
 
 #required_variables VIRES_USER
 
-export P3_VENV_ROOT="$PYTHON_VENV_JHUB"
-activate_venv
+activate_venv "$JHUB_VENV_ROOT"
 
 JHUB_SOURCE_PATH="${JHUB_SOURCE_PATH:-/usr/local/vires/vires_jhub}"
 
@@ -42,7 +41,7 @@ do
 /JHUB_BEGIN/,/JHUB_END/de
 /^[ 	]*<\/VirtualHost>/i
     # JHUB_BEGIN - OAuth server instance - Do not edit or remove this line!
-    # OAuth server instance configured by the automatic installation script
+    # JupyterHub server instance configured by the automatic installation script
 
     RewriteEngine On
     RewriteCond %{HTTP:Connection} Upgrade [NC]
@@ -85,14 +84,14 @@ Before=httpd.service
 [Service]
 PIDFile=/run/${JHUB_SERVICE_NAME}.pid
 WorkingDirectory=${JHUB_WORK_DIR}
-Environment="PATH=${P3_VENV_ROOT}/bin:/usr/bin/"
-ExecStart=${P3_VENV_ROOT}/bin/jupyterhub \\
+Environment="PATH=${JHUB_VENV_ROOT}/bin:/usr/bin/"
+ExecStart=${JHUB_VENV_ROOT}/bin/jupyterhub \\
     --Spawner.default_url="/lab" \\
     --JupyterHub.authenticator_class='vires_jhub.authenticator.LocalViresOAuthenticator' \\
     --JupyterHub.pid_file="/run/${JHUB_SERVICE_NAME}.pid" \\
     --JupyterHub.bind_url="http://$JHUB_SERVER_HOST" \\
     --JupyterHub.base_url="$JHUB_BASE_URL_PATH" \\
-    --JupyterHub.logo_file="${P3_VENV_ROOT}/share/jupyterhub/static/vires/images/vre_logo.svg" \\
+    --JupyterHub.logo_file="${JHUB_VENV_ROOT}/share/jupyterhub/static/vires/images/vre_logo.svg" \\
     --JupyterHub.template_paths=["$JHUB_SOURCE_PATH/share/vires_jhub/templates"] \\
     --JupyterHub.template_vars={"vires_url":""} \\
     --ViresOAuthenticator.server_url="/oauth/" \\

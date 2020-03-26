@@ -7,12 +7,13 @@
 # Copyright (C) 2017 EOX IT Services GmbH
 
 . `dirname $0`/../lib_logging.sh
-. `dirname $0`/../lib_virtualenv.sh
+. `dirname $0`/../lib_python_venv.sh
 
-SOURCE_URL="https://github.com/DAMATS/WPS-Backend/archive/0.4.2.tar.gz"
+#TODO: fix the backend version
+SOURCE_URL="https://github.com/DAMATS/WPS-Backend/archive/0.5.0.tar.gz"
 
 info "Installing EOxServer asynchronous WPS backend."
 
-activate_virtualenv
+activate_venv "$VIRES_VENV_ROOT"
 
 pip install $PIP_OPTIONS "$SOURCE_URL"

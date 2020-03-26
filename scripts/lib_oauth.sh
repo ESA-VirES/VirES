@@ -1,8 +1,7 @@
 #!/bin/sh
 #-------------------------------------------------------------------------------
 #
-# Project: VirES
-# Purpose: EOxServer utility scripts
+# VirES OAuth identity server utility scripts
 # Authors: Martin Paces <martin.paces@eox.at>
 #
 #-------------------------------------------------------------------------------
@@ -29,7 +28,7 @@
 
 set_instance_variables() {
     required_variables OAUTH_SERVER_HOME VIRES_LOGDIR
- 
+
     HOSTNAME="$VIRES_HOSTNAME"
     INSTANCE="`basename "$OAUTH_SERVER_HOME"`"
     INSTROOT="`dirname "$OAUTH_SERVER_HOME"`"
@@ -83,5 +82,5 @@ required_variables()
         then
             error "Missing the required ${__VARIABLE___} variable!"
         fi
-    done 
+    done
 }

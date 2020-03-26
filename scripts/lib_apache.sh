@@ -30,50 +30,55 @@
 # locate Apache configuration files
 # configured for the given port number 
 
-_locate_conf()
+_locate_virtal_host_conf()
 {
+    _dupm_conf() {
+        sed -n -e '/^\s*<VirtualHost/,/^\s*<\\VirtualHost/p' "$1"
+    }
+
+    _find_port() {
+        _dupm_conf "$1" | sed -n -e 's/^\s*<VirtualHost\s\+\([^>]*\)\s*>/\1/p' \
+        | sed 's/\s\+/ /g' | tr ' ' '\n' | sed 's/.*:\([0-9]\+\)$/\1/' \
+        | sort -n | uniq | egrep "^$2\$"
+    }
+    _find_host() {
+        _dupm_conf "$1" | sed -n -e 's/^\s*\(ServerName\|ServerAlias\)\s\+\([^#]*\)\s*\(#\|$\)/\2/p' \
+        | sed 's/\s\+/ /g' | tr ' ' '\n' | sed 's/.*:\([0-9]\+\)$/\1/' \
+        | sort -n | uniq | egrep "^`sed 's/\\./\\\\./g' <<< "$2"`\$"
+    }
+
+    _PORT=$1
+    _HOST=$2
     _CONFS="/etc/httpd/conf/httpd.conf /etc/httpd/conf.d/*.conf"
-    for _F_ in $_CONFS
+    for _FILE in $_CONFS
     do
-        if [ 0 -lt `grep -c "$1" "$_F_"` ]
-        then
-            echo "$_F_"
-            return 0
-        fi
+        [ -n "`_find_port "$_FILE" "$_PORT"`" ] || continue
+        [ -z "$_HOST" ] || [ -n "`_find_host "$_FILE" "$_HOST"`" ] || continue
+        echo $_FILE
     done
-    return 1 
 }
 
 locate_apache_conf()
 {
-    PORT=${1:-80}
-    if [ $# -gt 1 ]
-    then 
-        shift
-        HOSTS=$* 
-    else
-        HOSTS="\* _default_"
-    fi
-    for HOST in $HOSTS
-    do
-        _locate_conf '^[ 	]*<VirtualHost[ 	]*'"${HOST}:${PORT}"'>' || true
-    done
+    _PORT=${1:-80}
+    _HOST=$2
+    _locate_virtal_host_conf $_PORT $_HOST
 }
 
 locate_wsgi_socket_prefix_conf()
 {
-    _locate_conf '^[ 	]*WSGISocketPrefix' || true
+    _locate_conf '^\s*WSGISocketPrefix' || true
 }
 
 locate_wsgi_daemon()
 {
-    _locate_conf '^[ 	]*WSGIDaemonProcess[ 	]*'$1 || true
+    _locate_conf '^\s*WSGIDaemonProcess\s*'$1 || true
 }
 
 disable_virtual_host()
 {
     ex "$1" <<END
-/^[ 	]*<VirtualHost/,/<\/VirtualHost>/s/^/#/
+/^\s*<VirtualHost/,/<\/VirtualHost>/s/^/#/
 wq
 END
 }
