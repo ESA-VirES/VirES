@@ -7,10 +7,10 @@
 # Copyright (C) 2018 EOX IT Services GmbH
 
 . `dirname $0`/../lib_logging.sh
-. `dirname $0`/../lib_virtualenv.sh
+. `dirname $0`/../lib_python_venv.sh
 
-info "Installing pyAMPS from PyPI"
+info "Installing pyAMPS ..."
 
-activate_virtualenv
+activate_venv "$VIRES_VENV_ROOT"
 
 pip install $PIP_OPTIONS pyamps

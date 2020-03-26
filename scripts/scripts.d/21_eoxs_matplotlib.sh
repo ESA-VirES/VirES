@@ -1,21 +1,21 @@
 #!/bin/sh
 #-------------------------------------------------------------------------------
 #
-# Purpose: head-less maptlotlib installation.
+# Purpose: head-less maptlotlib installation
 # Author(s): Martin Paces <martin.paces@eox.at>
 #-------------------------------------------------------------------------------
 # Copyright (C) 2018 EOX IT Services GmbH
 
 . `dirname $0`/../lib_logging.sh
-. `dirname $0`/../lib_virtualenv.sh
+. `dirname $0`/../lib_python_venv.sh
 
 info "Installing scipy ..."
 
-activate_virtualenv
+activate_venv "$VIRES_VENV_ROOT"
 
-pip install $PIP_OPTIONS 'matplotlib'
+pip install $PIP_OPTIONS matplotlib
 
-# configure the default backend for the install (need by pip installs) and execution user
+# configure the default backend for both the install and execution users
 
 for USER in $VIRES_USER $VIRES_INSTALL_USER
 do
