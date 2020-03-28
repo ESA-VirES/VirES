@@ -104,11 +104,11 @@ do
     | $MNG product register -c "$COLLECTION" -f - --update
 done
 
-for SAT in A B
+for SAT in A B C
 do
     COLLECTION="SW_OPER_EEF${SAT}TMS_2F"
-    find "$DATA_DIR" -type f -name "SW_OPER_EEF${SAT}TMS_2F*_010[1-9].DBL" | sort \
-    | $MNG product register -c "$COLLECTION" -f - --update --ignore-overlaps
+    find "$DATA_DIR" -type f -name "SW_OPER_EEF${SAT}TMS_2F*_0[2-9][0-9][1-9].cdf" | sort \
+    | $MNG product register -c "$COLLECTION" -f - --update
 done
 
 for SAT in A B C
