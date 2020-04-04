@@ -48,7 +48,7 @@ then
 fi
 required_variables DBENGINE DBNAME
 
-HTTP_TIMEOUT=300
+HTTP_TIMEOUT=600
 
 #-------------------------------------------------------------------------------
 # STEP 1: CREATE INSTANCE (if not already present)

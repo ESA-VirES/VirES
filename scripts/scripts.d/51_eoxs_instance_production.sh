@@ -47,7 +47,7 @@ required_variables SMTP_HOSTNAME SMTP_DEFAULT_SENDER SERVER_EMAIL
 SMTP_USE_TLS=${SMTP_USE_TLS:-YES}
 SMTP_PORT=${SMTP_PORT:-25}
 
-HTTP_TIMEOUT=300
+HTTP_TIMEOUT=600
 
 #-------------------------------------------------------------------------------
 # STEP 1: CREATE INSTANCE (if not already present)
