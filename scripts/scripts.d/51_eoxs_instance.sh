@@ -48,6 +48,8 @@ then
 fi
 required_variables DBENGINE DBNAME
 
+HTTP_TIMEOUT=300
+
 #-------------------------------------------------------------------------------
 # STEP 1: CREATE INSTANCE (if not already present)
 
@@ -477,7 +479,7 @@ do
         Header set Access-Control-Allow-Origin "*"
     </Directory>
 
-    ProxyPass "${BASE_URL_PATH:-/}" "http://$VIRES_SERVER_HOST${BASE_URL_PATH:-/}"
+    ProxyPass "${BASE_URL_PATH:-/}" "http://$VIRES_SERVER_HOST${BASE_URL_PATH:-/}" connectiontimeout=60 timeout=$HTTP_TIMEOUT
     #ProxyPassReverse "${BASE_URL_PATH:-/}" "http://$VIRES_SERVER_HOST${BASE_URL_PATH:-/}"
     #RequestHeader set SCRIPT_NAME "${BASE_URL_PATH:-/}"
 
@@ -577,6 +579,7 @@ ExecStart=${VIRES_VENV_ROOT}/bin/gunicorn \\
     --group $VIRES_GROUP \\
     --workers $VIRES_SERVER_NPROC \\
     --threads $VIRES_SERVER_NTHREAD \\
+    --timeout $HTTP_TIMEOUT \\
     --pid /run/${VIRES_SERVICE_NAME}.pid \\
     --access-logfile $GUNICORN_ACCESS_LOG \\
     --error-logfile $GUNICORN_ERROR_LOG \\
