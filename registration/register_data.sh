@@ -10,8 +10,8 @@ MNG="../scripts/venv_vires_manage"
 DATA_DIR="${DATA_DIR:-/mnt/data}"
 chmod 0755 ~/
 
-$MNG product_type import
-$MNG product_collection import
+$MNG product_type import --default
+$MNG product_collection import --default
 
 [ -f "$PWD/Dst_MJD_1998.dat" ] || wget 'ftp://ftp.gfz-potsdam.de/pub/incoming/champ_payload/Nils/Dst_MJD_1998.dat' -O "$PWD/Dst_MJD_1998.dat"
 [ -f "$PWD/Kp_MJD_1998_QL.dat" ] || wget 'ftp://ftp.gfz-potsdam.de/pub/incoming/champ_payload/Nils/Kp_MJD_1998_QL.dat' -O "$PWD/Kp_MJD_1998_QL.dat"

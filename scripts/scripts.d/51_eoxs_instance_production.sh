@@ -587,8 +587,8 @@ then
 fi
 
 # initialize product types and collections
-python "$MNGCMD" product_type import
-python "$MNGCMD" product_collection import
+python "$MNGCMD" product_type import --default
+python "$MNGCMD" product_collection import --default
 
 #-------------------------------------------------------------------------------
 # STEP 7: SERVICE SETUP
