@@ -116,14 +116,14 @@ LOGGING = {
         },
     },
     'handlers': {
-        'server_log_file': {
+        'oauth_file': {
             'level': 'DEBUG',
             'class': 'logging.handlers.WatchedFileHandler',
             'filename': '${OAUTHLOG}',
             'formatter': 'default',
             'filters': [],
         },
-        'access_log_file': {
+        'access_file': {
             'level': 'DEBUG',
             'class': 'logging.handlers.WatchedFileHandler',
             'filename': '${ACCESSLOG}',
@@ -138,13 +138,18 @@ LOGGING = {
         },
     },
     'loggers': {
-        'django.request': {
-            'handlers': ['access_log_file'],
+        'vires_oauth': {
+            'handlers': ['oauth_file'],
+            'level': 'DEBUG' if DEBUG else 'INFO',
+            'propagate': False,
+        },
+        'access': {
+            'handlers': ['access_file'],
             'level': 'DEBUG' if DEBUG else 'INFO',
             'propagate': False,
         },
         '': {
-            'handlers': ['server_log_file'],
+            'handlers': ['oauth_file'],
             'level': 'INFO' if DEBUG else 'WARNING',
             'propagate': False,
         },
@@ -378,37 +383,6 @@ VIRES_APPS = [
 ]
 
 # OAUTH MIDDLEWARE - END - Do not edit or remove this line!
-.
-\$a
-# OAUTH LOGGING - BEGIN - Do not edit or remove this line!
-LOGGING['loggers'].update({
-    'vires_oauth.access': {
-        'handlers': ['access_log_file'],
-        'level': 'DEBUG' if DEBUG else 'INFO',
-        'propagate': False,
-    },
-    'vires_oauth.allauth': {
-        'handlers': ['access_log_file'],
-        'level': 'DEBUG' if DEBUG else 'INFO',
-        'propagate': False,
-    },
-    'vires_oauth.oauth2_provider': {
-        'handlers': ['access_log_file'],
-        'level': 'DEBUG' if DEBUG else 'INFO',
-        'propagate': False,
-    },
-    'vires_oauth': {
-        'handlers': ['server_log_file'],
-        'level': 'DEBUG' if DEBUG else 'INFO',
-        'propagate': False,
-    },
-})
-# OAUTH LOGGING - END - Do not edit or remove this line!
-.
-/^TEMPLATES\s*=/
-/^]/a
-# OAUTH TEMPLATES - BEGIN - Do not edit or remove this line!
-# OAUTH TEMPLATES - END - Do not edit or remove this line!
 .
 wq
 END
