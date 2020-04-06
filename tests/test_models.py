@@ -50,7 +50,7 @@ from eoxmagmod import (
     load_model_swarm_mio_internal,
     ComposedGeomagneticModel,
 )
-from eoxmagmod.data import IGRF12, CHAOS_STATIC_LATEST, LCS1, MF7
+from eoxmagmod.data import IGRF13, CHAOS_STATIC_LATEST, LCS1, MF7
 from eoxmagmod.time_util import decimal_year_to_mjd2000_simple
 from util.time_util import parse_datetime
 from util.wps import (
@@ -187,8 +187,8 @@ class TestAsyncFetchFilteredDataCdfSunPosition(TestCase, SunPositionTestMixIn, A
 
 class DipoleTestMixIn(object):
     variables = ["DipoleAxisVector", "NGPLatitude", "NGPLongitude"]
-    model_name = "IGRF12"
-    model = load_model_shc(IGRF12, interpolate_in_decimal_years=True)
+    model_name = "IGRF"
+    model = load_model_shc(IGRF13, interpolate_in_decimal_years=True)
 
     def test_dipole(self):
         request = self.get_request(
@@ -503,29 +503,29 @@ class MagneticModelMIOTestMixIn(MagneticModelTestMixIn):
 
 #-------------------------------------------------------------------------------
 
-class TestFetchDataCsvModelIGRF12(TestCase, MagneticModelTestMixIn, FetchDataCsvMixIn):
-    model_name = "IGRF12"
-    model = load_model_shc(IGRF12, interpolate_in_decimal_years=True)
+class TestFetchDataCsvModelIGRF(TestCase, MagneticModelTestMixIn, FetchDataCsvMixIn):
+    model_name = "IGRF"
+    model = load_model_shc(IGRF13, interpolate_in_decimal_years=True)
 
 
-class TestFetchFilteredDataCsvModelIGRF12(TestCase, MagneticModelTestMixIn, FetchFilteredDataCsvMixIn):
-    model_name = "IGRF12"
-    model = load_model_shc(IGRF12, interpolate_in_decimal_years=True)
+class TestFetchFilteredDataCsvModelIGRF(TestCase, MagneticModelTestMixIn, FetchFilteredDataCsvMixIn):
+    model_name = "IGRF"
+    model = load_model_shc(IGRF13, interpolate_in_decimal_years=True)
 
 
-class TestFetchFilteredDataCdfModelIGRF12(TestCase, MagneticModelTestMixIn, FetchFilteredDataCdfMixIn):
-    model_name = "IGRF12"
-    model = load_model_shc(IGRF12, interpolate_in_decimal_years=True)
+class TestFetchFilteredDataCdfModelIGRF(TestCase, MagneticModelTestMixIn, FetchFilteredDataCdfMixIn):
+    model_name = "IGRF"
+    model = load_model_shc(IGRF13, interpolate_in_decimal_years=True)
 
 
-class TestAsyncFetchFilteredDataCsvModelIGRF12(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataCsvMixIn):
-    model_name = "IGRF12"
-    model = load_model_shc(IGRF12, interpolate_in_decimal_years=True)
+class TestAsyncFetchFilteredDataCsvModelIGRF(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataCsvMixIn):
+    model_name = "IGRF"
+    model = load_model_shc(IGRF13, interpolate_in_decimal_years=True)
 
 
-class TestAsyncFetchFilteredDataCdfModelIGRF12(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataCdfMixIn):
-    model_name = "IGRF12"
-    model = load_model_shc(IGRF12, interpolate_in_decimal_years=True)
+class TestAsyncFetchFilteredDataCdfModelIGRF(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataCdfMixIn):
+    model_name = "IGRF"
+    model = load_model_shc(IGRF13, interpolate_in_decimal_years=True)
 
 #-------------------------------------------------------------------------------
 
@@ -681,89 +681,6 @@ class TestAsyncFetchFilteredDataCsvModelCHAOSMMASecondary(TestCase, MagneticMode
 class TestAsyncFetchFilteredDataCdfModelCHAOSMMASecondary(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataCdfMixIn):
     model_name = "CHAOS-MMA-Secondary"
     model = load_model_swarm_mma_2c_internal(MMA_CHAOS)
-
-#-------------------------------------------------------------------------------
-
-class TestFetchDataCsvModelCHAOS6Static(TestFetchDataCsvModelCHAOSStatic):
-    model_name = "CHAOS-6-Static"
-
-
-class TestFetchFilteredDataCsvModelCHAOS6Static(TestFetchFilteredDataCsvModelCHAOSStatic):
-    model_name = "CHAOS-6-Static"
-
-
-class TestFetchFilteredDataCdfModelCHAOS6Static(TestFetchFilteredDataCdfModelCHAOSStatic):
-    model_name = "CHAOS-6-Static"
-
-
-class TestAsyncFetchFilteredDataCsvModelCHAOS6Static(TestAsyncFetchFilteredDataCsvModelCHAOSStatic):
-    model_name = "CHAOS-6-Static"
-
-
-class TestAsyncFetchFilteredDataCdfModelCHAOS6Static(TestAsyncFetchFilteredDataCdfModelCHAOSStatic):
-    model_name = "CHAOS-6-Static"
-
-#-------------------------------------------------------------------------------
-
-class TestFetchDataCsvModelCHAOS6Core(TestFetchDataCsvModelCHAOSCore):
-    model_name = "CHAOS-6-Core"
-
-
-class TestFetchFilteredDataCsvModelCHAOS6Core(TestFetchFilteredDataCsvModelCHAOSCore):
-    model_name = "CHAOS-6-Core"
-
-
-class TestFetchFilteredDataCdfModelCHAOS6Core(TestFetchFilteredDataCdfModelCHAOSCore):
-    model_name = "CHAOS-6-Core"
-
-
-class TestAsyncFetchFilteredDataCsvModelCHAOS6Core(TestAsyncFetchFilteredDataCsvModelCHAOSCore):
-    model_name = "CHAOS-6-Core"
-
-
-class TestAsyncFetchFilteredDataCdfModelCHAOS6Core(TestAsyncFetchFilteredDataCdfModelCHAOSCore):
-    model_name = "CHAOS-6-Core"
-
-#-------------------------------------------------------------------------------
-
-class TestFetchDataCsvModelCHAOS6MMAPrimary(TestFetchDataCsvModelCHAOSMMAPrimary):
-    model_name = "CHAOS-6-MMA-Primary"
-
-
-class TestFetchFilteredDataCsvModelCHAOS6MMAPrimary(TestFetchFilteredDataCsvModelCHAOSMMAPrimary):
-    model_name = "CHAOS-6-MMA-Primary"
-
-
-class TestFetchFilteredDataCdfModelCHAOS6MMAPrimary(TestFetchFilteredDataCdfModelCHAOSMMAPrimary):
-    model_name = "CHAOS-6-MMA-Primary"
-
-
-class TestAsyncFetchFilteredDataCsvModelCHAOS6MMAPrimary(TestAsyncFetchFilteredDataCsvModelCHAOSMMAPrimary):
-    model_name = "CHAOS-6-MMA-Primary"
-
-
-class TestAsyncFetchFilteredDataCdfModelCHAOS6MMAPrimary(TestAsyncFetchFilteredDataCdfModelCHAOSMMAPrimary):
-    model_name = "CHAOS-6-MMA-Primary"
-
-
-class TestFetchDataCsvModelCHAOS6MMASecondary(TestFetchDataCsvModelCHAOSMMASecondary):
-    model_name = "CHAOS-6-MMA-Secondary"
-
-
-class TestFetchFilteredDataCsvModelCHAOS6MMASecondary(TestFetchFilteredDataCsvModelCHAOSMMASecondary):
-    model_name = "CHAOS-6-MMA-Secondary"
-
-
-class TestFetchFilteredDataCdfModelCHAOS6MMASecondary(TestFetchFilteredDataCdfModelCHAOSMMASecondary):
-    model_name = "CHAOS-6-MMA-Secondary"
-
-
-class TestAsyncFetchFilteredDataCsvModelCHAOS6MMASecondary(TestAsyncFetchFilteredDataCsvModelCHAOSMMASecondary):
-    model_name = "CHAOS-6-MMA-Secondary"
-
-
-class TestAsyncFetchFilteredDataCdfModelCHAOS6MMASecondary(TestAsyncFetchFilteredDataCdfModelCHAOSMMASecondary):
-    model_name = "CHAOS-6-MMA-Secondary"
 
 #-------------------------------------------------------------------------------
 
@@ -1095,10 +1012,10 @@ class TestAsyncFetchFilteredDataCdfModelMIO2DSecondary(TestCase, MagneticModelMI
 class TestFetchDataCsvModelExpression(TestCase, MagneticModelTestMixIn, FetchDataCsvMixIn):
     model_name = "MODEL"
     model_expression = (
-        '+"CHAOS-6-Core"(max_degree=30)'
-        '+"CHAOS-6-Static"(max_degree=30)'
-        '+"CHAOS-6-MMA-Primary"'
-        '+"CHAOS-6-MMA-Secondary"'
+        '+"CHAOS-Core"(max_degree=30)'
+        '+"CHAOS-Static"(max_degree=30)'
+        '+"CHAOS-MMA-Primary"'
+        '+"CHAOS-MMA-Secondary"'
     )
     model = load_composed_model(
         (load_model_shc_combined(
@@ -1113,10 +1030,10 @@ class TestFetchDataCsvModelExpression(TestCase, MagneticModelTestMixIn, FetchDat
 class TestFetchFilteredDataCsvModelExpression(TestCase, MagneticModelTestMixIn, FetchFilteredDataCsvMixIn):
     model_name = "MODEL"
     model_expression = (
-        '+"CHAOS-6-Core"(max_degree=30)'
-        '+"CHAOS-6-Static"(max_degree=30)'
-        "+'CHAOS-6-MMA-Primary'"
-        "+'CHAOS-6-MMA-Secondary'"
+        '+"CHAOS-Core"(max_degree=30)'
+        '+"CHAOS-Static"(max_degree=30)'
+        "+'CHAOS-MMA-Primary'"
+        "+'CHAOS-MMA-Secondary'"
     )
     model = load_composed_model(
         (load_model_shc_combined(
@@ -1131,10 +1048,10 @@ class TestFetchFilteredDataCsvModelExpression(TestCase, MagneticModelTestMixIn, 
 class TestFetchFilteredDataCdfModelExpression(TestCase, MagneticModelTestMixIn, FetchFilteredDataCdfMixIn):
     model_name = "MODEL"
     model_expression = (
-        '+"CHAOS-6-Core"(max_degree=30)'
-        '+"CHAOS-6-Static"(max_degree=30)'
-        "+'CHAOS-6-MMA-Primary'"
-        "+'CHAOS-6-MMA-Secondary'"
+        '+"CHAOS-Core"(max_degree=30)'
+        '+"CHAOS-Static"(max_degree=30)'
+        "+'CHAOS-MMA-Primary'"
+        "+'CHAOS-MMA-Secondary'"
     )
     model = load_composed_model(
         (load_model_shc_combined(
@@ -1149,10 +1066,10 @@ class TestFetchFilteredDataCdfModelExpression(TestCase, MagneticModelTestMixIn, 
 class TestAsyncFetchFilteredDataCsvModelExpression(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataCsvMixIn):
     model_name = "MODEL"
     model_expression = (
-        '+"CHAOS-6-Core"(max_degree=30)'
-        '+"CHAOS-6-Static"(max_degree=30)'
-        "+'CHAOS-6-MMA-Primary'"
-        "+'CHAOS-6-MMA-Secondary'"
+        '+"CHAOS-Core"(max_degree=30)'
+        '+"CHAOS-Static"(max_degree=30)'
+        "+'CHAOS-MMA-Primary'"
+        "+'CHAOS-MMA-Secondary'"
     )
     model = load_composed_model(
         (load_model_shc_combined(
@@ -1167,10 +1084,10 @@ class TestAsyncFetchFilteredDataCsvModelExpression(TestCase, MagneticModelTestMi
 class TestAsyncFetchFilteredDataCdfModelExpression(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataCdfMixIn):
     model_name = "MODEL"
     model_expression = (
-        '+"CHAOS-6-Core"(max_degree=30)'
-        '+"CHAOS-6-Static"(max_degree=30)'
-        "+'CHAOS-6-MMA-Primary'"
-        "+'CHAOS-6-MMA-Secondary'"
+        '+"CHAOS-Core"(max_degree=30)'
+        '+"CHAOS-Static"(max_degree=30)'
+        "+'CHAOS-MMA-Primary'"
+        "+'CHAOS-MMA-Secondary'"
     )
     model = load_composed_model(
         (load_model_shc_combined(

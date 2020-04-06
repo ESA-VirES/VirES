@@ -38,8 +38,6 @@ SYSTEM_NAME="VirES"
 [ -f "`dirname $0`/user.conf" ] && . `dirname $0`/user.conf
 . `dirname $0`/lib_common.sh
 . `dirname $0`/lib_logging.sh
-. `dirname $0`/lib_virtualenv.sh
-. `dirname $0`/lib_python3_venv.sh
 
 {
     info "#"
@@ -89,18 +87,6 @@ SYSTEM_NAME="VirES"
     _mkdir "$VIRES_USER:$VIRES_GROUP" 0775 "$VIRES_TMPDIR" "$SYSTEM_NAME temporary storage directory"
     _mkdir "$VIRES_USER:$VIRES_GROUP" 0775 "$VIRES_CACHE_DIR" "$SYSTEM_NAME data cache directory"
     _mkdir "$VIRES_USER:$VIRES_GROUP" 0775 "$VIRES_UPLOAD_DIR" "$SYSTEM_NAME data upload directory"
-
-    if is_virtualenv_enabled
-    then
-        is_virtualenv_root_set || exit 1
-        _mkdir "$VIRES_INSTALL_USER:$VIRES_INSTALL_GROUP" 0755 "$VIRTUALENV_ROOT" "$SYSTEM_NAME python virtualenv directory"
-    fi
-
-    if is_venv_enabled
-    then
-        is_venv_root_set || exit 1
-        _mkdir "$VIRES_INSTALL_USER:$VIRES_INSTALL_GROUP" 0755 "$P3_VENV_ROOT" "$SYSTEM_NAME python3 venv directory"
-    fi
 
     #-------------------------------------------------------------------------------
     # execute specific installation scripts

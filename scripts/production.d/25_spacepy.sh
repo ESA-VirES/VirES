@@ -1,1 +1,0 @@
-../scripts.d/25_spacepy.sh

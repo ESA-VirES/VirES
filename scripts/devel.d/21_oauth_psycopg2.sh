@@ -1,0 +1,1 @@
+../scripts.d/21_oauth_psycopg2.sh

@@ -8,7 +8,7 @@
 
 . `dirname $0`/../lib_logging.sh
 . `dirname $0`/../lib_util.sh
-. `dirname $0`/../lib_eoxserver.sh
+. `dirname $0`/../lib_vires.sh
 
 CONFIGURE_ALLAUTH="${CONFIGURE_ALLAUTH:-YES}"
 
