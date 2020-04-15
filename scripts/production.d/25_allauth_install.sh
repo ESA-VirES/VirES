@@ -1,1 +1,0 @@
-../scripts.d/25_allauth_install.sh

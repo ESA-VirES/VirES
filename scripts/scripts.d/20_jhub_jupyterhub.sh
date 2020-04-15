@@ -7,14 +7,13 @@
 # Copyright (C) 2019 EOX IT Services GmbH
 
 . `dirname $0`/../lib_logging.sh
-. `dirname $0`/../lib_python3_venv.sh
+. `dirname $0`/../lib_python_venv.sh
 
 info "Installing Jupyter Hub ..."
 
-export P3_VENV_ROOT="$VIRES_ROOT/python3_jhub"
-activate_venv
+activate_venv "$JHUB_VENV_ROOT"
 
-# Note: upgrade once jupyterhub>1.0.0 avaiable.
-pip install $PIP_OPTIONS 'jupyterhub<1.0.0'
+pip install $PIP_OPTIONS jupyterhub
 npm install -g configurable-http-proxy
 pip install $PIP_OPTIONS notebook
+pip install $PIP_OPTIONS jupyterlab

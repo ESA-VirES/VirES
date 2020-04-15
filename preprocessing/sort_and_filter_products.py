@@ -53,6 +53,7 @@ def check_inputs(argv):
     invert_filter = False
     filename_pattern = ".+"
     ignore_extension = False
+    ignore_signature = False
     allow_overlaps = False
     latest_baseline = False
     latest_extent = False
@@ -63,6 +64,8 @@ def check_inputs(argv):
             invert_filter = True
         elif arg in ('-i', '--ignore-extension'):
             ignore_extension = True
+        elif arg in ('-i', '--ignore-signature'):
+            ignore_signature = True
         elif arg in ('-a', '--allow-overlaps'):
             allow_overlaps = True
         elif arg in ('-l', '--latest-baseline'):
@@ -81,16 +84,17 @@ def check_inputs(argv):
         "invert_filter": invert_filter,
         "filename_pattern": re.compile(filename_pattern),
         "ignore_extension": ignore_extension,
+        "ignore_signature": ignore_signature,
         "allow_overlaps": allow_overlaps,
         "latest_baseline": latest_baseline,
         "latest_extent": latest_extent,
     }
 
 
-def main(invert_filter, filename_pattern, ignore_extension, allow_overlaps,
-         latest_baseline, latest_extent):
+def main(invert_filter, filename_pattern, ignore_extension, ignore_signature,
+         allow_overlaps, latest_baseline, latest_extent):
     filtered_products = filter_products(
-        read_products(sys.stdin, filename_pattern, ignore_extension),
+        read_products(sys.stdin, filename_pattern, ignore_extension, ignore_signature),
         invert_filter, allow_overlaps, latest_baseline, latest_extent,
     )
 
@@ -122,7 +126,7 @@ def filter_products(items, invert_filter, allow_overlaps, latest_baseline,
         yield item.path
 
 
-def read_products(source, filename_pattern, ignore_extension=False):
+def read_products(source, filename_pattern, ignore_extension=False, ignore_signature=False):
     expected_signature = None
 
     for path in (item.strip() for item in source):
@@ -147,7 +151,7 @@ def read_products(source, filename_pattern, ignore_extension=False):
             ) if ignore_extension else (
                 expected_signature != signature
             )
-            if signature_differs:
+            if not ignore_signature and signature_differs:
                 raise CommandError(
                     "Mixed file signature! Probably mixed product types. "
                     "%s*%s.%s != %s*%s.%s" % (expected_signature + signature)

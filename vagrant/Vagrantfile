@@ -42,6 +42,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   # Shell provisioning
   config.vm.provision :shell, :inline => "cd /home/vagrant/VirES/scripts/ ; /bin/sh ./install.sh -d"
+  config.vm.provision :shell, :inline => "cd /home/vagrant/VirES/scripts/ ; /bin/sh ./install.sh -j"
   config.vm.provision :shell, :inline => "cd /home/vagrant/VirES/scripts/ ; /bin/sh ./install.sh scripts.d/99_restart_server.sh", run: "always"
 
   # Adjust Virtualbox configuration

@@ -50,7 +50,7 @@ HTTP_TIMEOUT = 60 # seconds
 URL = "http://www.spacecenter.dk/files/magnetic-models/RC/MMA/"
 
 RE_CHAOS6_MMA_FILENAME = re.compile(
-    r"SW_OPER_MMA_CHAOS6_\d{8,8}T\d{6,6}_\d{8,8}T\d{6,6}_\d{4,4}\.cdf"
+    r"SW_OPER_MMA_CHAOS[67_]_\d{8,8}T\d{6,6}_\d{8,8}T\d{6,6}_\d{4,4}\.cdf"
 )
 
 

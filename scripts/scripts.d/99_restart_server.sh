@@ -8,47 +8,49 @@
 
 . `dirname $0`/../lib_logging.sh
 
-info "stoping httpd.service"
-systemctl stop httpd.service
 
+list_services() {
 
-if [ "${CONFIGURE_WPSASYNC:-YES}" = "YES" ]
-then
-    [ -z "$VIRES_WPS_SERVICE_NAME" ] && error "Missing the required VIRES_WPS_SERVICE_NAME variable!"
+    echo "httpd.service"
 
-    info "stopping ${VIRES_WPS_SERVICE_NAME}.service"
-    systemctl stop "${VIRES_WPS_SERVICE_NAME}.service"
-fi
+    if [ -n "`systemctl -a | grep 'jupyterhub\.service'`" ]
+    then
+        echo "jupyterhub.service"
+    fi
 
-if [ -n "${OAUTH_SERVICE_NAME}" ]
-then
-    info "stopping ${OAUTH_SERVICE_NAME}.service"
-    systemctl stop "${OAUTH_SERVICE_NAME}.service"
-fi
+    if [ -n "${OAUTH_SERVICE_NAME}" ]
+    then
+        echo "${OAUTH_SERVICE_NAME}.service"
+    fi
 
-if [ "${CONFIGURE_WPSASYNC:-YES}" = "YES" ]
-then
-    info "starting ${VIRES_WPS_SERVICE_NAME}.service"
-    systemctl start "${VIRES_WPS_SERVICE_NAME}.service"
-fi
+    if [ -n "${VIRES_SERVICE_NAME}" ]
+    then
+        echo "${VIRES_SERVICE_NAME}.service"
+    fi
 
-if [ -n "${OAUTH_SERVICE_NAME}" ]
-then
-    info "starting ${OAUTH_SERVICE_NAME}.service"
-    systemctl start "${OAUTH_SERVICE_NAME}.service"
-fi
+    if [ -n "${VIRES_WPS_SERVICE_NAME}" ]
+    then
+        echo "${VIRES_WPS_SERVICE_NAME}.service"
+    fi
+}
 
-info "starting httpd.service"
-systemctl start httpd.service
+list_services
+for SERVICE in `list_services`
+do
+    info "stopping $SERVICE ..."
+    systemctl stop $SERVICE
+done
 
-systemctl status httpd.service
+info "reloading daemons' configuration ..."
+systemctl daemon-reload
 
-if [ "${CONFIGURE_WPSASYNC:-YES}" = "YES" ]
-then
-    systemctl status "${VIRES_WPS_SERVICE_NAME}.service"
-fi
+for SERVICE in `list_services | tac`
+do
+    info "starting $SERVICE ..."
+    systemctl start $SERVICE
+done
 
-if [ -n "${OAUTH_SERVICE_NAME}" ]
-then
-    systemctl status "${OAUTH_SERVICE_NAME}.service"
-fi
+for SERVICE in `list_services`
+do
+    systemctl status $SERVICE
+done

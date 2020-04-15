@@ -34,7 +34,7 @@ export VIRES_INSTALLER_VERSION="`cat "$VERSION_FILE"`"
 # flag indicating whether the installation script shall enable the firewall
 export ENABLE_FIREWALL=${ENABLE_FIREWALL:-NO}
 
-# public hostname (or IP number) under which the ODA-OS shall be accessable
+# public hostname (or IP number) under which the ODA-OS shall be accessible
 # NOTE: Critical parameter! Be sure you set it to the proper value.
 export VIRES_HOSTNAME=${VIRES_HOSTNAME}
 
@@ -75,21 +75,26 @@ export VIRES_INSTALL_GROUP=${VIRES_INSTALL_GROUP:-root}
 export VIRES_INSTALL_USER=${VIRES_INSTALL_USER:-root}
 
 # location of the VirES Server home directory
-export VIRES_SERVER_HOME=${VIRES_SERVER_HOME:-$VIRES_ROOT/eoxs}
+export VIRES_SERVER_HOME=${VIRES_SERVER_HOME:-$VIRES_ROOT/swarm}
+# location of the VirES Server URL
+export VIRES_SERVER_HOST=${VIRES_SERVER_HOST:-127.0.0.1:8011}
+# VirES server - service name
+export VIRES_SERVICE_NAME=${VIRES_SERVICE_NAME:-swarm}
+
 # location of the OAuth2 Server home directory
 export OAUTH_SERVER_HOME=${OAUTH_SERVER_HOME:-$VIRES_ROOT/oauth}
 # location of the OAuth2 Server URL
-export OAUTH_SERVER_HOST=${OAUTH_SERVER_HOST:-127.0.0.1:8000}
+export OAUTH_SERVER_HOST=${OAUTH_SERVER_HOST:-127.0.0.1:8010}
 # OAuth2 server - service name
 export OAUTH_SERVICE_NAME=${OAUTH_SERVICE_NAME:-oauth}
 
-# WSGI daemon - number of processes to be used by the VirES EOxServer instances
-export EOXS_WSGI_NPROC=${EOXS_WSGI_NPROC:-4}
-# WSGI daemon - process group to be used by the VirES EOxServer instances
-export EOXS_WSGI_PROCESS_GROUP=${EOXS_WSGI_PROCESS_GROUP:-vires_eoxs_ows}
+# number of processes to be used by the VirES-Server instances
+export VIRES_SERVER_NPROC=${VIRES_SERVER_NPROC:-4}
+# number of threads per process to be used by the VirES-Server instances
+export VIRES_SERVER_NTHREAD=${VIRES_SERVER_NTHREAD:-1}
 
 # location of the VirES Client home directory
-export VIRES_CLIENT_HOME=${VIRES_CLIENT_HOME:-$VIRES_ROOT/eoxc}
+export VIRES_CLIENT_HOME=${VIRES_CLIENT_HOME:-$VIRES_ROOT/client}
 
 # WPS configuration - service name
 export VIRES_WPS_SERVICE_NAME=${VIRES_WPS_SERVICE_NAME:-eoxs_wps_async}
@@ -110,6 +115,9 @@ export VIRES_WPS_NPROC=${VIRES_WPS_NPROC:-4}
 # WPS configuration - maximum number of queued jobs
 export VIRES_WPS_MAX_JOBS=${VIRES_WPS_MAX_JOBS:-128}
 
+# optional VRE/JupyterHub base URL
+export VIRES_VRE_JHUB_URL
+
 # some apache configurations
 export SSL_CERTIFICATE_FILE=${SSL_CERTIFICATE_FILE:-/etc/pki/tls/certs/localhost.crt}
 export SSL_CERTIFICATE_KEYFILE=${SSL_CERTIFICATE_KEYFILE:-/etc/pki/tls/private/localhost.key}
@@ -127,13 +135,16 @@ export DBPORT=${DBPORT:-}
 # are we using virtualenv
 export ENABLE_VIRTUALENV=${ENABLE_VIRTUALENV:-YES}
 
-# pyhton virtualenv root
-export VIRTUALENV_ROOT=${VIRTUALENV_ROOT:-$VIRES_ROOT/virtualenv}
+# VirES-Server virtual environment
+export VIRES_VENV_ROOT="${VIRES_VENV_ROOT:-$VIRES_ROOT/venv_p36_vires}"
 
-# pyhton 3 venv root
-export P3_VENV_ROOT=${P3_VENV_ROOT:-$VIRES_ROOT/python3_venv}
+# OAuth server virtual environment
+export OAUTH_VENV_ROOT="${OAUTH_VENV_ROOT:-$VIRES_ROOT/venv_p36_oauth}"
 
-# Switch controlling wether the AllAuth gets configured or not.
+# Jupyter Hub virtual environment
+export JHUB_VENV_ROOT="${JHUB_VENV_ROOT:-$VIRES_ROOT/venv_p36_jhub}"
+
+# Switch controlling whether the AllAuth gets configured or not.
 export CONFIGURE_ALLAUTH=${CONFIGURE_ALLAUTH:-NO}
 
 # Optional location of the loaded fixtures.
@@ -147,7 +158,7 @@ export TEMPLATES_DIR_SRC="${TEMPLATES_DIR_SRC}"
 export CONF_HTTP
 export CONF_HTTPS
 
-# optinal configuration file templates
+# optional configuration file templates
 export CONF_HTTP_TEMPLATE
 export CONF_HTTPS_TEMPLATE
 
@@ -156,3 +167,11 @@ export CONFIGURE_HTTP
 export CONFIGURE_HTTPS
 
 export PIP_OPTIONS="--upgrade --upgrade-strategy=only-if-needed"
+
+export PG_VERSION="${PG_VERSION:-9.6}"
+export PG_REPO="${PG_REPO:-pgdg96}"
+export PG_PREFIX="${PG_PREFIX:-postgresql96}"
+export PGIS_PACKAGE="${PGIS_PACKAGE:-postgis2_96}"
+
+# local development URL
+export LOCAL_URL="${LOCAL_URL}"

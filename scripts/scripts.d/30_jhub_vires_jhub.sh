@@ -7,11 +7,15 @@
 # Copyright (C) 2015 EOX IT Services GmbH
 
 . `dirname $0`/../lib_logging.sh
-. `dirname $0`/../lib_python3_venv.sh
+. `dirname $0`/../lib_python_venv.sh
 
 info "Installing VirES Jupyter Hub Integration in the development mode ..."
 
-export P3_VENV_ROOT="$VIRES_ROOT/python3_jhub"
-activate_venv
+activate_venv "$JHUB_VENV_ROOT"
 
-pip install -e "${JHUB_SOURCE_PATH:-/usr/local/vires/vires_jhub}"
+JHUB_SOURCE_PATH="${JHUB_SOURCE_PATH:-/usr/local/vires/vires_jhub}"
+
+pip install -e "$JHUB_SOURCE_PATH"
+
+# link VirES custom static assets
+ln -sf "$JHUB_SOURCE_PATH/share/vires_jhub/static" "${JHUB_VENV_ROOT}/share/jupyterhub/static/vires"
