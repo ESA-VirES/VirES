@@ -410,7 +410,7 @@ INSTALLED_APPS += [
 
 SOCIALACCOUNT_PROVIDERS = {
     'vires': {
-        'SERVER_URL': '$OAUTH_SERVER_URL'
+        'SERVER_URL': '$OAUTH_SERVER_URL',
         'SCOPE': ['read_id', 'read_permissions'],
         'PERMISSION': '$VIRES_PERMISSION',
     },
