@@ -153,17 +153,29 @@ LOGGING = {
         },
     },
     'handlers': {
-        'server_log_file': {
+        'oauth_file': {
             'level': 'DEBUG',
             'class': 'logging.handlers.WatchedFileHandler',
             'filename': '${OAUTHLOG}',
             'formatter': 'default',
             'filters': [],
         },
-        'access_log_file': {
+        'oauth_email': {
+            'level': 'ERROR',
+            'class': 'django.utils.log.AdminEmailHandler',
+            'formatter': 'default',
+            'filters': [],
+        },
+        'access_file': {
             'level': 'DEBUG',
             'class': 'logging.handlers.WatchedFileHandler',
             'filename': '${ACCESSLOG}',
+            'formatter': 'access',
+            'filters': [],
+        },
+        'access_email': {
+            'level': 'ERROR',
+            'class': 'django.utils.log.AdminEmailHandler',
             'formatter': 'access',
             'filters': [],
         },
@@ -173,26 +185,20 @@ LOGGING = {
             'formatter': 'default',
             'filters': [],
         },
-        'mail_admins': {
-            'level': 'ERROR',
-            'class': 'django.utils.log.AdminEmailHandler',
-            'formatter': 'default',
-            'filters': [],
-        },
     },
     'loggers': {
-        'django.request': {
-            'handlers': ['access_log_file', 'mail_admins'],
+        'vires_oauth': {
+            'handlers': ['oauth_file', 'oauth_email'],
             'level': 'DEBUG' if DEBUG else 'INFO',
             'propagate': False,
         },
-        'django': {
-            'handlers': ['mail_admins'],
-            'level': 'ERROR',
+        'access': {
+            'handlers': ['access_file', 'access_email'],
+            'level': 'DEBUG' if DEBUG else 'INFO',
             'propagate': False,
         },
         '': {
-            'handlers': ['server_log_file'],
+            'handlers': ['oauth_file', 'oauth_email'],
             'level': 'INFO' if DEBUG else 'WARNING',
             'propagate': False,
         },
@@ -434,37 +440,6 @@ VIRES_APPS = [
 ]
 
 # OAUTH MIDDLEWARE - END - Do not edit or remove this line!
-.
-\$a
-# OAUTH LOGGING - BEGIN - Do not edit or remove this line!
-LOGGING['loggers'].update({
-    'vires_oauth.access': {
-        'handlers': ['access_log_file'],
-        'level': 'DEBUG' if DEBUG else 'INFO',
-        'propagate': False,
-    },
-    'vires_oauth.allauth': {
-        'handlers': ['access_log_file'],
-        'level': 'DEBUG' if DEBUG else 'INFO',
-        'propagate': False,
-    },
-    'vires_oauth.oauth2_provider': {
-        'handlers': ['access_log_file'],
-        'level': 'DEBUG' if DEBUG else 'INFO',
-        'propagate': False,
-    },
-    'vires_oauth': {
-        'handlers': ['server_log_file'],
-        'level': 'DEBUG' if DEBUG else 'INFO',
-        'propagate': False,
-    },
-})
-# OAUTH LOGGING - END - Do not edit or remove this line!
-.
-/^TEMPLATES\s*=/
-/^]/a
-# OAUTH TEMPLATES - BEGIN - Do not edit or remove this line!
-# OAUTH TEMPLATES - END - Do not edit or remove this line!
 .
 wq
 END
