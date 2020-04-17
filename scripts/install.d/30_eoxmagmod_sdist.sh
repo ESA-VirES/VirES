@@ -1,1 +1,0 @@
-../scripts.d/30_eoxmagmod_sdist.sh
