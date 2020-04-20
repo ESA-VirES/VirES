@@ -1,1 +1,0 @@
-../scripts.d/25_oauth_django_allauth.sh
