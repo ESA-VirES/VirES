@@ -60,14 +60,14 @@ from util.wps import (
 
 MCO_SHA_2C = "./data/SW_OPER_MCO_SHA_2C.shc"
 MCO_SHA_2D = "./data/SW_OPER_MCO_SHA_2D.shc"
-MCO_CHAOS = "./data/SW_OPER_MCO_CHAOS6.shc"
+MCO_CHAOS = "./data/SW_OPER_MCO_SHA_2X.shc"
 MLI_SHA_2C = "./data/SW_OPER_MLI_SHA_2C.shc"
 MLI_SHA_2D = "./data/SW_OPER_MLI_SHA_2D.shc"
 MIO_SHA_2C = "./data/SW_OPER_MIO_SHA_2C.txt"
 MIO_SHA_2D = "./data/SW_OPER_MIO_SHA_2D.txt"
 MMA_SHA_2C = "./data/SW_OPER_MMA_SHA_2C.cdf"
 MMA_SHA_2F = "./data/SW_OPER_MMA_SHA_2F.cdf"
-MMA_CHAOS = "./data/SW_OPER_MMA_CHAOS6.cdf"
+MMA_CHAOS = "./data/SW_OPER_MMA_CHAOS_.cdf"
 
 RAD2DEG = 180.0/pi
 
