@@ -34,7 +34,7 @@
 from unittest import TestCase, main
 from math import pi
 from datetime import timedelta
-from numpy import array, stack, ones, broadcast_to, arcsin, arctan2, nan, empty
+from numpy import array, stack, ones, broadcast_to, arcsin, arctan2, empty
 from numpy.testing import assert_allclose
 from eoxmagmod import (
     vnorm, load_model_shc, load_model_shc_combined,
@@ -58,7 +58,6 @@ from util.wps import (
     CsvRequestMixIn, CdfRequestMixIn,
 )
 from pyamps_wrapper import (
-    eval_ionospheric_current_model,
     eval_associated_magnetic_model,
 )
 
@@ -111,83 +110,9 @@ class AsyncFetchFilteredDataCdfMixIn(CdfRequestMixIn, WpsAsyncPostRequestMixIn):
 
 #-------------------------------------------------------------------------------
 
-class AMPSCurrentTestMixIn(object):
-    variables = [
-        "IMF_V", "IMF_BY_GSM", "IMF_BZ_GSM", "DipoleTiltAngle", "F10_INDEX",
-        "QDLat", "MLT", "QDBasis",
-        "DivergenceFreeCurrentFunction",
-        "TotalCurrent",
-        "UpwardCurrent",
-    ]
-
-    def test_ionospheric_current_model(self):
-        request = self.get_request(
-            begin_time=self.begin_time,
-            end_time=self.end_time,
-            variables=self.variables,
-            collection_ids={"Alpha": ["SW_OPER_MAGA_LR_1B"]},
-        )
-        response = self.get_parsed_response(request)
-        times = array(response["Timestamp"])
-
-        qdlat = array(response["QDLat"])
-        mlt = array(response["MLT"])
-        qdbasis = array(response["QDBasis"])
-
-        if times.size > 0:
-            #median_time = times[times.size // 2]
-            #idx = argmax(abs(times - median_time), axis=0)
-            idx = times.size // 2
-
-            v_imf = array(response["IMF_V"])[idx]
-            by_gsm_imf = array(response["IMF_BY_GSM"])[idx]
-            bz_gsm_imf = array(response["IMF_BZ_GSM"])[idx]
-            tilt_angle = array(response["DipoleTiltAngle"])[idx]
-            f107 = array(response["F10_INDEX"])[idx]
-        else:
-            v_imf = nan
-            by_gsm_imf = nan
-            bz_gsm_imf = nan
-            tilt_angle = nan
-            f107 = nan
-
-        div_free_current_funct = array(response["DivergenceFreeCurrentFunction"])
-        total_current = array(response["TotalCurrent"])
-        upward_current = array(response["UpwardCurrent"])
-
-        div_free_current_funct_ref, total_current_ref, upward_current_ref = (
-            eval_ionospheric_current_model(
-                qdlat, mlt, qdbasis, v_imf, by_gsm_imf, bz_gsm_imf,
-                tilt_angle, f107
-            )
-        )
-
-        assert_allclose(div_free_current_funct, div_free_current_funct_ref, atol=1e-6)
-        assert_allclose(total_current, total_current_ref, atol=1e-5)
-        assert_allclose(upward_current, upward_current_ref, atol=1e-6)
-
-
-class TestFetchDataCsvAMPSCurrent(TestCase, AMPSCurrentTestMixIn, FetchDataCsvMixIn):
-    pass
-
-class TestFetchFilteredDataCsvAMPSCurrent(TestCase, AMPSCurrentTestMixIn, FetchFilteredDataCsvMixIn):
-    pass
-
-class TestFetchFilteredDataCdfAMPSCurrent(TestCase, AMPSCurrentTestMixIn, FetchFilteredDataCdfMixIn):
-    pass
-
-class TestAsyncFetchFilteredDataCsvAMPSCurrent(TestCase, AMPSCurrentTestMixIn, AsyncFetchFilteredDataCdfMixIn):
-    pass
-
-class TestAsyncFetchFilteredDataCdfAMPSCurrent(TestCase, AMPSCurrentTestMixIn, AsyncFetchFilteredDataCsvMixIn):
-    pass
-
-#-------------------------------------------------------------------------------
-
-
 class AMPSMagneticFieldTestMixIn(object):
     variables = [
-        'IMF_V', 'IMF_BY_GSM', 'IMF_BZ_GSM', 'DipoleTiltAngle', 'F10_INDEX',
+        'IMF_V', 'IMF_BY_GSM', 'IMF_BZ_GSM', 'DipoleTiltAngle', 'F107',
         "F_AMPS", "B_NEC_AMPS"
     ]
 
@@ -209,7 +134,7 @@ class AMPSMagneticFieldTestMixIn(object):
         by_gsm_imf = array(response["IMF_BY_GSM"])
         bz_gsm_imf = array(response["IMF_BZ_GSM"])
         tilt_angle = array(response["DipoleTiltAngle"])
-        f107 = array(response["F10_INDEX"])
+        f107 = array(response["F107"])
 
         f_amps = array(response["F_AMPS"])
         b_amps = array(response["B_NEC_AMPS"])
