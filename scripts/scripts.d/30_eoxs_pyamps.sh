@@ -13,4 +13,6 @@ info "Installing pyAMPS ..."
 
 activate_venv "$VIRES_VENV_ROOT"
 
-pip install $PIP_OPTIONS pyamps
+#pip install $PIP_OPTIONS pyamps
+# installing 1.4.1-rc directly from the Git repo
+pip install $PIP_OPTIONS git+https://github.com/klaundal/pyAMPS.git@0661c5d6faba0f0f0be567118ab4b0307e462d5e#pyamps
