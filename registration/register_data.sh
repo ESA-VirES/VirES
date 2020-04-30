@@ -51,6 +51,14 @@ do
     done
 done
 
+COLLECTION="OMNI_HR_1min_avg20min_delay10min"
+find "$DATA_DIR" -type f -name "omni_hro_1min_*_avg20min_delay10min.cdf" | sort \
+| $MNG product register -c "$COLLECTION" -f - --update
+
+COLLECTION="OMNI_HR_1min"
+find "$DATA_DIR" -type f -name "omni_hro_1min_*.cdf" | sort \
+| $MNG product register -c "$COLLECTION" -f - --update
+
 COLLECTION="SW_OPER_AUX_IMF_2_"
 find "$DATA_DIR" -type f -name "SW_OPER_AUX_IMF_2_*.DBL" | sort \
 | $MNG product register -c "$COLLECTION" -f - --update
