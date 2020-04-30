@@ -34,7 +34,7 @@
 from unittest import TestCase, main
 from math import pi
 from datetime import timedelta
-from numpy import array, stack, ones, broadcast_to, arcsin, arctan2
+from numpy import array, stack, ones, broadcast_to, arcsin, arctan2, empty
 from numpy.testing import assert_allclose
 from eoxmagmod import (
     vnorm, load_model_shc, load_model_shc_combined,
@@ -56,6 +56,9 @@ from util.time_util import parse_datetime
 from util.wps import (
     WpsPostRequestMixIn, WpsAsyncPostRequestMixIn,
     CsvRequestMixIn, CdfRequestMixIn,
+)
+from pyamps_wrapper import (
+    eval_associated_magnetic_model,
 )
 
 MCO_SHA_2C = "./data/SW_OPER_MCO_SHA_2C.shc"
@@ -104,6 +107,73 @@ class AsyncFetchFilteredDataCdfMixIn(CdfRequestMixIn, WpsAsyncPostRequestMixIn):
     template_source = "test_vires_fetch_filtered_data_async.xml"
     begin_time = START_TIME
     end_time = END_TIME
+
+#-------------------------------------------------------------------------------
+
+class AMPSMagneticFieldTestMixIn(object):
+    variables = [
+        'IMF_V', 'IMF_BY_GSM', 'IMF_BZ_GSM', 'DipoleTiltAngle', 'F107',
+        "F_AMPS", "B_NEC_AMPS"
+    ]
+
+    def test_associated_magnetic_field(self):
+        request = self.get_request(
+            begin_time=self.begin_time,
+            end_time=self.end_time,
+            variables=self.variables,
+            model_ids=["AMPS"],
+            collection_ids={"Alpha": ["SW_OPER_MAGA_LR_1B"]},
+        )
+        response = self.get_parsed_response(request)
+        times = array(response["Timestamp"])
+        lats = array(response["Latitude"])
+        lons = array(response["Longitude"])
+        rads = array(response["Radius"])*1e-3
+
+        v_imf = array(response["IMF_V"])
+        by_gsm_imf = array(response["IMF_BY_GSM"])
+        bz_gsm_imf = array(response["IMF_BZ_GSM"])
+        tilt_angle = array(response["DipoleTiltAngle"])
+        f107 = array(response["F107"])
+
+        f_amps = array(response["F_AMPS"])
+        b_amps = array(response["B_NEC_AMPS"])
+
+        if times.size > 0:
+            #mean_time = times[times.size // 2]
+            mean_time = 0.5 * (times.min() + times.max())
+            b_amps_ref = eval_associated_magnetic_model(
+                mean_time, times, lats, lons, rads,
+                v_imf, by_gsm_imf, bz_gsm_imf, tilt_angle, f107
+            )
+        else:
+            b_amps_ref = empty((0, 3))
+
+        f_amps_ref = vnorm(b_amps_ref)
+
+        assert_allclose(b_amps, b_amps_ref, atol=1e-2)
+        assert_allclose(f_amps, f_amps_ref, atol=1e-2)
+
+
+class TestFetchDataCsvAMPSMagneticField(TestCase, AMPSMagneticFieldTestMixIn, FetchDataCsvMixIn):
+    pass
+
+
+class TestFetchFilteredDataCsvAMPSMagneticField(TestCase, AMPSMagneticFieldTestMixIn, FetchFilteredDataCsvMixIn):
+    pass
+
+
+class TestFetchFilteredDataCdfAMPSMagneticField(TestCase, AMPSMagneticFieldTestMixIn, FetchFilteredDataCdfMixIn):
+    pass
+
+
+class TestAsyncFetchFilteredDataCsvAMPSMagneticField(TestCase, AMPSMagneticFieldTestMixIn, AsyncFetchFilteredDataCsvMixIn):
+    pass
+
+
+class TestAsyncFetchFilteredDataCdfAMPSMagneticField(TestCase, AMPSMagneticFieldTestMixIn, AsyncFetchFilteredDataCdfMixIn):
+    pass
+
 
 #-------------------------------------------------------------------------------
 
