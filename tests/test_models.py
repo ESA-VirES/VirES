@@ -34,7 +34,7 @@
 from unittest import TestCase, main
 from math import pi
 from datetime import timedelta
-from numpy import array, stack, ones, broadcast_to, arcsin, arctan2, nan, empty
+from numpy import array, stack, ones, broadcast_to, arcsin, arctan2, empty
 from numpy.testing import assert_allclose
 from eoxmagmod import (
     vnorm, load_model_shc, load_model_shc_combined,
@@ -58,20 +58,19 @@ from util.wps import (
     CsvRequestMixIn, CdfRequestMixIn,
 )
 from pyamps_wrapper import (
-    eval_ionospheric_current_model,
     eval_associated_magnetic_model,
 )
 
 MCO_SHA_2C = "./data/SW_OPER_MCO_SHA_2C.shc"
 MCO_SHA_2D = "./data/SW_OPER_MCO_SHA_2D.shc"
-MCO_CHAOS = "./data/SW_OPER_MCO_CHAOS6.shc"
+MCO_CHAOS = "./data/SW_OPER_MCO_SHA_2X.shc"
 MLI_SHA_2C = "./data/SW_OPER_MLI_SHA_2C.shc"
 MLI_SHA_2D = "./data/SW_OPER_MLI_SHA_2D.shc"
 MIO_SHA_2C = "./data/SW_OPER_MIO_SHA_2C.txt"
 MIO_SHA_2D = "./data/SW_OPER_MIO_SHA_2D.txt"
 MMA_SHA_2C = "./data/SW_OPER_MMA_SHA_2C.cdf"
 MMA_SHA_2F = "./data/SW_OPER_MMA_SHA_2F.cdf"
-MMA_CHAOS = "./data/SW_OPER_MMA_CHAOS6.cdf"
+MMA_CHAOS = "./data/SW_OPER_MMA_CHAOS_.cdf"
 
 RAD2DEG = 180.0/pi
 
@@ -110,80 +109,6 @@ class AsyncFetchFilteredDataCdfMixIn(CdfRequestMixIn, WpsAsyncPostRequestMixIn):
     end_time = END_TIME
 
 #-------------------------------------------------------------------------------
-
-class AMPSCurrentTestMixIn(object):
-    variables = [
-        "IMF_V", "IMF_BY_GSM", "IMF_BZ_GSM", "DipoleTiltAngle", "F10_INDEX",
-        "QDLat", "MLT", "QDBasis",
-        "DivergenceFreeCurrentFunction",
-        "TotalCurrent",
-        "UpwardCurrent",
-    ]
-
-    def test_ionospheric_current_model(self):
-        request = self.get_request(
-            begin_time=self.begin_time,
-            end_time=self.end_time,
-            variables=self.variables,
-            collection_ids={"Alpha": ["SW_OPER_MAGA_LR_1B"]},
-        )
-        response = self.get_parsed_response(request)
-        times = array(response["Timestamp"])
-
-        qdlat = array(response["QDLat"])
-        mlt = array(response["MLT"])
-        qdbasis = array(response["QDBasis"])
-
-        if times.size > 0:
-            #median_time = times[times.size // 2]
-            #idx = argmax(abs(times - median_time), axis=0)
-            idx = times.size // 2
-
-            v_imf = array(response["IMF_V"])[idx]
-            by_gsm_imf = array(response["IMF_BY_GSM"])[idx]
-            bz_gsm_imf = array(response["IMF_BZ_GSM"])[idx]
-            tilt_angle = array(response["DipoleTiltAngle"])[idx]
-            f107 = array(response["F10_INDEX"])[idx]
-        else:
-            v_imf = nan
-            by_gsm_imf = nan
-            bz_gsm_imf = nan
-            tilt_angle = nan
-            f107 = nan
-
-        div_free_current_funct = array(response["DivergenceFreeCurrentFunction"])
-        total_current = array(response["TotalCurrent"])
-        upward_current = array(response["UpwardCurrent"])
-
-        div_free_current_funct_ref, total_current_ref, upward_current_ref = (
-            eval_ionospheric_current_model(
-                qdlat, mlt, qdbasis, v_imf, by_gsm_imf, bz_gsm_imf,
-                tilt_angle, f107
-            )
-        )
-
-        assert_allclose(div_free_current_funct, div_free_current_funct_ref, atol=1e-6)
-        assert_allclose(total_current, total_current_ref, atol=1e-5)
-        assert_allclose(upward_current, upward_current_ref, atol=1e-6)
-
-
-class TestFetchDataCsvAMPSCurrent(TestCase, AMPSCurrentTestMixIn, FetchDataCsvMixIn):
-    pass
-
-class TestFetchFilteredDataCsvAMPSCurrent(TestCase, AMPSCurrentTestMixIn, FetchFilteredDataCsvMixIn):
-    pass
-
-class TestFetchFilteredDataCdfAMPSCurrent(TestCase, AMPSCurrentTestMixIn, FetchFilteredDataCdfMixIn):
-    pass
-
-class TestAsyncFetchFilteredDataCsvAMPSCurrent(TestCase, AMPSCurrentTestMixIn, AsyncFetchFilteredDataCdfMixIn):
-    pass
-
-class TestAsyncFetchFilteredDataCdfAMPSCurrent(TestCase, AMPSCurrentTestMixIn, AsyncFetchFilteredDataCsvMixIn):
-    pass
-
-#-------------------------------------------------------------------------------
-
 
 class AMPSMagneticFieldTestMixIn(object):
     variables = [
@@ -726,6 +651,36 @@ class TestAsyncFetchFilteredDataCdfModelMF7(TestCase, MagneticModelTestMixIn, As
 
 #-------------------------------------------------------------------------------
 
+class TestMixInCHAOS(MagneticModelTestMixIn):
+    model_name = "CHAOS"
+    model = load_composed_model(
+        (load_model_shc_combined(MCO_CHAOS, CHAOS_STATIC_LATEST), 1, {}),
+        (load_model_swarm_mma_2c_external(MMA_CHAOS), 1, {}),
+        (load_model_swarm_mma_2c_internal(MMA_CHAOS), 1, {}),
+    )
+
+
+class TestFetchDataCsvModelCHAOS(TestCase, TestMixInCHAOS, FetchDataCsvMixIn):
+    pass
+
+
+class TestFetchFilteredDataCsvModelCHAOS(TestCase, TestMixInCHAOS, FetchFilteredDataCsvMixIn):
+    pass
+
+
+class TestFetchFilteredDataCdfModelCHAOS(TestCase, TestMixInCHAOS, FetchFilteredDataCdfMixIn):
+    pass
+
+
+class TestAsyncFetchFilteredDataCsvModelCHAOS(TestCase, TestMixInCHAOS, AsyncFetchFilteredDataCsvMixIn):
+    pass
+
+
+class TestAsyncFetchFilteredDataCdfModelCHAOS(TestCase, TestMixInCHAOS, AsyncFetchFilteredDataCdfMixIn):
+    pass
+
+#-------------------------------------------------------------------------------
+
 class TestFetchDataCsvModelCHAOSStatic(TestCase, MagneticModelTestMixIn, FetchDataCsvMixIn):
     model_name = "CHAOS-Static"
     model = load_model_shc(CHAOS_STATIC_LATEST)
@@ -775,6 +730,35 @@ class TestAsyncFetchFilteredDataCsvModelCHAOSCore(TestCase, MagneticModelTestMix
 class TestAsyncFetchFilteredDataCdfModelCHAOSCore(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataCdfMixIn):
     model_name = "CHAOS-Core"
     model = load_model_shc(MCO_CHAOS)
+
+#-------------------------------------------------------------------------------
+
+class TestMixInCHAOSMMA(MagneticModelTestMixIn):
+    model_name = "CHAOS-MMA"
+    model = load_composed_model(
+        (load_model_swarm_mma_2c_external(MMA_CHAOS), 1, {}),
+        (load_model_swarm_mma_2c_internal(MMA_CHAOS), 1, {}),
+    )
+
+
+class TestFetchDataCsvModelCHAOSMMA(TestCase, TestMixInCHAOSMMA, FetchDataCsvMixIn):
+    pass
+
+
+class TestFetchFilteredDataCsvModelCHAOSMMA(TestCase, TestMixInCHAOSMMA, FetchFilteredDataCsvMixIn):
+    pass
+
+
+class TestFetchFilteredDataCdfModelCHAOSMMA(TestCase, TestMixInCHAOSMMA, FetchFilteredDataCdfMixIn):
+    pass
+
+
+class TestAsyncFetchFilteredDataCsvModelCHAOSMMA(TestCase, TestMixInCHAOSMMA, AsyncFetchFilteredDataCsvMixIn):
+    pass
+
+
+class TestAsyncFetchFilteredDataCdfModelCHAOSMMA(TestCase, TestMixInCHAOSMMA, AsyncFetchFilteredDataCdfMixIn):
+    pass
 
 #-------------------------------------------------------------------------------
 
@@ -951,6 +935,35 @@ class TestAsyncFetchFilteredDataCdfModelMLI2D(TestCase, MagneticModelTestMixIn, 
 
 #-------------------------------------------------------------------------------
 
+class TestMixInMMA2C(MagneticModelTestMixIn):
+    model_name = "MMA_SHA_2C"
+    model = load_composed_model(
+        (load_model_swarm_mma_2c_external(MMA_SHA_2C), 1, {}),
+        (load_model_swarm_mma_2c_internal(MMA_SHA_2C), 1, {}),
+    )
+
+
+class TestFetchDataCsvModelMMA2C(TestCase, TestMixInMMA2C, FetchDataCsvMixIn):
+    pass
+
+
+class TestFetchFilteredDataCsvModelMMA2C(TestCase, TestMixInMMA2C, FetchFilteredDataCsvMixIn):
+    pass
+
+
+class TestFetchFilteredDataCdfModelMMA2C(TestCase, TestMixInMMA2C, FetchFilteredDataCdfMixIn):
+    pass
+
+
+class TestAsyncFetchFilteredDataCsvModelMMA2C(TestCase, TestMixInMMA2C, AsyncFetchFilteredDataCsvMixIn):
+    pass
+
+
+class TestAsyncFetchFilteredDataCdfModelMMA2C(TestCase, TestMixInMMA2C, AsyncFetchFilteredDataCdfMixIn):
+    pass
+
+#-------------------------------------------------------------------------------
+
 class TestFetchDataCsvModelMMA2CPrimary(TestCase, MagneticModelTestMixIn, FetchDataCsvMixIn):
     model_name = "MMA_SHA_2C-Primary"
     model = load_model_swarm_mma_2c_external(MMA_SHA_2C)
@@ -999,6 +1012,35 @@ class TestAsyncFetchFilteredDataCsvModelMMA2CSecondary(TestCase, MagneticModelTe
 class TestAsyncFetchFilteredDataCdfModelMMA2CSecondary(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataCdfMixIn):
     model_name = "MMA_SHA_2C-Secondary"
     model = load_model_swarm_mma_2c_internal(MMA_SHA_2C)
+
+#-------------------------------------------------------------------------------
+
+class TestMixInMMA2F(MagneticModelTestMixIn):
+    model_name = "MMA_SHA_2F"
+    model = load_composed_model(
+        (load_model_swarm_mma_2f_geo_external(MMA_SHA_2F), 1, {}),
+        (load_model_swarm_mma_2f_geo_internal(MMA_SHA_2F), 1, {}),
+    )
+
+
+class TestFetchDataCsvModelMMA2F(TestCase, TestMixInMMA2F, FetchDataCsvMixIn):
+    pass
+
+
+class TestFetchFilteredDataCsvModelMMA2F(TestCase, TestMixInMMA2F, FetchFilteredDataCsvMixIn):
+    pass
+
+
+class TestFetchFilteredDataCdfModelMMA2F(TestCase, TestMixInMMA2F, FetchFilteredDataCdfMixIn):
+    pass
+
+
+class TestAsyncFetchFilteredDataCsvModelMMA2F(TestCase, TestMixInMMA2F, AsyncFetchFilteredDataCsvMixIn):
+    pass
+
+
+class TestAsyncFetchFilteredDataCdfModelMMA2F(TestCase, TestMixInMMA2F, AsyncFetchFilteredDataCdfMixIn):
+    pass
 
 #-------------------------------------------------------------------------------
 
@@ -1053,6 +1095,35 @@ class TestAsyncFetchFilteredDataCdfModelMMA2FSecondary(TestCase, MagneticModelTe
 
 #-------------------------------------------------------------------------------
 
+class TestMixInMIO2C(MagneticModelMIOTestMixIn):
+    model_name = "MIO_SHA_2C"
+    model = load_composed_model(
+        (load_model_swarm_mio_external(MIO_SHA_2C), 1, {}),
+        (load_model_swarm_mio_internal(MIO_SHA_2C), 1, {}),
+    )
+
+
+class TestFetchDataCsvModelMIO2C(TestCase, TestMixInMIO2C, FetchDataCsvMixIn):
+    pass
+
+
+class TestFetchFilteredDataCsvModelMIO2C(TestCase, TestMixInMIO2C, FetchFilteredDataCsvMixIn):
+    pass
+
+
+class TestFetchFilteredDataCdfModelMIO2C(TestCase, TestMixInMIO2C, FetchFilteredDataCdfMixIn):
+    pass
+
+
+class TestAsyncFetchFilteredDataCsvModelMIO2C(TestCase, TestMixInMIO2C, AsyncFetchFilteredDataCsvMixIn):
+    pass
+
+
+class TestAsyncFetchFilteredDataCdfModelMIO2C(TestCase, TestMixInMIO2C, AsyncFetchFilteredDataCdfMixIn):
+    pass
+
+#-------------------------------------------------------------------------------
+
 class TestFetchDataCsvModelMIO2CPrimary(TestCase, MagneticModelMIOTestMixIn, FetchDataCsvMixIn):
     model_name = "MIO_SHA_2C-Primary"
     model = load_model_swarm_mio_external(MIO_SHA_2C)
@@ -1102,6 +1173,36 @@ class TestAsyncFetchFilteredDataCdfModelMIO2CSecondary(TestCase, MagneticModelMI
     model_name = "MIO_SHA_2C-Secondary"
     model = load_model_swarm_mio_internal(MIO_SHA_2C)
 
+#-------------------------------------------------------------------------------
+
+class TestMixInMIO2D(MagneticModelMIOTestMixIn):
+    model_name = "MIO_SHA_2D"
+    model = load_composed_model(
+        (load_model_swarm_mio_external(MIO_SHA_2D), 1, {}),
+        (load_model_swarm_mio_internal(MIO_SHA_2D), 1, {}),
+    )
+
+
+class TestFetchDataCsvModelMIO2D(TestCase, TestMixInMIO2D, FetchDataCsvMixIn):
+    pass
+
+
+class TestFetchFilteredDataCsvModelMIO2D(TestCase, TestMixInMIO2D, FetchFilteredDataCsvMixIn):
+    pass
+
+
+class TestFetchFilteredDataCdfModelMIO2D(TestCase, TestMixInMIO2D, FetchFilteredDataCdfMixIn):
+    pass
+
+
+class TestAsyncFetchFilteredDataCsvModelMIO2D(TestCase, TestMixInMIO2D, AsyncFetchFilteredDataCsvMixIn):
+    pass
+
+
+class TestAsyncFetchFilteredDataCdfModelMIO2D(TestCase, TestMixInMIO2D, AsyncFetchFilteredDataCdfMixIn):
+    pass
+
+#-------------------------------------------------------------------------------
 
 class TestFetchDataCsvModelMIO2DPrimary(TestCase, MagneticModelMIOTestMixIn, FetchDataCsvMixIn):
     model_name = "MIO_SHA_2D-Primary"
