@@ -1346,5 +1346,37 @@ class TestAsyncFetchFilteredDataCdfModelExpression(TestCase, MagneticModelTestMi
 
 #-------------------------------------------------------------------------------
 
+class TestMixInSwarmCI(MagneticModelMIOTestMixIn):
+    model_name = "SwarmCI"
+    model = load_composed_model(
+        (load_model_shc_combined(MCO_SHA_2C, MLI_SHA_2C), 1, {}),
+        (load_model_swarm_mma_2c_external(MMA_SHA_2C), 1, {}),
+        (load_model_swarm_mma_2c_internal(MMA_SHA_2C), 1, {}),
+        (load_model_swarm_mio_external(MIO_SHA_2C), 1, {}),
+        (load_model_swarm_mio_internal(MIO_SHA_2C), 1, {}),
+    )
+
+
+class TestFetchDataCsvModelSwarmCI(TestCase, TestMixInSwarmCI, FetchDataCsvMixIn):
+    pass
+
+
+class TestFetchFilteredDataCsvModelSwarmCI(TestCase, TestMixInSwarmCI, FetchFilteredDataCsvMixIn):
+    pass
+
+
+class TestFetchFilteredDataCdfModelSwarmCI(TestCase, TestMixInSwarmCI, FetchFilteredDataCdfMixIn):
+    pass
+
+
+class TestAsyncFetchFilteredDataCsvModelSwarmCI(TestCase, TestMixInSwarmCI, AsyncFetchFilteredDataCsvMixIn):
+    pass
+
+
+class TestAsyncFetchFilteredDataCdfModelSwarmCI(TestCase, TestMixInSwarmCI, AsyncFetchFilteredDataCdfMixIn):
+    pass
+
+#-------------------------------------------------------------------------------
+
 if __name__ == "__main__":
     main()
