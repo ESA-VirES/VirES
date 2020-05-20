@@ -16,6 +16,7 @@ info "Configuring Jupyter Hub ..."
 
 activate_venv "$JHUB_VENV_ROOT"
 
+VIRES_SERVER_URL="${VIRES_SERVER_URL:-http://127.0.0.1}"
 JHUB_SOURCE_PATH="${JHUB_SOURCE_PATH:-/usr/local/vires/vires_jhub}"
 
 JHUB_CLIENT_ID="<TBD>"
@@ -85,6 +86,7 @@ Before=httpd.service
 PIDFile=/run/${JHUB_SERVICE_NAME}.pid
 WorkingDirectory=${JHUB_WORK_DIR}
 Environment="PATH=${JHUB_VENV_ROOT}/bin:/usr/bin/"
+Environment="JUPYTERHUB_CRYPT_KEY=$(openssl rand -hex 32)"
 ExecStart=${JHUB_VENV_ROOT}/bin/jupyterhub \\
     --Spawner.default_url="/lab" \\
     --JupyterHub.authenticator_class='vires_jhub.authenticator.LocalViresOAuthenticator' \\
@@ -94,11 +96,15 @@ ExecStart=${JHUB_VENV_ROOT}/bin/jupyterhub \\
     --JupyterHub.logo_file="${JHUB_VENV_ROOT}/share/jupyterhub/static/vires/images/vre_logo.svg" \\
     --JupyterHub.template_paths=["$JHUB_SOURCE_PATH/share/vires_jhub/templates"] \\
     --JupyterHub.template_vars={"vires_url":""} \\
+    --ViresOAuthenticator.enable_auth_state=True \\
     --ViresOAuthenticator.server_url="/oauth/" \\
     --ViresOAuthenticator.direct_server_url="http://$OAUTH_SERVER_HOST" \\
     --ViresOAuthenticator.client_id="$JHUB_CLIENT_ID" \\
     --ViresOAuthenticator.client_secret="$JHUB_CLIENT_SECRET" \\
     --ViresOAuthenticator.admin_permission="admin" \\
+    --ViresOAuthenticator.instance_name="Vagrant JupyterHub" \\
+    --ViresOAuthenticator.default_data_server="$VIRES_SERVER_URL" \\
+    --ViresOAuthenticator.data_servers={"swarm":"$VIRES_SERVER_URL"} \\
     --ViresOAuthenticator.user_permission="swarm_vre"
 
 [Install]
