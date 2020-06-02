@@ -66,6 +66,7 @@ MCO_SHA_2D = "./data/SW_OPER_MCO_SHA_2D.shc"
 MCO_CHAOS = "./data/SW_OPER_MCO_SHA_2X.shc"
 MLI_SHA_2C = "./data/SW_OPER_MLI_SHA_2C.shc"
 MLI_SHA_2D = "./data/SW_OPER_MLI_SHA_2D.shc"
+MLI_SHA_2E = "./data/SW_OPER_MLI_SHA_2E.shc"
 MIO_SHA_2C = "./data/SW_OPER_MIO_SHA_2C.txt"
 MIO_SHA_2D = "./data/SW_OPER_MIO_SHA_2D.txt"
 MMA_SHA_2C = "./data/SW_OPER_MMA_SHA_2C.cdf"
@@ -932,6 +933,31 @@ class TestAsyncFetchFilteredDataCsvModelMLI2D(TestCase, MagneticModelTestMixIn, 
 class TestAsyncFetchFilteredDataCdfModelMLI2D(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataCdfMixIn):
     model_name = "MLI_SHA_2D"
     model = load_model_shc(MLI_SHA_2D)
+
+
+class TestFetchDataCsvModelMLI2E(TestCase, MagneticModelTestMixIn, FetchDataCsvMixIn):
+    model_name = "MLI_SHA_2E"
+    model = load_model_shc(MLI_SHA_2E)
+
+
+class TestFetchFilteredDataCsvModelMLI2E(TestCase, MagneticModelTestMixIn, FetchFilteredDataCsvMixIn):
+    model_name = "MLI_SHA_2E"
+    model = load_model_shc(MLI_SHA_2E)
+
+
+class TestFetchFilteredDataCdfModelMLI2E(TestCase, MagneticModelTestMixIn, FetchFilteredDataCdfMixIn):
+    model_name = "MLI_SHA_2E"
+    model = load_model_shc(MLI_SHA_2E)
+
+
+class TestAsyncFetchFilteredDataCsvModelMLI2E(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataCsvMixIn):
+    model_name = "MLI_SHA_2E"
+    model = load_model_shc(MLI_SHA_2E)
+
+
+class TestAsyncFetchFilteredDataCdfModelMLI2E(TestCase, MagneticModelTestMixIn, AsyncFetchFilteredDataCdfMixIn):
+    model_name = "MLI_SHA_2E"
+    model = load_model_shc(MLI_SHA_2E)
 
 #-------------------------------------------------------------------------------
 
