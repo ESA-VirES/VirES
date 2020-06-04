@@ -341,7 +341,7 @@ from eoxserver.services.views import ows
 from vires.views import custom_data #, custom_model, client_state
 
 urlpatterns = [
-    url(r'^ows$', ows),
+    url(r'^ows$', ows, name="ows"),
     url(r'^custom_data/(?P<identifier>[0-9a-f-]{36,36})?$', custom_data),
     #url(r'^custom_model/(?P<identifier>[0-9a-f-]{36,36})?$', custom_model),
     #url(r'^client_state/(?P<identifier>[0-9a-f-]{36,36})?$', client_state),
@@ -361,7 +361,7 @@ from vires.views import custom_data #, custom_model, client_state
 
 urlpatterns = [
     url(r'^$', workspace(parse_client_state), name="workspace"),
-    url(r'^ows$', wrap_protected_api(ows)),
+    url(r'^ows$', wrap_protected_api(ows), name="ows"),
     url(r'^accounts/', include('eoxs_allauth.urls')),
     url(r'^custom_data/(?P<identifier>[0-9a-f-]{36,36})?$', wrap_protected_api(custom_data)),
     #url(r'^custom_model/(?P<identifier>[0-9a-f-]{36,36})?$', wrap_protected_api(custom_model)),
