@@ -32,6 +32,7 @@ $MNG cached_product update MCO_SHA_2X `find $DATA_DIR -name SW_OPER_MCO_SHA_2X_\
 # MLI
 $MNG cached_product update MLI_SHA_2C `find $DATA_DIR -name SW_OPER_MLI_SHA_2C_\*.shc | sort | tail -n 1`
 $MNG cached_product update MLI_SHA_2D `find $DATA_DIR -name SW_OPER_MLI_SHA_2D_\*.shc | sort | tail -n 1`
+$MNG cached_product update MLI_SHA_2E `find $DATA_DIR -name SW_OPER_MLI_SHA_2D_\*.shc | sort | tail -n 1`
 
 # MMA
 $MNG cached_product update MMA_SHA_2F `find $DATA_DIR -name SW_OPER_MMA_SHA_2F_\*.cdf`
