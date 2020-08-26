@@ -13,7 +13,8 @@ info "Installing PosgreSQL $PG_VERSION RDBMS ... "
 
 # Install RPM packages
 yum --assumeyes install $PG_PACKAGE $PG_SERVER_PACKAGE
-yum --assumeyes --setopt=obsoletes=0 install $PGIS_PACKAGE
+#yum --assumeyes --setopt=obsoletes=0 install $PGIS_PACKAGE
+yum --assumeyes install $PGIS_PACKAGE
 
 if [ -n "`systemctl | grep $PG_SERVICE_NAME`" ]
 then
