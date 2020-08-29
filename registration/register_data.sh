@@ -125,6 +125,13 @@ do
     | $MNG product register -c "$COLLECTION" -f - --update
 done
 
+for TYPE in S M
+do
+    COLLECTION="SW_OPER_AUX_OBS${TYPE}2_"
+    find "$DATA_DIR" -type f -name "SW_OPER_AUX_OBS${TYPE}2_*.DBL" | sort \
+    | $MNG product register -c "$COLLECTION" -f - --update
+done
+
 #for SAT in A B C
 #do
 #    COLLECTION="SW_OPER_AEJ${SAT}LPL_2F"
