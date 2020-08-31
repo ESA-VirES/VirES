@@ -132,56 +132,50 @@ do
     | $MNG product register -c "$COLLECTION" -f - --update
 done
 
-#for SAT in A B C
-#do
-#    COLLECTION="SW_OPER_AEJ${SAT}LPL_2F"
-#    $MNG product deregister -c "$COLLECTION" --all
-#    set -x
-#    find "$DATA_DIR" -type f -name "SW_OPER_AEJ${SAT}LPL_2F_20*.cdf" | sort \
-#    | $MNG product register -c "$COLLECTION" -f - --update
-#done
+for SAT in A B C
+do
+    COLLECTION="SW_OPER_AEJ${SAT}LPL_2F"
+    $MNG product deregister -c "$COLLECTION" --all
+    find "$DATA_DIR" -type f -name "SW_OPER_AEJ${SAT}LPL_2F_20*.cdf" | sort \
+    | $MNG product register -c "$COLLECTION" -f - --update
+done
 
-#for SAT in A B C
-#do
-#    COLLECTION="SW_OPER_AEJ${SAT}PBL_2F"
-#    $MNG product deregister -c "$COLLECTION" --all
-#    set -x
-#    find "$DATA_DIR" -type f -name "SW_OPER_AEJ${SAT}PBL_2F_20*.cdf" | sort \
-#    | $MNG product register -c "$COLLECTION" -f - --update
-#done
+for SAT in A B C
+do
+    COLLECTION="SW_OPER_AEJ${SAT}LPL_2F"
+    $MNG product deregister -c "$COLLECTION" --all
+    find "$DATA_DIR" -type f -name "SW_OPER_AEJ${SAT}LPL_2F_20*.cdf" | sort \
+    | $MNG product register -c "$COLLECTION" -f - --update
+done
 
-#for SAT in A B C
-#do
-#    COLLECTION="SW_OPER_AEJ${SAT}LPS_2F"
-#    $MNG product deregister -c "$COLLECTION" --all
-#    set -x
-#    find "$DATA_DIR" -type f -name "SW_OPER_AEJ${SAT}LPS_2F_20*.cdf" | sort \
-#    | $MNG product register -c "$COLLECTION" -f - --update
-#done
+for SAT in A B C
+do
+    COLLECTION="SW_OPER_AEJ${SAT}PBL_2F"
+    $MNG product deregister -c "$COLLECTION" --all
+    find "$DATA_DIR" -type f -name "SW_OPER_AEJ${SAT}PBL_2F_20*.cdf" | sort \
+    | $MNG product register -c "$COLLECTION" -f - --update
+done
 
-#for SAT in A B C
-#do
-#    COLLECTION="SW_OPER_AEJ${SAT}PBS_2F"
-#    $MNG product deregister -c "$COLLECTION" --all
-#    set -x
-#    find "$DATA_DIR" -type f -name "SW_OPER_AEJ${SAT}PBS_2F_20*.cdf" | sort \
-#    | $MNG product register -c "$COLLECTION" -f - --update
-#done
+for SAT in A B C
+do
+    COLLECTION="SW_OPER_AEJ${SAT}LPS_2F"
+    $MNG product deregister -c "$COLLECTION" --all
+    find "$DATA_DIR" -type f -name "SW_OPER_AEJ${SAT}LPS_2F_20*.cdf" | sort \
+    | $MNG product register -c "$COLLECTION" -f - --update
+done
 
-#for SAT in A B C
-#do
-#    COLLECTION="SW_OPER_AEJ${SAT}PBS_2F:PGMFD"
-#    $MNG product deregister -c "$COLLECTION" --all
-#    set -x
-#    find "$DATA_DIR" -type f -name "SW_OPER_AEJ${SAT}PBS_2F_20*.cdf" | sort \
-#    | $MNG product register -c "$COLLECTION" -f - --update
-#done
+for SAT in A B C
+do
+    COLLECTION="SW_OPER_AEJ${SAT}PBS_2F"
+    $MNG product deregister -c "$COLLECTION" --all
+    find "$DATA_DIR" -type f -name "SW_OPER_AEJ${SAT}PBS_2F_20*.cdf" | sort \
+    | $MNG product register -c "$COLLECTION" -f - --update
+done
 
-#for SAT in A B C
-#do
-#    COLLECTION="SW_OPER_AOB${SAT}FAC_2F"
-#    $MNG product deregister -c "$COLLECTION" --all
-#    set -x
-#    find "$DATA_DIR" -type f -name "SW_OPER_AOB${SAT}FAC_2F_20*.cdf" | sort \
-#    | $MNG product register -c "$COLLECTION" -f - --update
-#done
+for SAT in A B C
+do
+    COLLECTION="SW_OPER_AOB${SAT}FAC_2F"
+    $MNG product deregister -c "$COLLECTION" --all
+    find "$DATA_DIR" -type f -name "SW_OPER_AOB${SAT}FAC_2F_20*.cdf" | sort \
+    | $MNG product register -c "$COLLECTION" -f - --update
+done
