@@ -32,6 +32,7 @@ $MNG cached_product update MCO_SHA_2X `find $DATA_DIR -name SW_OPER_MCO_SHA_2X_\
 # MLI
 $MNG cached_product update MLI_SHA_2C `find $DATA_DIR -name SW_OPER_MLI_SHA_2C_\*.shc | sort | tail -n 1`
 $MNG cached_product update MLI_SHA_2D `find $DATA_DIR -name SW_OPER_MLI_SHA_2D_\*.shc | sort | tail -n 1`
+$MNG cached_product update MLI_SHA_2E `find $DATA_DIR -name SW_OPER_MLI_SHA_2D_\*.shc | sort | tail -n 1`
 
 # MMA
 $MNG cached_product update MMA_SHA_2F `find $DATA_DIR -name SW_OPER_MMA_SHA_2F_\*.cdf`
@@ -56,7 +57,7 @@ find "$DATA_DIR" -type f -name "omni_hro_1min_*_avg20min_delay10min.cdf" | sort 
 | $MNG product register -c "$COLLECTION" -f - --update
 
 COLLECTION="OMNI_HR_1min"
-find "$DATA_DIR" -type f -name "omni_hro_1min_*.cdf" | sort \
+find "$DATA_DIR" -type f -name "omni_hro_1min_*_v[0-9][0-9].cdf" | sort \
 | $MNG product register -c "$COLLECTION" -f - --update
 
 COLLECTION="SW_OPER_AUX_IMF_2_"
@@ -121,6 +122,13 @@ for SAT in A B C
 do
     COLLECTION="SW_OPER_IPD${SAT}IRR_2F"
     find "$DATA_DIR" -type f -name "SW_OPER_IPD${SAT}IRR_2F*.cdf" | sort \
+    | $MNG product register -c "$COLLECTION" -f - --update
+done
+
+for TYPE in S M
+do
+    COLLECTION="SW_OPER_AUX_OBS${TYPE}2_"
+    find "$DATA_DIR" -type f -name "SW_OPER_AUX_OBS${TYPE}2_*.DBL" | sort \
     | $MNG product register -c "$COLLECTION" -f - --update
 done
 

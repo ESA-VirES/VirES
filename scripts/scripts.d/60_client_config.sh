@@ -68,13 +68,16 @@ wq
 END
 
     [ "$CONFIGURE_ALLAUTH" == "YES" ] || ex "$CONF" <<END
-/^[ 	]*<\/VirtualHost>/i
+/^\\s*\\(# EOXS00_BEGIN\\|<\/VirtualHost>\\)/i
     # EOXC00_BEGIN - VirES Client - Do not edit or remove this line!
 
-    RedirectMatch permanent ^/$ /eoxc/
+    ProxyPass "$VIRES_CLIENT_URL" !
+    ProxyPassMatch "^/$" !
+    RedirectMatch ^/$ $VIRES_CLIENT_URL/
 
     # VirES Client
     Alias $VIRES_CLIENT_URL "$VIRES_CLIENT_HOME"
+    Alias /eoxc "/var/www/vires/client"
     <Directory "$VIRES_CLIENT_HOME">
         Options -MultiViews +FollowSymLinks
     </Directory>

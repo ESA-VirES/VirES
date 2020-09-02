@@ -21,6 +21,8 @@ wq
 END
 
 [ -z "$PG_REPO" ] || { ex "$PG_REPO_CONF" && info "$PG_REPO enabled"; }<<END
+/\[pgdg-common\]/
++1,/^gpgkey/s/^\\s*enabled\\s*=.*\$/enabled=1/
 /\[$PG_REPO\]/
 +1,/^gpgkey/s/^\\s*enabled\\s*=.*\$/enabled=1/
 wq
