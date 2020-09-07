@@ -13,4 +13,4 @@ info "Installing scipy ..."
 
 activate_venv "$VIRES_VENV_ROOT"
 
-pip install $PIP_OPTIONS 'scipy>=1.4.0,<1.5a0'
+pip install $PIP_OPTIONS 'scipy>=1.5.0,<1.6a0'
