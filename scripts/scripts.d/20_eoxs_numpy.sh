@@ -13,4 +13,4 @@ info "Installing numpy ..."
 
 activate_venv "$VIRES_VENV_ROOT"
 
-pip install $PIP_OPTIONS 'numpy>=1.18.0,<1.19a0'
+pip install $PIP_OPTIONS 'numpy>=1.19.0,<1.20a0'
