@@ -129,12 +129,13 @@ def repack_aux_obs(filename_input, filename_output):
 
 def get_obs_index_and_ranges(cdf):
     """ Get index sorting the arrays by observatory and time. """
+    times = cdf.raw_var(TIMESTAMP_VARIABLE)[...]
+    codes = cdf[OBS_CODE_VARIABLE][...][:, 0]
     ranges = {}
     indices = []
     offset = 0
-    for code in get_obs_codes(cdf):
-        times = cdf.raw_var(TIMESTAMP_VARIABLE)[...]
-        index = get_obs_index(cdf, code)
+    for code in get_obs_codes(codes):
+        index = get_obs_index(codes, code)
         index = sort_by(times, index)
         indices.append(index)
         ranges[code] = (offset, offset + len(index))
@@ -143,9 +144,9 @@ def get_obs_index_and_ranges(cdf):
     return concatenate(indices), ranges
 
 
-def get_obs_index(cdf, code):
+def get_obs_index(codes, code):
     """ Get index extracting records for the given observatory. """
-    return (cdf[OBS_CODE_VARIABLE][...][:, 0] == code).nonzero()[0]
+    return (codes == code).nonzero()[0]
 
 
 def sort_by(values, index):
@@ -153,9 +154,9 @@ def sort_by(values, index):
     return index[values[index].argsort()]
 
 
-def get_obs_codes(cdf):
+def get_obs_codes(codes):
     """ Read available observatory codes from the source file. """
-    return [str(code) for code in unique(cdf[OBS_CODE_VARIABLE][...][:, 0])]
+    return [str(code) for code in unique(codes)]
 
 
 def find_nx1_variables(cdf):
