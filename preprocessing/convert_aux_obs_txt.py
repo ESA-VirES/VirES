@@ -313,7 +313,7 @@ def read_aux_obs_txt(filename):
     def _records_to_arrays(records):
         fields = [
             'IAGA_code', 'SensorIndex', 'Timestamp',
-            'Longitude', 'Latitude', 'Radius',
+            'Latitude', 'Longitude', 'Radius',
             'B_NEC', 'Quality',
         ]
         data = {field: [] for field in fields}
