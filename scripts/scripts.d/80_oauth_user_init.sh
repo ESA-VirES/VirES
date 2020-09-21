@@ -17,7 +17,7 @@ set_instance_variables
 required_variables MNGCMD
 
 # initial user (vagrant/vagrant)
-python "$MNGCMD" auth_import_users << END
+python "$MNGCMD" user import << END
 [
   {
     "username": "vagrant",

@@ -445,10 +445,10 @@ python "$MNGCMD" collectstatic -l --noinput
 python "$MNGCMD" migrate --noinput
 
 # initialize user permissions
-python "$MNGCMD" auth_import_permissions --default
+python "$MNGCMD" permission import --default
 
 # initialize user groups
-python "$MNGCMD" auth_import_groups --default
+python "$MNGCMD" group import --default
 
 #-------------------------------------------------------------------------------
 # STEP 9: CHANGE OWNERSHIP OF THE CONFIGURATION FILES
