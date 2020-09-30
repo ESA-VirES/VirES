@@ -483,24 +483,24 @@ python "$MNGCMD" collectstatic -l --noinput
 python "$MNGCMD" migrate --noinput
 
 # initialize user permissions
-python "$MNGCMD" auth_import_permissions --default
+python "$MNGCMD" permission import --default
 
 # initialize user groups
-python "$MNGCMD" auth_import_groups --default
+python "$MNGCMD" group import --default
 
 # set site name and domain
-python "$MNGCMD" auth_set_site --name "$VIRES_HOSTNAME" --domain "$VIRES_HOSTNAME"
+python "$MNGCMD" site set --name "$VIRES_HOSTNAME" --domain "$VIRES_HOSTNAME"
 
 # load the social providers
 if [ -n "$OAUTH_SOCIAL_PROVIDERS" ]
 then
-    python "$MNGCMD" auth_import_social_providers --file "$OAUTH_SOCIAL_PROVIDERS"
+    python "$MNGCMD" social_provider import --file "$OAUTH_SOCIAL_PROVIDERS"
 fi
 
 # load the apps
 if [ -n "$OAUTH_APPS" ]
 then
-    python "$MNGCMD" auth_import_apps --file "$OAUTH_APPS"
+    python "$MNGCMD" app import --file "$OAUTH_APPS"
 fi
 
 #-------------------------------------------------------------------------------
