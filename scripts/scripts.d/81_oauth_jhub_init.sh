@@ -22,7 +22,7 @@ set_instance_variables
 required_variables MNGCMD
 
 # JHub OAuth client initialization
-python "$MNGCMD" auth_import_apps << END
+python "$MNGCMD" app import << END
 [
   {
     "name": "VRE - JupyterHub - Vagrant",

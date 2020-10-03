@@ -64,7 +64,7 @@ def check_inputs(argv):
             invert_filter = True
         elif arg in ('-i', '--ignore-extension'):
             ignore_extension = True
-        elif arg in ('-i', '--ignore-signature'):
+        elif arg in ('-j', '--ignore-signature'):
             ignore_signature = True
         elif arg in ('-a', '--allow-overlaps'):
             allow_overlaps = True
@@ -191,7 +191,7 @@ def filter_latest_extent_nonoverlapping(items):
     """ Filter latest extent non-overlapping products. """
     sorted_intervals = SortedItervals()
     rejected = []
-    key = lambda v: (v.baseline, v.end, v.start, v.version)
+    key = lambda v: (v.baseline, v.end, v.version, v.start)
     for item in sorted(items, key=key, reverse=True):
         rejected.extend(sorted_intervals.fill_in(item.start, item.end, item))
     return list(sorted_intervals), list(reversed(rejected))
@@ -251,12 +251,12 @@ class SortedItervals(object):
         idx_stop = min(bisect_left(self.ranges, (end,)) + 2, len(self.ranges))
 
         while idx_start < idx_stop:
-            if self.ranges[idx_start][1] >= start:
+            if self.ranges[idx_start][1] > start:
                 break
             idx_start += 1
 
         while idx_start < idx_stop:
-            if self.ranges[idx_stop-1][0] <= end:
+            if self.ranges[idx_stop-1][0] < end:
                 break
             idx_stop -= 1
 

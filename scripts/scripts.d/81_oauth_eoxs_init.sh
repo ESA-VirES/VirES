@@ -29,7 +29,7 @@ set_instance_variables
 required_variables MNGCMD
 
 # VirES-Server OAuth client initialization
-python "$MNGCMD" auth_import_apps << END
+python "$MNGCMD" app import << END
 [
   {
     "name": "VirES for Swarm - Vagrant",
