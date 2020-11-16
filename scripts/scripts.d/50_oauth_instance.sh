@@ -255,6 +255,7 @@ $ a
 from django.urls import include
 urlpatterns += [
     path('', include('vires_oauth.urls')),
+    path('captcha/', include('captcha.urls')),
 ]
 # OAUTH URLS - END - Do not edit or remove this line!
 .
@@ -281,6 +282,7 @@ INSTALLED_APPS += [
     #'allauth.socialaccount.providers.github',
     'django_countries',
     'oauth2_provider',
+    'captcha',
 ]
 
 SOCIALACCOUNT_PROVIDERS = {
@@ -363,6 +365,8 @@ SOCIALACCOUNT_EMAIL_VERIFICATION = ACCOUNT_EMAIL_VERIFICATION
 SOCIALACCOUNT_QUERY_EMAIL = True
 ACCOUNT_SIGNUP_FORM_CLASS = 'vires_oauth.forms.SignupForm'
 ACCOUNT_SIGNUP_EMAIL_ENTER_TWICE = True
+
+CAPTCHA_IMAGE_SIZE = (90, 28)
 
 VIRES_OAUTH_DEFAULT_GROUPS = ["default", "swarm_vre"]
 VIRES_SERVICE_TERMS_VERSION = "2019-11-12V2.0.0"
