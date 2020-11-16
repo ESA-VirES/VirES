@@ -271,6 +271,7 @@ a
 # OAUTH APPS - BEGIN - Do not edit or remove this line!
 INSTALLED_APPS += [
     'django.contrib.sites',
+    'django.forms',
     'vires_oauth',
     'allauth',
     'allauth.account',
