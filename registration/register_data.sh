@@ -125,6 +125,13 @@ do
     | $MNG product register -c "$COLLECTION" -f - --update
 done
 
+for TYPE in 1M 4M
+do
+    COLLECTION="SW_OPER_VOBS_${TYPE}_2_"
+    find "$DATA_DIR" -type f -name "SW_OPER_VOBS_${TYPE}_2_*.cdf" | sort \
+    | $MNG product register -c "$COLLECTION" -f - --update
+done
+
 for TYPE in S M
 do
     COLLECTION="SW_OPER_AUX_OBS${TYPE}2_"

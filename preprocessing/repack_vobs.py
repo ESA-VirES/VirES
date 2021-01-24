@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 #-------------------------------------------------------------------------------
 #
-# Re-pack ground observatory data to a new CDF file.
+# Re-pack virtual observatory data to a new CDF file.
 #
 # Author: Martin Paces <martin.paces@eox.at>
 #-------------------------------------------------------------------------------
-# Copyright (C) 2020 EOX IT Services GmbH
+# Copyright (C) 2021 EOX IT Services GmbH
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -26,12 +26,14 @@
 # THE SOFTWARE.
 #-------------------------------------------------------------------------------
 
+# TODO: fix the secular variation variables
+
 import sys
 import ctypes
 from datetime import datetime #, timedelta
 from os import remove, rename
 from os.path import basename, exists, splitext
-from numpy import unique, concatenate
+from numpy import unique, concatenate, asarray, argsort
 import spacepy
 from spacepy import pycdf
 
@@ -40,7 +42,7 @@ GZIP_COMPRESSION = pycdf.const.GZIP_COMPRESSION
 GZIP_COMPRESSION_LEVEL4 = ctypes.c_long(4)
 GZIP_COMPRESSION_LEVEL = GZIP_COMPRESSION_LEVEL4
 
-CDF_CREATOR = "EOX:repack_aux_obs.py [%s-%s, libcdf-%s]" % (
+CDF_CREATOR = "EOX:repack_vobs.py [%s-%s, libcdf-%s]" % (
     spacepy.__name__, spacepy.__version__,
     "%s.%s.%s-%s" % tuple(
         v if isinstance(v, int) else v.decode('ascii')
@@ -48,14 +50,36 @@ CDF_CREATOR = "EOX:repack_aux_obs.py [%s-%s, libcdf-%s]" % (
     )
 )
 
+OBS_CODE_ATTRIBUTES = {
+    "UNITS": "-",
+    "DESCRIPTION": "Seven letter virtual observatory identification code associated with datum",
+    "FORMAT": "A7"
+}
 
 QUALITY_VARIABLE = "Quality"
-OBS_CODE_VARIABLE = "IAGA_code"
-OBS_CODES_ATTRIBUTE = "IAGA_CODES"
+OBS_CODE_VARIABLE = "SiteCode"
+OBS_CODES_ATTRIBUTE = "SITE_CODES"
 OBS_RANGES_ATTRIBUTE = "INDEX_RANGES"
 TIMESTAMP_VARIABLE = "Timestamp"
+LATITUDE_VARIABLE = "Latitude"
+LONGITUDE_VARIABLE = "Longitude"
+RADIUS_VARIABLE = "Radius"
+
+VARIABLES = [
+    TIMESTAMP_VARIABLE,
+    LATITUDE_VARIABLE,
+    LONGITUDE_VARIABLE,
+    RADIUS_VARIABLE,
+    "B_CF",
+    "B_OB",
+    #"B_SV",
+    "sigma_CF",
+    "sigma_OB",
+    #"sigma_SV",
+]
 
 
+CDF_CHAR_TYPE = pycdf.const.CDF_CHAR.value
 CDF_FLOAT_TYPE = pycdf.const.CDF_FLOAT.value
 CDF_DOUBLE_TYPE = pycdf.const.CDF_DOUBLE.value
 CDF_REAL8_TYPE = pycdf.const.CDF_REAL8.value # CDF_DOUBLE != CDF_REAL8
@@ -76,7 +100,7 @@ def usage(exename, file=sys.stderr):
     print("USAGE: %s <input> [<output>]" % basename(exename), file=file)
     print("\n".join([
         "DESCRIPTION:",
-        "  Re-pack observatory data CDF and save them into a new CDF file.",
+        "  Re-pack virtual observatory product and save them into a new CDF file.",
     ]), file=file)
 
 
@@ -99,7 +123,7 @@ def main(filename_input, filename_output):
         remove(filename_tmp)
 
     try:
-        repack_aux_obs(filename_input, filename_tmp)
+        repack_vobs(filename_input, filename_tmp)
         if exists(filename_tmp):
             print("%s -> %s" % (filename_input, filename_output))
             rename(filename_tmp, filename_output)
@@ -110,25 +134,33 @@ def main(filename_input, filename_output):
             remove(filename_tmp)
 
 
-def repack_aux_obs(filename_input, filename_output):
-    """ Repack AUX_OBS product file and squeeze dimension of Nx1 scalar arrays.
-    """
+
+def repack_vobs(filename_input, filename_output):
+    """ Repack VOBS product file. """
     extra_attributes = {
         "ORIGINAL_PRODUCT_NAME": splitext(basename(filename_input))[0],
     }
     with cdf_open(filename_input) as cdf_src:
-        variables = find_nx1_variables(cdf_src)
-        index, ranges = get_obs_index_and_ranges(cdf_src
-            cdf_src.raw_var(TIMESTAMP_VARIABLE)[...],
-            cdf_src[OBS_CODE_VARIABLE][...][:, 0]
+        _, sites = extract_sites_labels(
+            cdf_src[LATITUDE_VARIABLE][...],
+            cdf_src[LONGITUDE_VARIABLE][...],
+            cdf_src[RADIUS_VARIABLE][...],
+        )
+        index, ranges = get_obs_index_and_ranges(
+            cdf_src.raw_var(TIMESTAMP_VARIABLE)[...], sites
         )
         extra_attributes[OBS_CODES_ATTRIBUTE] = list(ranges)
         extra_attributes[OBS_RANGES_ATTRIBUTE] = list(ranges.values())
-        if variables:
-            with cdf_open(filename_output, "w") as cdf_dst:
-                copy_squeezed(
-                    cdf_dst, cdf_src, variables, index, extra_attributes
-                )
+        with cdf_open(filename_output, "w") as cdf_dst:
+            _copy_attributes(cdf_dst, cdf_src)
+            _update_attributes(cdf_dst, extra_attributes)
+            _update_creator(cdf_dst)
+            _set_variable(
+                cdf_dst, OBS_CODE_VARIABLE, sites, CDF_CHAR_TYPE,
+                OBS_CODE_ATTRIBUTES
+            )
+            for variable in VARIABLES:
+                _copy_variable(cdf_dst, cdf_src, variable, index)
 
 
 def get_obs_index_and_ranges(times, codes):
@@ -158,30 +190,28 @@ def sort_by(values, index):
 
 def get_obs_codes(codes):
     """ Read available observatory codes from the source file. """
-    return [str(code) for code in unique(codes)]
+    unique_codes, index = unique(codes, return_index=True)
+    return list(unique_codes[argsort(index)])
 
 
-def find_nx1_variables(cdf):
-    """ Find variables with the squeezable Nx1 dimension. """
-    variables = []
-    for variable in cdf:
-        shape = cdf[variable].shape
-        if shape and shape[1:] == (1,):
-            variables.append(variable)
-    return variables
+def extract_sites_labels(latitudes, longitudes, radii):
+    """ Extract sites labels. """
 
+    def _get_site_code(latitude, longitude):
+        return ("%s%2.2d%s%3.3d" % (
+            "N" if latitude >= 0.0 else "S", abs(int(round(latitude))),
+            "E" if longitude >= 0.0 else "W", abs(int(round(longitude))),
+        )).encode('ascii')
 
-def copy_squeezed(cdf_dst, cdf_src, squeezed_variables, index, attrs=None):
-    """ Copy squeezed content from the source to the destination CDF file. """
-    squeezed_variables = set(squeezed_variables)
-    _copy_attributes(cdf_dst, cdf_src)
-    _update_attributes(cdf_dst, attrs)
-    _update_creator(cdf_dst)
-    for variable in cdf_src:
-        if variable in squeezed_variables:
-            _copy_squeezed_nx1(cdf_dst, cdf_src, variable, index)
-        else:
-            _copy_variable(cdf_dst, cdf_src, variable, index)
+    site_map, sites = {}, []
+    for location in zip(latitudes, longitudes, radii):
+        site_code = site_map.get(location)
+        if not site_code:
+            latitude, longitude, _ = location
+            site_map[location] = site_code = _get_site_code(latitude, longitude)
+        sites.append(site_code)
+
+    return site_map, asarray(sites, 'S')
 
 
 def _update_attributes(cdf, attrs):
@@ -198,28 +228,37 @@ def _update_creator(cdf):
 
 
 def _copy_variable(cdf_dst, cdf_src, variable, index):
-    _set_variable(
-        cdf_dst, cdf_src, variable, cdf_src.raw_var(variable)[...][index]
-    )
-
-
-def _copy_squeezed_nx1(cdf_dst, cdf_src, variable, index):
-    _set_variable(
-        cdf_dst, cdf_src, variable, cdf_src.raw_var(variable)[:, 0][index]
-    )
-
-
-def _set_variable(cdf_dst, cdf_src, variable, data):
     raw_var = cdf_src.raw_var(variable)
+    data = cdf_src.raw_var(variable)[...][index]
     cdf_dst.new(
-        variable, data, TYPE_MAP.get(raw_var.type(), raw_var.type()), dims=data.shape[1:],
-        compress=GZIP_COMPRESSION, compress_param=GZIP_COMPRESSION_LEVEL,
+        variable,
+        data,
+        TYPE_MAP.get(raw_var.type(), raw_var.type()),
+        dims=data.shape[1:],
+        compress=GZIP_COMPRESSION,
+        compress_param=GZIP_COMPRESSION_LEVEL,
     )
     cdf_dst[variable].attrs.update(raw_var.attrs)
 
 
+def _set_variable(cdf_dst, variable, data, cdf_type, attrs=None):
+    cdf_dst.new(
+        variable,
+        data,
+        cdf_type,
+        dims=data.shape[1:],
+        compress=GZIP_COMPRESSION,
+        compress_param=GZIP_COMPRESSION_LEVEL,
+    )
+    if attrs:
+        cdf_dst[variable].attrs.update(attrs)
+
+
 def _copy_attributes(cdf_dst, cdf_src):
-    _update_attributes(cdf_dst, cdf_src.attrs)
+    _update_attributes(cdf_dst, {
+        key: list(value)
+        for key, value in cdf_src.attrs.items()
+    })
 
 
 def cdf_open(filename, mode="r"):
