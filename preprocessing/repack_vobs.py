@@ -33,7 +33,7 @@ import ctypes
 from datetime import datetime #, timedelta
 from os import remove, rename
 from os.path import basename, exists, splitext
-from numpy import unique, concatenate, asarray, argsort
+from numpy import unique, concatenate, asarray, argsort, stack
 import spacepy
 from spacepy import pycdf
 
@@ -78,6 +78,7 @@ VARIABLES = [
     #"sigma_SV",
 ]
 
+NEC_VARIABLES = ["B_CF", "B_OB", "B_SV", "sigma_CF", "sigma_OB", "sigma_SV"]
 
 CDF_CHAR_TYPE = pycdf.const.CDF_CHAR.value
 CDF_FLOAT_TYPE = pycdf.const.CDF_FLOAT.value
@@ -134,6 +135,13 @@ def main(filename_input, filename_output):
             remove(filename_tmp)
 
 
+def is_repacked(cdf):
+    """ True if the CDF has been already repacked. """
+    return (
+        'CREATOR' in cdf.attrs
+        and str(cdf.attrs['CREATOR'][0]).startswith('EOX:repack_vobs.py')
+    )
+
 
 def repack_vobs(filename_input, filename_output):
     """ Repack VOBS product file. """
@@ -141,6 +149,11 @@ def repack_vobs(filename_input, filename_output):
         "ORIGINAL_PRODUCT_NAME": splitext(basename(filename_input))[0],
     }
     with cdf_open(filename_input) as cdf_src:
+
+        # skip already re-packed data
+        if is_repacked(cdf_src):
+            return
+
         _, sites = extract_sites_labels(
             cdf_src[LATITUDE_VARIABLE][...],
             cdf_src[LONGITUDE_VARIABLE][...],
@@ -230,6 +243,8 @@ def _update_creator(cdf):
 def _copy_variable(cdf_dst, cdf_src, variable, index):
     raw_var = cdf_src.raw_var(variable)
     data = cdf_src.raw_var(variable)[...][index]
+    if variable in NEC_VARIABLES:
+        data = _covert_rtp_to_nec(data)
     cdf_dst.new(
         variable,
         data,
@@ -240,6 +255,9 @@ def _copy_variable(cdf_dst, cdf_src, variable, index):
     )
     cdf_dst[variable].attrs.update(raw_var.attrs)
 
+
+def _covert_rtp_to_nec(data):
+    return stack((-data[:, 1], +data[:, 2], -data[:, 0]), axis=1)
 
 def _set_variable(cdf_dst, variable, data, cdf_type, attrs=None):
     cdf_dst.new(
