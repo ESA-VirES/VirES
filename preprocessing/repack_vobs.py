@@ -169,7 +169,7 @@ def repack_vobs(filename_input, filename_output):
             _update_attributes(cdf_dst, extra_attributes)
             _update_creator(cdf_dst)
             _set_variable(
-                cdf_dst, OBS_CODE_VARIABLE, sites, CDF_CHAR_TYPE,
+                cdf_dst, OBS_CODE_VARIABLE, sites[index], CDF_CHAR_TYPE,
                 OBS_CODE_ATTRIBUTES
             )
             for variable in VARIABLES:
