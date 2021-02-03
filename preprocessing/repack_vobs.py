@@ -26,14 +26,12 @@
 # THE SOFTWARE.
 #-------------------------------------------------------------------------------
 
-# TODO: fix the secular variation variables
-
 import sys
 import ctypes
 from datetime import datetime #, timedelta
 from os import remove, rename
 from os.path import basename, exists, splitext
-from numpy import unique, concatenate, asarray, argsort
+from numpy import unique, concatenate, asarray, argsort, stack
 import spacepy
 from spacepy import pycdf
 
@@ -56,14 +54,26 @@ OBS_CODE_ATTRIBUTES = {
     "FORMAT": "A7"
 }
 
-QUALITY_VARIABLE = "Quality"
-OBS_CODE_VARIABLE = "SiteCode"
+OBS_CODE_SV_ATTRIBUTES = {
+    "UNITS": "-",
+    "DESCRIPTION": "Secular variation seven letter virtual observatory identification code associated with datum",
+    "FORMAT": "A7"
+}
+
 OBS_CODES_ATTRIBUTE = "SITE_CODES"
 OBS_RANGES_ATTRIBUTE = "INDEX_RANGES"
+OBS_CODE_VARIABLE = "SiteCode"
 TIMESTAMP_VARIABLE = "Timestamp"
 LATITUDE_VARIABLE = "Latitude"
 LONGITUDE_VARIABLE = "Longitude"
 RADIUS_VARIABLE = "Radius"
+
+OBS_RANGES_SV_ATTRIBUTE = "INDEX_RANGES_SV"
+OBS_CODE_SV_VARIABLE = "SiteCode_SV"
+TIMESTAMP_SV_VARIABLE = "Timestamp_SV"
+LATITUDE_SV_VARIABLE = "Latitude_SV"
+LONGITUDE_SV_VARIABLE = "Longitude_SV"
+RADIUS_SV_VARIABLE = "Radius_SV"
 
 VARIABLES = [
     TIMESTAMP_VARIABLE,
@@ -72,12 +82,33 @@ VARIABLES = [
     RADIUS_VARIABLE,
     "B_CF",
     "B_OB",
-    #"B_SV",
     "sigma_CF",
     "sigma_OB",
-    #"sigma_SV",
 ]
 
+VARIABLES_SV = [
+    TIMESTAMP_SV_VARIABLE,
+    LATITUDE_VARIABLE,
+    LONGITUDE_VARIABLE,
+    RADIUS_VARIABLE,
+    "B_SV",
+    "sigma_SV",
+]
+
+VARIABLES_SV_MAP = {
+    LATITUDE_VARIABLE: LATITUDE_SV_VARIABLE,
+    LONGITUDE_VARIABLE: LONGITUDE_SV_VARIABLE,
+    RADIUS_VARIABLE: RADIUS_SV_VARIABLE,
+}
+
+NEC_VARIABLES = [
+    "B_CF",
+    "B_OB",
+    "B_SV",
+    "sigma_CF",
+    "sigma_OB",
+    "sigma_SV",
+]
 
 CDF_CHAR_TYPE = pycdf.const.CDF_CHAR.value
 CDF_FLOAT_TYPE = pycdf.const.CDF_FLOAT.value
@@ -89,6 +120,9 @@ TYPE_MAP = {
     CDF_REAL8_TYPE: CDF_DOUBLE_TYPE,
     CDF_REAL4_TYPE: CDF_FLOAT_TYPE,
 }
+
+# NOTE: There seems to be no way how to get the pad value via the pycdf API.
+TIMESTAMP_PAD_VALUE = 59958230400000.0 # 1900-01-01T00:00:00Z
 
 
 class CommandError(Exception):
@@ -134,6 +168,13 @@ def main(filename_input, filename_output):
             remove(filename_tmp)
 
 
+def is_repacked(cdf):
+    """ True if the CDF has been already repacked. """
+    return (
+        'CREATOR' in cdf.attrs
+        and str(cdf.attrs['CREATOR'][0]).startswith('EOX:repack_vobs.py')
+    )
+
 
 def repack_vobs(filename_input, filename_output):
     """ Repack VOBS product file. """
@@ -141,6 +182,11 @@ def repack_vobs(filename_input, filename_output):
         "ORIGINAL_PRODUCT_NAME": splitext(basename(filename_input))[0],
     }
     with cdf_open(filename_input) as cdf_src:
+
+        # skip already re-packed data
+        if is_repacked(cdf_src):
+            return
+
         _, sites = extract_sites_labels(
             cdf_src[LATITUDE_VARIABLE][...],
             cdf_src[LONGITUDE_VARIABLE][...],
@@ -149,18 +195,52 @@ def repack_vobs(filename_input, filename_output):
         index, ranges = get_obs_index_and_ranges(
             cdf_src.raw_var(TIMESTAMP_VARIABLE)[...], sites
         )
+
+        times_sv = cdf_src.raw_var(TIMESTAMP_SV_VARIABLE)[...]
+        offset_sv = get_time_offset(times_sv, TIMESTAMP_PAD_VALUE)
+        index_sv, ranges_sv = get_obs_index_and_ranges(
+            times_sv[offset_sv:], sites[offset_sv:times_sv.size]
+        )
+        index_sv += offset_sv
+        del times_sv
+
+        assert list(ranges) == list(ranges_sv)
+
         extra_attributes[OBS_CODES_ATTRIBUTE] = list(ranges)
         extra_attributes[OBS_RANGES_ATTRIBUTE] = list(ranges.values())
+        extra_attributes[OBS_RANGES_SV_ATTRIBUTE] = list(ranges_sv.values())
+
         with cdf_open(filename_output, "w") as cdf_dst:
             _copy_attributes(cdf_dst, cdf_src)
             _update_attributes(cdf_dst, extra_attributes)
             _update_creator(cdf_dst)
             _set_variable(
-                cdf_dst, OBS_CODE_VARIABLE, sites, CDF_CHAR_TYPE,
+                cdf_dst, OBS_CODE_VARIABLE, sites[index], CDF_CHAR_TYPE,
                 OBS_CODE_ATTRIBUTES
             )
             for variable in VARIABLES:
-                _copy_variable(cdf_dst, cdf_src, variable, index)
+                _copy_variable(cdf_dst, cdf_src, variable, variable, index)
+            _set_variable(
+                cdf_dst, OBS_CODE_SV_VARIABLE, sites[index_sv], CDF_CHAR_TYPE,
+                OBS_CODE_SV_ATTRIBUTES
+            )
+            for variable in VARIABLES_SV:
+                _copy_variable(
+                    cdf_dst, cdf_src, variable,
+                    VARIABLES_SV_MAP.get(variable, variable), index_sv
+                )
+
+
+def get_time_offset(times, nodata_value):
+    """ Get offset to the first valid time value. """
+    idx = (times != nodata_value).nonzero()[0]
+    return idx[0] if idx.size > 0 else times.size
+
+
+def get_obs_index_and_ranges_with_offset(times, codes, offset):
+    """ Get index sorting the arrays by observatory and time. """
+    index, ranges = get_obs_index_and_ranges(times[offset:], codes[offset:])
+    return index + offset, ranges
 
 
 def get_obs_index_and_ranges(times, codes):
@@ -174,7 +254,6 @@ def get_obs_index_and_ranges(times, codes):
         indices.append(index)
         ranges[code] = (offset, offset + len(index))
         offset += len(index)
-
     return concatenate(indices), ranges
 
 
@@ -227,18 +306,24 @@ def _update_creator(cdf):
     })
 
 
-def _copy_variable(cdf_dst, cdf_src, variable, index):
-    raw_var = cdf_src.raw_var(variable)
-    data = cdf_src.raw_var(variable)[...][index]
+def _copy_variable(cdf_dst, cdf_src, variable_src, variable_dst, index):
+    raw_var = cdf_src.raw_var(variable_src)
+    data = cdf_src.raw_var(variable_src)[...][index]
+    if variable_src in NEC_VARIABLES:
+        data = _covert_rtp_to_nec(data)
     cdf_dst.new(
-        variable,
+        variable_dst,
         data,
         TYPE_MAP.get(raw_var.type(), raw_var.type()),
         dims=data.shape[1:],
         compress=GZIP_COMPRESSION,
         compress_param=GZIP_COMPRESSION_LEVEL,
     )
-    cdf_dst[variable].attrs.update(raw_var.attrs)
+    cdf_dst[variable_dst].attrs.update(raw_var.attrs)
+
+
+def _covert_rtp_to_nec(data):
+    return stack((-data[:, 1], +data[:, 2], -data[:, 0]), axis=1)
 
 
 def _set_variable(cdf_dst, variable, data, cdf_type, attrs=None):
