@@ -168,10 +168,10 @@ export CONFIGURE_HTTPS
 
 export PIP_OPTIONS="--upgrade --upgrade-strategy=only-if-needed"
 
-export PG_VERSION="${PG_VERSION:-9.6}"
-export PG_REPO="${PG_REPO:-pgdg96}"
-export PG_PREFIX="${PG_PREFIX:-postgresql96}"
-export PGIS_PACKAGE="${PGIS_PACKAGE:-postgis2_96}"
+export PG_VERSION="${PG_VERSION:-13}"
+export PG_REPO="${PG_REPO:-pgdg$PG_VERSION}"
+export PG_PACKAGE="${PG_RPM:-postgresql$PG_VERSION}"
+export PGIS_PACKAGE="${PGIS_PACKAGE:-postgis31_$PG_VERSION}"
 
 # local development URL
 export LOCAL_URL="${LOCAL_URL}"
