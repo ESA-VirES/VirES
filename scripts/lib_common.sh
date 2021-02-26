@@ -168,7 +168,7 @@ export CONFIGURE_HTTPS
 
 export PIP_OPTIONS="--upgrade --upgrade-strategy=only-if-needed"
 
-export PG_VERSION="${PG_VERSION:-13}"
+export PG_VERSION="${PG_VERSION:-12}"
 export PG_REPO="${PG_REPO:-pgdg$PG_VERSION}"
 export PG_PACKAGE="${PG_RPM:-postgresql$PG_VERSION}"
 export PGIS_PACKAGE="${PGIS_PACKAGE:-postgis31_$PG_VERSION}"
