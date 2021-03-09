@@ -26,14 +26,9 @@
 # THE SOFTWARE.
 #-------------------------------------------------------------------------------
 
-# following commented variables are set externally
-#PG_VERSION="9.6"
-#PG_PREFIX="postgresql96"
-#PGIS_PACKAGE="postgis2_96"
-
-PG_PACKAGE="$PG_PREFIX"
-PG_SERVER_PACKAGE="$PG_PREFIX-server"
-PG_DEVEL_PACKAGE="$PG_PREFIX-devel"
+#PG_PACKAGE="$PG_PACKAGE"
+PG_SERVER_PACKAGE="$PG_PACKAGE-server"
+PG_DEVEL_PACKAGE="$PG_PACKAGE-devel"
 
 PG_DATA_DIR_DEFAULT="/var/lib/pgsql/$PG_VERSION/data"
 PG_SERVICE_NAME="postgresql-$PG_VERSION.service"
@@ -42,7 +37,7 @@ PG_PATH="/usr/pgsql-$PG_VERSION/bin"
 PG_CONF_FILE="$HOME/.pg_data_dir"
 PG_DATA_DIR="${VIRES_PGDATA_DIR:-$PG_DATA_DIR_DEFAULT}"
 
-alias postgresql-setup="$PG_PATH/$PG_PREFIX-setup"
+alias postgresql-setup="$PG_PATH/postgresql-$PG_VERSION-setup"
 alias psql="sudo -u postgres $PG_PATH/psql"
 
 [ -n "PG_PATH" ] && export PATH="$PG_PATH:$PATH"
