@@ -14,6 +14,7 @@ PG_REPO_CONF="/etc/yum.repos.d/pgdg-redhat-all.repo"
 info "Installing PostgresSQL RPM repository ..."
 
 rpm -q --quiet pgdg-redhat-repo || rpm -Uvh https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+yum install -y centos-release-scl-rh
 
 ex "$PG_REPO_CONF" <<END
 1,\$s/^\\s*enabled\\s*=.*\$/enabled=0/
