@@ -96,6 +96,10 @@ cat > "$SETTINGS" <<END
 
 from os.path import join, abspath, dirname
 
+# temporary workaround resolving conflict with gdal32 from pgdg-common
+# remove once the DB instance is gone
+GDAL_LIBRARY_PATH = "/usr/lib64/libgdal.so.1"
+
 DEBUG = False
 
 PROJECT_DIR = dirname(abspath(__file__))
