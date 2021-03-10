@@ -96,6 +96,8 @@ cat > "$SETTINGS" <<END
 
 from os.path import join, abspath, dirname
 
+GDAL_LIBRARY_PATH = "/usr/lib64/libgdal.so.1"
+
 DEBUG = False
 
 PROJECT_DIR = dirname(abspath(__file__))
