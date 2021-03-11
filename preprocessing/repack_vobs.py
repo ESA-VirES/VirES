@@ -101,15 +101,6 @@ VARIABLES_SV_MAP = {
     RADIUS_VARIABLE: RADIUS_SV_VARIABLE,
 }
 
-NEC_VARIABLES = [
-    "B_CF",
-    "B_OB",
-    "B_SV",
-    "sigma_CF",
-    "sigma_OB",
-    "sigma_SV",
-]
-
 CDF_CHAR_TYPE = pycdf.const.CDF_CHAR.value
 CDF_FLOAT_TYPE = pycdf.const.CDF_FLOAT.value
 CDF_DOUBLE_TYPE = pycdf.const.CDF_DOUBLE.value
@@ -123,6 +114,24 @@ TYPE_MAP = {
 
 # NOTE: There seems to be no way how to get the pad value via the pycdf API.
 TIMESTAMP_PAD_VALUE = 59958230400000.0 # 1900-01-01T00:00:00Z
+
+
+def _covert_rtp_to_nec(data):
+    return stack((-data[:, 1], +data[:, 2], -data[:, 0]), axis=1)
+
+
+def _covert_rtp_to_nec_positive(data):
+    return stack((data[:, 1], +data[:, 2], data[:, 0]), axis=1)
+
+
+DATA_CONVERSION = {
+    "B_CF": _covert_rtp_to_nec,
+    "B_OB": _covert_rtp_to_nec,
+    "B_SV": _covert_rtp_to_nec,
+    "sigma_CF": _covert_rtp_to_nec_positive,
+    "sigma_OB": _covert_rtp_to_nec_positive,
+    "sigma_SV": _covert_rtp_to_nec_positive,
+}
 
 
 class CommandError(Exception):
@@ -309,11 +318,9 @@ def _update_creator(cdf):
 def _copy_variable(cdf_dst, cdf_src, variable_src, variable_dst, index):
     raw_var = cdf_src.raw_var(variable_src)
     data = cdf_src.raw_var(variable_src)[...][index]
-    if variable_src in NEC_VARIABLES:
-        data = _covert_rtp_to_nec(data)
     cdf_dst.new(
         variable_dst,
-        data,
+        DATA_CONVERSION.get(variable_src, lambda v: v)(data),
         TYPE_MAP.get(raw_var.type(), raw_var.type()),
         dims=data.shape[1:],
         compress=GZIP_COMPRESSION,

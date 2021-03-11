@@ -213,8 +213,10 @@ def compare_variables(cdf_src, cdf_dst, time_variable, location_variables,
     for var_dst, var_src in tested_variables.items():
         data_ref = cdf_src.raw_var(var_src)[...]
         data_tested = cdf_dst.raw_var(var_dst)[...]
-        if var_dst.startswith('B_') or var_dst.startswith('sigma_'):
+        if var_dst.startswith('B_'):
             data_tested = _convert_nec_to_rtp(data_tested)
+        elif var_dst.startswith('sigma_'):
+            data_tested = _convert_nec_to_rtp_positive(data_tested)
         try:
             assert_equal(data_ref[index_src2dst], data_tested)
             assert_equal(
@@ -230,6 +232,10 @@ def compare_variables(cdf_src, cdf_dst, time_variable, location_variables,
 
 def _convert_nec_to_rtp(data):
     return stack((-data[:, 2], -data[:, 0], data[:, 1]), axis=1)
+
+
+def _convert_nec_to_rtp_positive(data):
+    return stack((data[:, 2], data[:, 0], data[:, 1]), axis=1)
 
 
 def _find_mapping(cdf_src, cdf_dst, vars_src, vars_dst):
