@@ -284,6 +284,7 @@ EOXS_PROCESSES = [
     'vires.processes.fetch_data.FetchData',
     'vires.processes.fetch_filtered_data.FetchFilteredData',
     'vires.processes.fetch_filtered_data_async.FetchFilteredDataAsync',
+    'vires.processes.fetch_fieldlines.FetchFieldlines',
     'vires.processes.list_jobs.ListJobs',
     'vires.processes.remove_job.RemoveJob',
 ]

@@ -14,5 +14,5 @@ info "Installing django-allauth ..."
 activate_venv "$OAUTH_VENV_ROOT"
 
 # 2020-11-17 NOTE: django-allauth 0.43.0 breaks the OAuth server.
-pip install $PIP_OPTIONS django-allauth==0.42.0
+pip install $PIP_OPTIONS django-allauth
 pip install $PIP_OPTIONS django-countries

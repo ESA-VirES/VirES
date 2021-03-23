@@ -111,13 +111,17 @@ def main(filename_input, filename_output):
 
 
 def repack_aux_obs(filename_input, filename_output):
-    """ Squeeze dimension of Nx1 scalar arrays."""
+    """ Repack AUX_OBS product file and squeeze dimension of Nx1 scalar arrays.
+    """
     extra_attributes = {
         "ORIGINAL_PRODUCT_NAME": splitext(basename(filename_input))[0],
     }
     with cdf_open(filename_input) as cdf_src:
         variables = find_nx1_variables(cdf_src)
-        index, ranges = get_obs_index_and_ranges(cdf_src)
+        index, ranges = get_obs_index_and_ranges(cdf_src
+            cdf_src.raw_var(TIMESTAMP_VARIABLE)[...],
+            cdf_src[OBS_CODE_VARIABLE][...][:, 0]
+        )
         extra_attributes[OBS_CODES_ATTRIBUTE] = list(ranges)
         extra_attributes[OBS_RANGES_ATTRIBUTE] = list(ranges.values())
         if variables:
@@ -127,10 +131,8 @@ def repack_aux_obs(filename_input, filename_output):
                 )
 
 
-def get_obs_index_and_ranges(cdf):
+def get_obs_index_and_ranges(times, codes):
     """ Get index sorting the arrays by observatory and time. """
-    times = cdf.raw_var(TIMESTAMP_VARIABLE)[...]
-    codes = cdf[OBS_CODE_VARIABLE][...][:, 0]
     ranges = {}
     indices = []
     offset = 0

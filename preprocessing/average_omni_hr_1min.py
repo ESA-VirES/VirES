@@ -293,7 +293,11 @@ def cdf_open(filename, mode="r"):
 
 
 if __name__ == "__main__":
-    try:
-        sys.exit(main(*parse_inputs(sys.argv)))
-    except CommandError as error:
-        print("ERROR: %s" % error, file=sys.stderr)
+    if not sys.argv[1:]:
+        usage(sys.argv[0], file=sys.stderr)
+    else:
+        try:
+            sys.exit(main(*parse_inputs(sys.argv)))
+        except CommandError as error:
+            print("ERROR: %s" % error, file=sys.stderr)
+            usage(sys.argv[0], file=sys.stderr)
