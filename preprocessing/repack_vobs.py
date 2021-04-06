@@ -27,25 +27,23 @@
 #-------------------------------------------------------------------------------
 
 import sys
-import ctypes
-from datetime import datetime #, timedelta
+from logging import getLogger
+from datetime import datetime
 from os import remove, rename
 from os.path import basename, exists, splitext
 from numpy import unique, concatenate, asarray, argsort, stack
-import spacepy
-from spacepy import pycdf
+from common import (
+    setup_logging, cdf_open, CommandError,
+    SPACEPY_NAME, SPACEPY_VERSION, LIBCDF_VERSION,
+    GZIP_COMPRESSION, GZIP_COMPRESSION_LEVEL4,
+    CDF_CHAR, CDF_REAL8, CDF_REAL4, CDF_DOUBLE, CDF_FLOAT,
+)
 
 
-GZIP_COMPRESSION = pycdf.const.GZIP_COMPRESSION
-GZIP_COMPRESSION_LEVEL4 = ctypes.c_long(4)
-GZIP_COMPRESSION_LEVEL = GZIP_COMPRESSION_LEVEL4
+LOGGER = getLogger(__name__)
 
 CDF_CREATOR = "EOX:repack_vobs.py [%s-%s, libcdf-%s]" % (
-    spacepy.__name__, spacepy.__version__,
-    "%s.%s.%s-%s" % tuple(
-        v if isinstance(v, int) else v.decode('ascii')
-        for v in pycdf.lib.version
-    )
+    SPACEPY_NAME, SPACEPY_VERSION, LIBCDF_VERSION
 )
 
 OBS_CODE_ATTRIBUTES = {
@@ -101,15 +99,9 @@ VARIABLES_SV_MAP = {
     RADIUS_VARIABLE: RADIUS_SV_VARIABLE,
 }
 
-CDF_CHAR_TYPE = pycdf.const.CDF_CHAR.value
-CDF_FLOAT_TYPE = pycdf.const.CDF_FLOAT.value
-CDF_DOUBLE_TYPE = pycdf.const.CDF_DOUBLE.value
-CDF_REAL8_TYPE = pycdf.const.CDF_REAL8.value # CDF_DOUBLE != CDF_REAL8
-CDF_REAL4_TYPE = pycdf.const.CDF_REAL4.value # CDF_FLOAT != CDF_REAL4
-
 TYPE_MAP = {
-    CDF_REAL8_TYPE: CDF_DOUBLE_TYPE,
-    CDF_REAL4_TYPE: CDF_FLOAT_TYPE,
+    CDF_REAL8: CDF_DOUBLE,
+    CDF_REAL4: CDF_FLOAT,
 }
 
 # NOTE: There seems to be no way how to get the pad value via the pycdf API.
@@ -134,8 +126,8 @@ DATA_CONVERSION = {
 }
 
 
-class CommandError(Exception):
-    """ Command error exception. """
+class ConversionSkipped(Exception):
+    """ Exception raised when the processing is skipped."""
 
 
 def usage(exename, file=sys.stderr):
@@ -155,11 +147,14 @@ def parse_inputs(argv):
         output = argv[2]
     except IndexError:
         raise CommandError("Not enough input arguments!")
-    return input_, output or input_
+    return input_, output
 
 
-def main(filename_input, filename_output):
+def main(filename_input, filename_output=None):
     """ main subroutine """
+    if filename_output is None:
+        filename_output = filename_input
+
     filename_tmp = filename_output + ".tmp.cdf"
 
     if exists(filename_tmp):
@@ -167,11 +162,10 @@ def main(filename_input, filename_output):
 
     try:
         repack_vobs(filename_input, filename_tmp)
-        if exists(filename_tmp):
-            print("%s -> %s" % (filename_input, filename_output))
-            rename(filename_tmp, filename_output)
-        else:
-            print("%s skipped" % filename_input)
+        LOGGER.info("%s -> %s", filename_input, filename_output)
+        rename(filename_tmp, filename_output)
+    except ConversionSkipped as exc:
+        LOGGER.warning("%s skipped - %s", filename_input, exc)
     finally:
         if exists(filename_tmp):
             remove(filename_tmp)
@@ -194,7 +188,7 @@ def repack_vobs(filename_input, filename_output):
 
         # skip already re-packed data
         if is_repacked(cdf_src):
-            return
+            raise ConversionSkipped("already repacked product")
 
         _, sites = extract_sites_labels(
             cdf_src[LATITUDE_VARIABLE][...],
@@ -224,13 +218,13 @@ def repack_vobs(filename_input, filename_output):
             _update_attributes(cdf_dst, extra_attributes)
             _update_creator(cdf_dst)
             _set_variable(
-                cdf_dst, OBS_CODE_VARIABLE, sites[index], CDF_CHAR_TYPE,
+                cdf_dst, OBS_CODE_VARIABLE, sites[index], CDF_CHAR,
                 OBS_CODE_ATTRIBUTES
             )
             for variable in VARIABLES:
                 _copy_variable(cdf_dst, cdf_src, variable, variable, index)
             _set_variable(
-                cdf_dst, OBS_CODE_SV_VARIABLE, sites[index_sv], CDF_CHAR_TYPE,
+                cdf_dst, OBS_CODE_SV_VARIABLE, sites[index_sv], CDF_CHAR,
                 OBS_CODE_SV_ATTRIBUTES
             )
             for variable in VARIABLES_SV:
@@ -324,7 +318,7 @@ def _copy_variable(cdf_dst, cdf_src, variable_src, variable_dst, index):
         TYPE_MAP.get(raw_var.type(), raw_var.type()),
         dims=data.shape[1:],
         compress=GZIP_COMPRESSION,
-        compress_param=GZIP_COMPRESSION_LEVEL,
+        compress_param=GZIP_COMPRESSION_LEVEL4,
     )
     cdf_dst[variable_dst].attrs.update(raw_var.attrs)
 
@@ -340,7 +334,7 @@ def _set_variable(cdf_dst, variable, data, cdf_type, attrs=None):
         cdf_type,
         dims=data.shape[1:],
         compress=GZIP_COMPRESSION,
-        compress_param=GZIP_COMPRESSION_LEVEL,
+        compress_param=GZIP_COMPRESSION_LEVEL4,
     )
     if attrs:
         cdf_dst[variable].attrs.update(attrs)
@@ -353,34 +347,10 @@ def _copy_attributes(cdf_dst, cdf_src):
     })
 
 
-def cdf_open(filename, mode="r"):
-    """ Open a new or existing  CDF file.
-    Allowed modes are 'r' (read-only) and 'w' (read-write).
-    A new CDF file is created if the 'w' mode is chosen and the file does not
-    exist.
-    The returned object is a context manager which can be used with the `with`
-    command.
-
-    NOTE: for the newly created CDF files the pycdf.CDF adds the '.cdf'
-    extension to the filename if it does not end by this extension already.
-    """
-    if mode == "r":
-        cdf = pycdf.CDF(filename)
-    elif mode == "w":
-        if exists(filename):
-            cdf = pycdf.CDF(filename)
-            cdf.readonly(False)
-        else:
-            pycdf.lib.set_backward(False) # produce CDF version 3
-            cdf = pycdf.CDF(filename, "")
-    else:
-        raise ValueError("Invalid mode value %r!" % mode)
-    return cdf
-
-
 if __name__ == "__main__":
+    setup_logging()
     try:
         sys.exit(main(*parse_inputs(sys.argv)))
     except CommandError as error:
-        print("ERROR: %s" % error, file=sys.stderr)
+        LOGGER.error("%s", error)
         usage(sys.argv[0])
