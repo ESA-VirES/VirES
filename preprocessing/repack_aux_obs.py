@@ -27,48 +27,40 @@
 #-------------------------------------------------------------------------------
 
 import sys
-import ctypes
-from datetime import datetime #, timedelta
+from logging import getLogger
+from datetime import datetime
 from os import remove, rename
 from os.path import basename, exists, splitext
-from numpy import unique, concatenate
-import spacepy
-from spacepy import pycdf
-
-
-GZIP_COMPRESSION = pycdf.const.GZIP_COMPRESSION
-GZIP_COMPRESSION_LEVEL4 = ctypes.c_long(4)
-GZIP_COMPRESSION_LEVEL = GZIP_COMPRESSION_LEVEL4
-
-CDF_CREATOR = "EOX:repack_aux_obs.py [%s-%s, libcdf-%s]" % (
-    spacepy.__name__, spacepy.__version__,
-    "%s.%s.%s-%s" % tuple(
-        v if isinstance(v, int) else v.decode('ascii')
-        for v in pycdf.lib.version
-    )
+from numpy import unique, concatenate, squeeze
+from common import (
+    setup_logging, cdf_open, CommandError,
+    SPACEPY_NAME, SPACEPY_VERSION, LIBCDF_VERSION,
+    GZIP_COMPRESSION, GZIP_COMPRESSION_LEVEL4,
+    CDF_REAL8, CDF_REAL4, CDF_DOUBLE, CDF_FLOAT,
 )
 
 
-QUALITY_VARIABLE = "Quality"
+LOGGER = getLogger(__name__)
+
+CDF_CREATOR = "EOX:repack_aux_obs.py [%s-%s, libcdf-%s]" % (
+    SPACEPY_NAME, SPACEPY_VERSION, LIBCDF_VERSION
+)
+
+
 OBS_CODE_VARIABLE = "IAGA_code"
 OBS_CODES_ATTRIBUTE = "IAGA_CODES"
 OBS_RANGES_ATTRIBUTE = "INDEX_RANGES"
 TIMESTAMP_VARIABLE = "Timestamp"
 
 
-CDF_FLOAT_TYPE = pycdf.const.CDF_FLOAT.value
-CDF_DOUBLE_TYPE = pycdf.const.CDF_DOUBLE.value
-CDF_REAL8_TYPE = pycdf.const.CDF_REAL8.value # CDF_DOUBLE != CDF_REAL8
-CDF_REAL4_TYPE = pycdf.const.CDF_REAL4.value # CDF_FLOAT != CDF_REAL4
-
 TYPE_MAP = {
-    CDF_REAL8_TYPE: CDF_DOUBLE_TYPE,
-    CDF_REAL4_TYPE: CDF_FLOAT_TYPE,
+    CDF_REAL8: CDF_DOUBLE,
+    CDF_REAL4: CDF_FLOAT,
 }
 
 
-class CommandError(Exception):
-    """ Command error exception. """
+class ConversionSkipped(Exception):
+    """ Exception raised when the processing is skipped."""
 
 
 def usage(exename, file=sys.stderr):
@@ -88,11 +80,14 @@ def parse_inputs(argv):
         output = argv[2]
     except IndexError:
         raise CommandError("Not enough input arguments!")
-    return input_, output or input_
+    return input_, output
 
 
-def main(filename_input, filename_output):
+def main(filename_input, filename_output=None):
     """ main subroutine """
+    if filename_output is None:
+        filename_output = filename_input
+
     filename_tmp = filename_output + ".tmp.cdf"
 
     if exists(filename_tmp):
@@ -100,11 +95,10 @@ def main(filename_input, filename_output):
 
     try:
         repack_aux_obs(filename_input, filename_tmp)
-        if exists(filename_tmp):
-            print("%s -> %s" % (filename_input, filename_output))
-            rename(filename_tmp, filename_output)
-        else:
-            print("%s skipped" % filename_input)
+        LOGGER.info("%s -> %s", filename_input, filename_output)
+        rename(filename_tmp, filename_output)
+    except ConversionSkipped as exc:
+        LOGGER.warning("%s skipped - %s", filename_input, exc)
     finally:
         if exists(filename_tmp):
             remove(filename_tmp)
@@ -113,22 +107,35 @@ def main(filename_input, filename_output):
 def repack_aux_obs(filename_input, filename_output):
     """ Repack AUX_OBS product file and squeeze dimension of Nx1 scalar arrays.
     """
+
+    def _does_not_need_repacking():
+        dindex = index[1:] - index[:-1]
+        is_same_order = (
+            dindex.size < 0 or (dindex.max() == 1 and dindex.min() == 1)
+        )
+        return (
+            OBS_RANGES_ATTRIBUTE in cdf_src.attrs and
+            OBS_CODES_ATTRIBUTE in cdf_src.attrs and
+            is_same_order and not bool(nx1_variables)
+        )
+
     extra_attributes = {
         "ORIGINAL_PRODUCT_NAME": splitext(basename(filename_input))[0],
     }
     with cdf_open(filename_input) as cdf_src:
-        variables = find_nx1_variables(cdf_src)
-        index, ranges = get_obs_index_and_ranges(cdf_src
+        nx1_variables = find_nx1_variables(cdf_src)
+        index, ranges = get_obs_index_and_ranges(
             cdf_src.raw_var(TIMESTAMP_VARIABLE)[...],
-            cdf_src[OBS_CODE_VARIABLE][...][:, 0]
+            squeeze(cdf_src[OBS_CODE_VARIABLE][...])
         )
+        if _does_not_need_repacking():
+            raise ConversionSkipped("repacking is not needed")
         extra_attributes[OBS_CODES_ATTRIBUTE] = list(ranges)
         extra_attributes[OBS_RANGES_ATTRIBUTE] = list(ranges.values())
-        if variables:
-            with cdf_open(filename_output, "w") as cdf_dst:
-                copy_squeezed(
-                    cdf_dst, cdf_src, variables, index, extra_attributes
-                )
+        with cdf_open(filename_output, "w") as cdf_dst:
+            copy_squeezed_and_ordered(
+                cdf_dst, cdf_src, nx1_variables, index, extra_attributes
+            )
 
 
 def get_obs_index_and_ranges(times, codes):
@@ -171,7 +178,7 @@ def find_nx1_variables(cdf):
     return variables
 
 
-def copy_squeezed(cdf_dst, cdf_src, squeezed_variables, index, attrs=None):
+def copy_squeezed_and_ordered(cdf_dst, cdf_src, squeezed_variables, index, attrs=None):
     """ Copy squeezed content from the source to the destination CDF file. """
     squeezed_variables = set(squeezed_variables)
     _copy_attributes(cdf_dst, cdf_src)
@@ -213,7 +220,7 @@ def _set_variable(cdf_dst, cdf_src, variable, data):
     raw_var = cdf_src.raw_var(variable)
     cdf_dst.new(
         variable, data, TYPE_MAP.get(raw_var.type(), raw_var.type()), dims=data.shape[1:],
-        compress=GZIP_COMPRESSION, compress_param=GZIP_COMPRESSION_LEVEL,
+        compress=GZIP_COMPRESSION, compress_param=GZIP_COMPRESSION_LEVEL4,
     )
     cdf_dst[variable].attrs.update(raw_var.attrs)
 
@@ -222,34 +229,10 @@ def _copy_attributes(cdf_dst, cdf_src):
     _update_attributes(cdf_dst, cdf_src.attrs)
 
 
-def cdf_open(filename, mode="r"):
-    """ Open a new or existing  CDF file.
-    Allowed modes are 'r' (read-only) and 'w' (read-write).
-    A new CDF file is created if the 'w' mode is chosen and the file does not
-    exist.
-    The returned object is a context manager which can be used with the `with`
-    command.
-
-    NOTE: for the newly created CDF files the pycdf.CDF adds the '.cdf'
-    extension to the filename if it does not end by this extension already.
-    """
-    if mode == "r":
-        cdf = pycdf.CDF(filename)
-    elif mode == "w":
-        if exists(filename):
-            cdf = pycdf.CDF(filename)
-            cdf.readonly(False)
-        else:
-            pycdf.lib.set_backward(False) # produce CDF version 3
-            cdf = pycdf.CDF(filename, "")
-    else:
-        raise ValueError("Invalid mode value %r!" % mode)
-    return cdf
-
-
 if __name__ == "__main__":
+    setup_logging()
     try:
         sys.exit(main(*parse_inputs(sys.argv)))
     except CommandError as error:
-        print("ERROR: %s" % error, file=sys.stderr)
+        LOGGER.error("%s", error)
         usage(sys.argv[0])

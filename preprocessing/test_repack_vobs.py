@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #-------------------------------------------------------------------------------
 #
-# Test that if the re-packed VOBS file equals to the original file.
+# Test that the re-packed VOBS file equals to the original file.
 #
 # Author: Martin Paces <martin.paces@eox.at>
 #-------------------------------------------------------------------------------
@@ -27,29 +27,15 @@
 #-------------------------------------------------------------------------------
 
 import sys
-from os.path import basename, exists
+from logging import getLogger
+from os.path import basename
 from numpy import asarray, stack, arange
-from numpy.testing import assert_equal #, assert_allclose
-from spacepy import pycdf
+from numpy.testing import assert_equal
+from common import cdf_open, setup_logging, CommandError
+from compare_cdf import compare_attributes
+from test_repack_aux_obs import verify_index_ranges
 
-
-class CommandError(Exception):
-    """ Command error exception. """
-
-
-def info(message):
-    """ Print info message. """
-    print(f"INFO: {message}")
-
-
-def warning(message):
-    """ Print warning message. """
-    print(f"WARNING: {message}")
-
-
-def error(message):
-    """ Print error message. """
-    print(f"ERROR: {message}")
+LOGGER = getLogger(__name__)
 
 
 def usage(exename, file=sys.stderr):
@@ -57,13 +43,12 @@ def usage(exename, file=sys.stderr):
     print("USAGE: %s <source-CDF> <re-packed-CDF>" % basename(exename), file=file)
     print("\n".join([
         "DESCRIPTION:",
-        "  Test the re-pack virtual observatory product against its source.",
+        "  Test a re-packed virtual observatory product against its source.",
     ]), file=file)
 
 
 def parse_inputs(argv):
     """ Parse input arguments. """
-    argv = argv + [None]
     try:
         source = argv[1]
         tested = argv[2]
@@ -74,17 +59,22 @@ def parse_inputs(argv):
 
 def main(filename_source, filename_tested):
     """ main subroutine """
-    return test_converted_vobs(filename_source, filename_tested)
+    LOGGER.info("Comparing %s to %s ...", filename_tested, filename_source)
+    result = test_converted_vobs(filename_source, filename_tested)
+    if result:
+        LOGGER.error("%s has issues!", filename_tested)
+    else:
+        LOGGER.info("%s is correct.", filename_tested)
 
 
 def test_converted_vobs(filename_source, filename_tested):
     """ Compare converted VOBS file to its source and report differences. """
-    info(f"Comparing {filename_tested} to {filename_source} ...")
     error_count = 0
     with cdf_open(filename_source) as cdf_src:
         with cdf_open(filename_tested) as cdf_tested:
-            error_count += compare_global_attributes(
-                cdf_src.attrs, cdf_tested.attrs
+            error_count += compare_attributes(
+                cdf_src.attrs, cdf_tested.attrs,
+                excluded=['ORIGINAL_PRODUCT_NAME', 'CREATOR']
             )
             error_count += compare_variables(
                 cdf_src, cdf_tested,
@@ -125,32 +115,7 @@ def test_converted_vobs(filename_source, filename_tested):
             error_count += verify_index_ranges(
                 cdf_tested, 'SiteCode_SV', 'SITE_CODES', 'INDEX_RANGES_SV'
             )
-    if error_count:
-        error(f"{filename_tested} has issues!")
-    else:
-        info(f"{filename_tested} is correct.")
     return error_count > 0
-
-
-def verify_index_ranges(cdf, site_code_variable, site_code_attribute, index_range_attribute):
-    """ Verify site index ranges. """
-    sites = list(cdf.attrs[site_code_attribute])
-    ranges = [tuple(item) for item in list(cdf.attrs[index_range_attribute])]
-
-    ref_ranges = {}
-    for idx, code in enumerate(cdf[site_code_variable][...]):
-        start, _ = ref_ranges.get(code) or (idx, None)
-        ref_ranges[code] = (start, idx + 1)
-
-    if sites != list(ref_ranges):
-        error(f"Invalid {site_code_attribute} codes!")
-        return  1
-
-    if ranges != list(ref_ranges.values()):
-        error(f"Incorrect {index_range_attribute} ranges!")
-        return  1
-
-    return 0
 
 
 def verify_site_codes(cdf, site_code_variable, latitude_variable, longitude_variable):
@@ -163,7 +128,7 @@ def verify_site_codes(cdf, site_code_variable, latitude_variable, longitude_vari
         ))
 
     if site_code_variable not in cdf:
-        error("Missing {key} variable!")
+        LOGGER.error("Missing {key} variable!")
         return 1
 
     site_codes = asarray([
@@ -174,7 +139,7 @@ def verify_site_codes(cdf, site_code_variable, latitude_variable, longitude_vari
     try:
         assert_equal(site_codes, cdf[site_code_variable][...])
     except AssertionError:
-        error(f"Invalid {site_code_variable} values detected!")
+        LOGGER.error("Invalid %s values detected!", site_code_variable)
         return 1
 
     return 0
@@ -194,11 +159,11 @@ def compare_variables(cdf_src, cdf_dst, time_variable, location_variables,
 
     if not mask_dst.all():
         error_count += 1
-        error("Impossible source to tested element mapping!")
+        LOGGER.error("Impossible source to tested element mapping!")
 
     if not mask_src.all() and not dst_is_subset_of_src:
         error_count += 1
-        error("Impossible tested to source element mapping!")
+        LOGGER.error("Impossible tested to source element mapping!")
 
     idx_src = arange(mask_src.size)
     idx_dst = arange(mask_dst.size)
@@ -207,14 +172,16 @@ def compare_variables(cdf_src, cdf_dst, time_variable, location_variables,
             (idx_dst != idx_dst[index_dst2src][index_src2dst]).any()
         ):
         error_count += 1
-        error("Ambiguous element mapping!")
+        LOGGER.error("Ambiguous element mapping!")
 
     # compare mapping
     for var_dst, var_src in tested_variables.items():
         data_ref = cdf_src.raw_var(var_src)[...]
         data_tested = cdf_dst.raw_var(var_dst)[...]
-        if var_dst.startswith('B_') or var_dst.startswith('sigma_'):
+        if var_dst.startswith('B_'):
             data_tested = _convert_nec_to_rtp(data_tested)
+        elif var_dst.startswith('sigma_'):
+            data_tested = _convert_nec_to_rtp_positive(data_tested)
         try:
             assert_equal(data_ref[index_src2dst], data_tested)
             assert_equal(
@@ -223,13 +190,17 @@ def compare_variables(cdf_src, cdf_dst, time_variable, location_variables,
             )
         except AssertionError:
             error_count += 1
-            error(f"{var_dst} values differ!")
+            LOGGER.error("%s values differ!", var_dst)
 
     return error_count
 
 
 def _convert_nec_to_rtp(data):
     return stack((-data[:, 2], -data[:, 0], data[:, 1]), axis=1)
+
+
+def _convert_nec_to_rtp_positive(data):
+    return stack((data[:, 2], data[:, 0], data[:, 1]), axis=1)
 
 
 def _find_mapping(cdf_src, cdf_dst, vars_src, vars_dst):
@@ -259,65 +230,10 @@ def _find_mapping(cdf_src, cdf_dst, vars_src, vars_dst):
     return index_src2dst, index_dst2src
 
 
-def compare_global_attributes(src_attrs, dst_attrs):
-    """ Compare global attributes. """
-    error_count = 0
-    excluded = ['ORIGINAL_PRODUCT_NAME', 'CREATOR']
-    for key in src_attrs:
-        if key in excluded:
-            continue
-
-        if key not in dst_attrs:
-            error_count += 1
-            error(f"Missing {key} global attribute!")
-            continue
-        items0 = list(src_attrs[key])
-        items1 = list(dst_attrs[key])
-        if len(items0) != len(items1):
-            error_count += 1
-            error(
-                f"Mismatch of the count of the {key} global attribute"
-                f" elements {len(items0)} != {len(items1)}"
-            )
-
-        for idx, (item0, item1) in enumerate(zip(items0, items1)):
-            if item0 != item1:
-                error_count += 1
-                error(
-                    f"Mismatch of the global attribute {key}[{idx}]!"
-                    f" {item0!r} != {item1!r}"
-                )
-    return error_count
-
-
-def cdf_open(filename, mode="r"):
-    """ Open a new or existing  CDF file.
-    Allowed modes are 'r' (read-only) and 'w' (read-write).
-    A new CDF file is created if the 'w' mode is chosen and the file does not
-    exist.
-    The returned object is a context manager which can be used with the `with`
-    command.
-
-    NOTE: for the newly created CDF files the pycdf.CDF adds the '.cdf'
-    extension to the filename if it does not end by this extension already.
-    """
-    if mode == "r":
-        cdf = pycdf.CDF(filename)
-    elif mode == "w":
-        if exists(filename):
-            cdf = pycdf.CDF(filename)
-            cdf.readonly(False)
-        else:
-            pycdf.lib.set_backward(False) # produce CDF version 3
-            cdf = pycdf.CDF(filename, "")
-    else:
-        raise ValueError("Invalid mode value %r!" % mode)
-    return cdf
-
-
 if __name__ == "__main__":
+    setup_logging()
     try:
         sys.exit(main(*parse_inputs(sys.argv)))
     except CommandError as error:
-        print("ERROR: %s" % error, file=sys.stderr)
+        LOGGER.error("%s", error)
         usage(sys.argv[0])
