@@ -28,44 +28,38 @@
 
 import re
 import sys
-import ctypes
+from logging import getLogger
 from datetime import datetime, timedelta
 from os import rename, remove
 from os.path import basename, exists
 from itertools import chain
 from numpy import (
     concatenate, full, nan, broadcast_to, array, isnan, argsort, arange,
-    #logical_or, logical_not, zeros,
 )
-import spacepy
-from spacepy import pycdf
+from common import (
+    setup_logging, cdf_open, CommandError,
+    SPACEPY_NAME, SPACEPY_VERSION, LIBCDF_VERSION,
+    GZIP_COMPRESSION, GZIP_COMPRESSION_LEVEL4,
+    CDF_EPOCH, CDF_DOUBLE, CDF_UINT1, CDF_UINT2, CDF_UINT4,
+)
 
-VERSION = "1.0.0"
+
+LOGGER = getLogger(__name__)
+
+VERSION = "1.1.0"
 RE_AEJ_PBL_2F = re.compile("^SW_OPER_AEJ[ABC]PBL_2F_")
 RE_AEJ_PBS_2F = re.compile("^SW_OPER_AEJ[ABC]PBS_2F_")
 
 MAX_TIME_SELECTION = timedelta(days=25*365.25) # max. time selection of ~25 years
 
-GZIP_COMPRESSION = pycdf.const.GZIP_COMPRESSION
-GZIP_COMPRESSION_LEVEL1 = ctypes.c_long(1)
-GZIP_COMPRESSION_LEVEL9 = ctypes.c_long(9)
-CDF_EPOCH = pycdf.const.CDF_EPOCH
-CDF_DOUBLE = pycdf.const.CDF_DOUBLE
-CDF_UINT1 = pycdf.const.CDF_UINT1
-CDF_UINT2 = pycdf.const.CDF_UINT2
-
 CDF_CREATOR = "EOX:convert_aej_bp-%s [%s-%s, libcdf-%s]" % (
-    VERSION, spacepy.__name__, spacepy.__version__,
-    "%s.%s.%s-%s" % tuple(
-        v if isinstance(v, int) else v.decode('ascii')
-        for v in pycdf.lib.version
-    )
+    VERSION, SPACEPY_NAME, SPACEPY_VERSION, LIBCDF_VERSION
 )
 
 # save variables
 COMMON_PARAM = dict(
     compress=GZIP_COMPRESSION,
-    compress_param=GZIP_COMPRESSION_LEVEL1
+    compress_param=GZIP_COMPRESSION_LEVEL4
 )
 
 # point types - bit flags
@@ -171,6 +165,11 @@ CDF_VARIABLE_ATTRIBUTES = {
         "UNITS": " ",
         "FORMAT": "Z02",
     },
+    "SourceIndex": {
+        "DESCRIPTION": "Mapping to the original product records.",
+        "UNITS": " ",
+        "FORMAT": "I6",
+    },
     "Timestamp_B": {
         "DESCRIPTION": "Time of peaks in ground magnetic field disturbance",
         "UNITS": " ",
@@ -191,11 +190,21 @@ CDF_VARIABLE_ATTRIBUTES = {
         "UNITS": "nT",
         "FORMAT": "F9.3",
     },
+    "SourceRowIndex_B": {
+        "DESCRIPTION": "Mapping to the original product ground magnetic field disturbance records.",
+        "UNITS": " ",
+        "FORMAT": "I6",
+    },
+    "SourceColIndex_B": {
+        "DESCRIPTION": "Mapping to the original product ground magnetic field disturbance columns.",
+        "UNITS": " ",
+        "FORMAT": "I1",
+    },
 }
 
 
-class CommandError(Exception):
-    """ Command error exception. """
+class ConversionSkipped(Exception):
+    """ Exception raised when the processing is skipped."""
 
 
 def usage(exename, file=sys.stderr):
@@ -215,11 +224,14 @@ def parse_inputs(argv):
         output = argv[2]
     except IndexError:
         raise CommandError("Not enough input arguments!")
-    return input_, output or input_
+    return input_, output
 
 
-def main(filename_input, filename_output):
+def main(filename_input, filename_output=None):
     """ main subroutine """
+    if filename_output is None:
+        filename_output = filename_input
+
     filename_tmp = filename_output + ".tmp.cdf"
 
     if exists(filename_tmp):
@@ -227,11 +239,10 @@ def main(filename_input, filename_output):
 
     try:
         convert_aej_pb(filename_input, filename_tmp)
-        if exists(filename_tmp):
-            print("%s -> %s" % (filename_input, filename_output))
-            rename(filename_tmp, filename_output)
-        else:
-            print("%s skipped" % filename_input)
+        LOGGER.info("%s -> %s", filename_input, filename_output)
+        rename(filename_tmp, filename_output)
+    except ConversionSkipped as exc:
+        LOGGER.warning("%s skipped - %s", filename_input, exc)
     finally:
         if exists(filename_tmp):
             remove(filename_tmp)
@@ -243,17 +254,17 @@ def convert_aej_pb(filename_input, filename_output):
     with cdf_open(filename_input) as cdf_src:
 
         # detect product type
-        file_name_attr = str(cdf_src.attrs.get("File_Name", ""))
+        file_name_attr = basename(str(cdf_src.attrs.get("File_Name", "")))
         if RE_AEJ_PBL_2F.match(file_name_attr):
             convert_func = convert_cdf_aej_pbl_2f
         elif RE_AEJ_PBS_2F.match(file_name_attr):
             convert_func = convert_cdf_aej_pbs_2f
         else:
-            return
+            raise ConversionSkipped("not a AEJxPB*_2F product")
 
         # check if the file has been already processed
         if str(cdf_src.attrs.get("File_Type", "")).endswith(":VirES"):
-            return
+            raise ConversionSkipped("already converted product")
 
         # convert product
         with cdf_open(filename_output, "w") as cdf_dst:
@@ -288,7 +299,7 @@ def _set_variable_attrs(cdf_dst):
 def _set_file_type(cdf_dst):
     cdf_dst.attrs["File_Type"] = (
         str(cdf_dst.attrs.get("File_Type", "")) or
-        str(cdf_dst.attrs["File_Name"])[8:18]
+        basename(str(cdf_dst.attrs["File_Name"]))[8:18]
     ) + ":VirES"
 
 
@@ -297,6 +308,10 @@ def _convert_cdf_aej_pbs_b(cdf_dst, cdf_src):
     lat = _merge_data(cdf_src, ['Latitude_B'])
     lon = _merge_data(cdf_src, ['Longitude_B'])
     b_ne = _merge_data(cdf_src, ['B'])
+    row_mapping = concatenate([arange(cdf_src['B'].shape[0])] * 2)
+    col_mapping = concatenate([
+        full(cdf_src['B'].shape[0], 0), full(cdf_src['B'].shape[0], 1)
+    ])
 
     # sort data by time
     idx = argsort(time)
@@ -306,10 +321,11 @@ def _convert_cdf_aej_pbs_b(cdf_dst, cdf_src):
     cdf_dst.new("Latitude_B", lat[idx], CDF_DOUBLE, **COMMON_PARAM)
     cdf_dst.new("Longitude_B", lon[idx], CDF_DOUBLE, **COMMON_PARAM)
     cdf_dst.new("B", b_ne[idx], CDF_DOUBLE, **COMMON_PARAM)
+    cdf_dst.new("SourceRowIndex_B", row_mapping[idx], CDF_UINT4, **COMMON_PARAM)
+    cdf_dst.new("SourceColIndex_B", col_mapping[idx], CDF_UINT1, **COMMON_PARAM)
 
 
 def _convert_cdf_aej_pb_common(cdf_dst, cdf_src, j_variable):
-    # data
     time = _merge_data(
         cdf_src, ['t_EB', 't_PB', 't_Peak']
     )
@@ -338,9 +354,9 @@ def _convert_cdf_aej_pb_common(cdf_dst, cdf_src, j_variable):
         full(cdf_src['t_PB'].shape, nan),
         cdf_src[j_variable][...],
     ])
-    flags = concatenate([
-        cdf_src['Flags' if 'Flags' in cdf_src else 'FLags'][...]
-    ] * 6)
+
+    flags = concatenate([cdf_src['Flags'][...]] * 6)
+    row_mapping = concatenate([arange(cdf_src['Flags'].shape[0])] * 6)
 
     # filter out invalid locations
     #idx = logical_not(logical_or(isnan(lat), isnan(lon))).nonzero()[0]
@@ -360,9 +376,10 @@ def _convert_cdf_aej_pb_common(cdf_dst, cdf_src, j_variable):
     cdf_dst.new("Latitude_QD", lat_qd[idx], CDF_DOUBLE, **COMMON_PARAM)
     cdf_dst.new("Longitude_QD", lon_qd[idx], CDF_DOUBLE, **COMMON_PARAM)
     cdf_dst.new("MLT", mlt[idx], CDF_DOUBLE, **COMMON_PARAM)
-    cdf_dst.new("Flags", flags[idx], CDF_UINT1, **COMMON_PARAM)
-    cdf_dst.new("PointType", point_type[idx], CDF_UINT2, **COMMON_PARAM)
+    cdf_dst.new("Flags", flags[idx], CDF_UINT2, **COMMON_PARAM)
+    cdf_dst.new("PointType", point_type[idx], CDF_UINT1, **COMMON_PARAM)
     cdf_dst.new(CDF_VARIABLE_MAP[j_variable], j__[idx], CDF_DOUBLE, **COMMON_PARAM)
+    cdf_dst.new("SourceIndex", row_mapping[idx], CDF_UINT4, **COMMON_PARAM)
 
 
 def _tag_segment_end(idx, point_type):
@@ -420,7 +437,7 @@ def _reorder_peaks_and_boundaries(idx_in, time, point_type, qdlat):
                             _move_after(buf, (WEJ_EB, WEJ_PB))
                             _move_after(buf, (PEAK_MIN,))
                 else:
-                    print("WARNING: misplaced EEJ boundary at %s!" % time[idx])
+                    LOGGER.warning("misplaced EEJ boundary at %s!", time[idx])
 
             elif ptype == PEAK_MAX:
                 if eej_flag is None and len(buf) > 1:
@@ -441,7 +458,7 @@ def _reorder_peaks_and_boundaries(idx_in, time, point_type, qdlat):
                             _move_after(buf, (EEJ_EB, EEJ_PB))
                             _move_after(buf, (PEAK_MAX,))
                 else:
-                    print("WARNING: misplaced WEJ boundary at %s!" % time[idx])
+                    LOGGER.warning("misplaced WEJ boundary at %s!", time[idx])
 
             elif ptype == PEAK_MIN:
                 if wej_flag is None and len(buf) > 1:
@@ -483,34 +500,10 @@ def _copy_attributes(cdf_dst, cdf_src):
     cdf_dst.attrs.update(cdf_src.attrs)
 
 
-def cdf_open(filename, mode="r"):
-    """ Open a new or existing  CDF file.
-    Allowed modes are 'r' (read-only) and 'w' (read-write).
-    A new CDF file is created if the 'w' mode is chosen and the file does not
-    exist.
-    The returned object is a context manager which can be used with the `with`
-    command.
-
-    NOTE: for the newly created CDF files the pycdf.CDF adds the '.cdf'
-    extension to the filename if it does not end by this extension already.
-    """
-    if mode == "r":
-        cdf = pycdf.CDF(filename)
-    elif mode == "w":
-        if exists(filename):
-            cdf = pycdf.CDF(filename)
-            cdf.readonly(False)
-        else:
-            pycdf.lib.set_backward(False) # produce CDF version 3
-            cdf = pycdf.CDF(filename, "")
-    else:
-        raise ValueError("Invalid mode value %r!" % mode)
-    return cdf
-
-
 if __name__ == "__main__":
+    setup_logging()
     try:
         sys.exit(main(*parse_inputs(sys.argv)))
     except CommandError as error:
-        print("ERROR: %s" % error, file=sys.stderr)
+        LOGGER.error("%s", error)
         usage(sys.argv[0])

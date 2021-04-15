@@ -28,31 +28,29 @@
 # THE SOFTWARE.
 #-------------------------------------------------------------------------------
 
-from __future__ import print_function
 import sys
-import ctypes
+from logging import getLogger
 from datetime import datetime, timedelta
 from os import rename, remove
 from os.path import basename, exists
-import spacepy
-from spacepy import pycdf
+from common import (
+    setup_logging, cdf_open, CommandError,
+    SPACEPY_NAME, SPACEPY_VERSION, LIBCDF_VERSION,
+    GZIP_COMPRESSION, GZIP_COMPRESSION_LEVEL4,
+)
+
+
+LOGGER = getLogger()
 
 MAX_TIME_SELECTION = timedelta(days=25*365.25) # max. time selection of ~25 years
 
-GZIP_COMPRESSION = pycdf.const.GZIP_COMPRESSION
-GZIP_COMPRESSION_LEVEL1 = ctypes.c_long(1)
-GZIP_COMPRESSION_LEVEL9 = ctypes.c_long(9)
 CDF_CREATOR = "EOX:fix_efi_lp_u_orbit.py [%s-%s, libcdf-%s]" % (
-    spacepy.__name__, spacepy.__version__,
-    "%s.%s.%s-%s" % tuple(
-        v if isinstance(v, int) else v.decode('ascii')
-        for v in pycdf.lib.version
-    )
+    SPACEPY_NAME, SPACEPY_VERSION, LIBCDF_VERSION
 )
 
-class CommandError(Exception):
-    """ Command error exception. """
-    pass
+
+class ConversionSkipped(Exception):
+    """ Exception raised when the processing is skipped."""
 
 
 def usage(exename, file=sys.stderr):
@@ -77,11 +75,14 @@ def parse_inputs(argv):
         output = argv[2]
     except IndexError:
         raise CommandError("Not enough input arguments!")
-    return input_, output or input_
+    return input_, output
 
 
-def main(filename_input, filename_output):
+def main(filename_input, filename_output=None):
     """ main subroutine """
+    if filename_output is None:
+        filename_output = filename_input
+
     filename_tmp = filename_output + ".tmp.cdf"
 
     if exists(filename_tmp):
@@ -89,11 +90,10 @@ def main(filename_input, filename_output):
 
     try:
         fix_efi_lp(filename_input, filename_tmp)
-        if exists(filename_tmp):
-            print("%s -> %s" % (filename_input, filename_output))
-            rename(filename_tmp, filename_output)
-        else:
-            print("%s skipped" % filename_input)
+        LOGGER.info("%s -> %s", filename_input, filename_output)
+        rename(filename_tmp, filename_output)
+    except ConversionSkipped as exc:
+        LOGGER.warning("%s skipped - %s", filename_input, exc)
     finally:
         if exists(filename_tmp):
             remove(filename_tmp)
@@ -139,7 +139,7 @@ def _set_variable(cdf_dst, cdf_src, variable, data):
     raw_var = cdf_src.raw_var(variable)
     cdf_dst.new(
         variable, data, raw_var.type(), dims=data.shape[1:],
-        compress=GZIP_COMPRESSION, compress_param=GZIP_COMPRESSION_LEVEL1,
+        compress=GZIP_COMPRESSION, compress_param=GZIP_COMPRESSION_LEVEL4,
     )
     cdf_dst[variable].attrs.update(raw_var.attrs)
 
@@ -148,34 +148,10 @@ def _copy_attributes(cdf_dst, cdf_src):
     cdf_dst.attrs.update(cdf_src.attrs)
 
 
-def cdf_open(filename, mode="r"):
-    """ Open a new or existing  CDF file.
-    Allowed modes are 'r' (read-only) and 'w' (read-write).
-    A new CDF file is created if the 'w' mode is chosen and the file does not
-    exist.
-    The returned object is a context manager which can be used with the `with`
-    command.
-
-    NOTE: for the newly created CDF files the pycdf.CDF adds the '.cdf'
-    extension to the filename if it does not end by this extension already.
-    """
-    if mode == "r":
-        cdf = pycdf.CDF(filename)
-    elif mode == "w":
-        if exists(filename):
-            cdf = pycdf.CDF(filename)
-            cdf.readonly(False)
-        else:
-            pycdf.lib.set_backward(False) # produce CDF version 3
-            cdf = pycdf.CDF(filename, "")
-    else:
-        raise ValueError("Invalid mode value %r!" % mode)
-    return cdf
-
-
 if __name__ == "__main__":
+    setup_logging()
     try:
         sys.exit(main(*parse_inputs(sys.argv)))
     except CommandError as error:
-        print("ERROR: %s" % error, file=sys.stderr)
+        LOGGER.error("%s", error)
         usage(sys.argv[0])
