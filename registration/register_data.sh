@@ -12,6 +12,7 @@ chmod 0755 ~/
 
 $MNG product_type import --default
 $MNG product_collection import --default
+$MNG product deregister --invalid
 
 [ -f "$PWD/Dst_MJD_1998.dat" ] || wget 'ftp://ftp.gfz-potsdam.de/pub/incoming/champ_payload/Nils/Dst_MJD_1998.dat' -O "$PWD/Dst_MJD_1998.dat"
 [ -f "$PWD/Kp_MJD_1998_QL.dat" ] || wget 'ftp://ftp.gfz-potsdam.de/pub/incoming/champ_payload/Nils/Kp_MJD_1998_QL.dat' -O "$PWD/Kp_MJD_1998_QL.dat"
@@ -128,7 +129,15 @@ done
 for TYPE in 1M 4M
 do
     COLLECTION="SW_OPER_VOBS_${TYPE}_2_"
-    find "$DATA_DIR" -type f -name "SW_OPER_VOBS_${TYPE}_2_*.cdf" | sort \
+    find "$DATA_DIR" -type f -name "${COLLECTION}*\.cdf" | sort \
+    | $MNG product register -c "$COLLECTION" -f - --update
+done
+
+TYPE=4M
+for MISSION in CH CO CR OR
+do
+    COLLECTION="${MISSION}_OPER_VOBS_${TYPE}_2_"
+    find "$DATA_DIR" -type f -name "${COLLECTION}*\.cdf" | sort \
     | $MNG product register -c "$COLLECTION" -f - --update
 done
 
