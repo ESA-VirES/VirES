@@ -182,6 +182,11 @@ def test_converted_mit_lp(cdf_src, cdf_dst):
             "Position_Quality_ID",
         ]
     )
+    error_count += _compare_mapped_variables(
+        cdf_dst, row_index, variables={
+            "Counter_ID": "Counter",
+        }
+    )
     error_count += _check_point_type(
         cdf_dst, col_index, "PointType_ID",
         point_types=[
@@ -253,6 +258,11 @@ def test_converted_mit_tec(cdf_src, cdf_dst):
             "Position_Quality_ID",
         ]
     )
+    error_count += _compare_mapped_variables(
+        cdf_dst, row_index, variables={
+            "Counter_ID": "Counter",
+        }
+    )
     error_count += _check_point_type(
         cdf_dst, col_index, "PointType_ID",
         point_types=[
@@ -315,6 +325,11 @@ def test_converted_ppi_fac(cdf_src, cdf_dst):
             "SZA_ID",
             "Position_Quality_ID",
         ]
+    )
+    error_count += _compare_mapped_variables(
+        cdf_dst, row_index, variables={
+            "Counter_ID": "Counter",
+        }
     )
     error_count += _check_point_type(
         cdf_dst, col_index, "PointType_ID",
@@ -400,8 +415,22 @@ def _compare_packed_variables(cdf_src, cdf_dst, mask_src, row_index, col_index,
             variable, cdf_src.raw_var(variable), cdf_dst.raw_var(variable),
             mask_src, row_index, col_index
         )
+    return error_count
 
 
+def _compare_mapped_variables(cdf_dst, row_index, variables):
+    error_count = 0
+    for variable_dst, variable_src in variables.items():
+        if variable_dst not in cdf_dst:
+            error_count += 1
+            LOGGER.error("Missing %s CDF variable!", variable_dst)
+            continue
+        error_count += _compare_mapped_variable(
+            variable_dst,
+            cdf_dst.raw_var(variable_src),
+            cdf_dst.raw_var(variable_dst),
+            row_index
+        )
     return error_count
 
 
@@ -462,6 +491,28 @@ def _check_point_type(cdf_dst, col_index, name, point_types):
         LOGGER.error("Wrong %s values!", name)
         return 1
     return 0
+
+
+def _compare_mapped_variable(name, var_src, var_dst, row_index):
+
+    error_count = compare_attributes(
+        var_src.attrs, var_dst.attrs, "%s variable" % name
+    )
+
+    if var_src.type() != var_dst.type():
+        LOGGER.error(
+            "%s data type mismatch! %s != %s", name,
+            CDF_TYPE_LABEL[var_src.type()], CDF_TYPE_LABEL[var_dst.type()],
+        )
+        return error_count + 1
+
+    try:
+        assert_equal(var_src[...][row_index], var_dst[...])
+    except AssertionError:
+        error_count += 1
+        LOGGER.error("%s values differ!", name)
+
+    return error_count
 
 
 def _compare_packed_variable(name, var_src, var_dst, mask_src,

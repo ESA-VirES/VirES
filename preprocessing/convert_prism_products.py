@@ -214,6 +214,9 @@ def convert_mit_lp(cdf_dst, cdf_src):
         "Quality",
     ])
     index, row_mapping, col_mapping = _get_unpacked_index(cdf_src)
+    _copy_mapped_variables(cdf_dst, cdf_src, row_mapping=row_mapping, variables={
+        "Counter_ID": "Counter",
+    })
     _copy_packed_variables(cdf_dst, cdf_src, index=index, variables=[
         "Timestamp_ID",
         "Latitude_ID",
@@ -269,6 +272,9 @@ def convert_mit_tec(cdf_dst, cdf_src):
         "Quality",
     ])
     index, row_mapping, col_mapping = _get_unpacked_index(cdf_src)
+    _copy_mapped_variables(cdf_dst, cdf_src, row_mapping=row_mapping, variables={
+        "Counter_ID": "Counter",
+    })
     _copy_packed_variables(cdf_dst, cdf_src, index=index, variables=[
         "Timestamp_ID",
         "Latitude_ID",
@@ -316,6 +322,9 @@ def convert_ppi_fac(cdf_dst, cdf_src):
         "Quality",
     ])
     index, row_mapping, col_mapping = _get_unpacked_index(cdf_src)
+    _copy_mapped_variables(cdf_dst, cdf_src, row_mapping=row_mapping, variables={
+        "Counter_ID": "Counter",
+    })
     _copy_packed_variables(cdf_dst, cdf_src, index=index, variables=[
         "Timestamp_ID",
         "Latitude_ID",
@@ -423,6 +432,21 @@ def _copy_packed_variable(cdf_dst, cdf_src, variable, index):
     _save_variable(
         cdf_dst, variable, raw_var.type(),
         raw_var[...].flatten()[index], raw_var.attrs,
+    )
+
+
+def _copy_mapped_variables(cdf_dst, cdf_src, variables, row_mapping):
+    for variable_dst, variable_src in variables.items():
+        _copy_mapped_variable(
+            cdf_dst, cdf_src, variable_src, variable_dst, row_mapping
+        )
+
+
+def _copy_mapped_variable(cdf_dst, cdf_src, variable_src, variable_dst, row_mapping):
+    raw_var = cdf_src.raw_var(variable_src)
+    _save_variable(
+        cdf_dst, variable_dst, raw_var.type(),
+        raw_var[...][row_mapping], raw_var.attrs,
     )
 
 
