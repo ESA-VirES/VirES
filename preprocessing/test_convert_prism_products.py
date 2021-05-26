@@ -31,7 +31,7 @@ import sys
 import re
 from logging import getLogger
 from os.path import basename
-from numpy import inf, zeros, empty, asarray
+from numpy import isnan, inf, zeros, empty, asarray
 from numpy.testing import assert_equal
 from common import (
     setup_logging, CommandError, CDF_TYPE_LABEL, cdf_open
@@ -348,7 +348,13 @@ def _load_masks(cdf_src, cdf_dst):
 
     # extract reference data mask
     try:
-        mask_src = cdf_src.raw_var("Position_Quality_ID")[...] != PQ_NOT_DEFINED
+        # NOTE: the Position_Quality_ID is not reliable to filter out invalid records
+        #mask_src = cdf_src.raw_var("Position_Quality_ID")[...] != PQ_NOT_DEFINED
+        mask_src = ~(
+            isnan(cdf_src.raw_var("Latitude_ID")[...]) |
+            isnan(cdf_src.raw_var("Longitude_ID")[...]) |
+            isnan(cdf_src.raw_var("Radius_ID")[...])
+        )
     except KeyError as variable:
         LOGGER.error("Missing %s source CDF variable!", variable)
         raise TestError

@@ -32,7 +32,7 @@ from logging import getLogger
 from datetime import datetime
 from os import rename, remove
 from os.path import basename, exists
-from numpy import asarray, argsort, arange
+from numpy import asarray, argsort, arange, isnan
 from numpy.lib.stride_tricks import as_strided
 from common import (
     setup_logging, cdf_open, CommandError,
@@ -394,7 +394,14 @@ def _get_unpacked_index(cdf_src):
     quality = cdf_src.raw_var("Position_Quality_ID")[...].flatten()
     row_mapping, col_mapping = _get_row_col_mapping(nrow, ncol)
     index = argsort(times)
-    index = index[quality[index] != PQ_NOT_DEFINED]
+    # NOTE: the Position_Quality_ID is not reliable to filter out invalid records
+    #index = index[quality[index] != PQ_NOT_DEFINED]
+    mask = ~(
+        isnan(cdf_src.raw_var("Latitude_ID")[...].flatten()[index]) |
+        isnan(cdf_src.raw_var("Longitude_ID")[...].flatten()[index]) |
+        isnan(cdf_src.raw_var("Radius_ID")[...].flatten()[index])
+    )
+    index = index[mask]
     return index, row_mapping[index], col_mapping[index]
 
 
