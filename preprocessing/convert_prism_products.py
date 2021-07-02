@@ -236,9 +236,9 @@ def convert_mit_lp(cdf_dst, cdf_src):
         0b001, # LP MIT poleward edge of the equatorward wall
         0b010, # LP MIT equatorward edge of poleward wall
         0b011, # LP MIT poleward edge of the poleward boundary
-        0b100, # LP SETE equatorward bounding position
-        0b101, # LP SETE poleward bounding position
+        0b100, # LP Te equatorward bounding position
         0b110, # LP Te peak position
+        0b101, # LP Te poleward bounding position
     ], product_type="MITxTEC_2F")
     _save_row_col_mapping(cdf_dst, row_mapping, col_mapping)
     _add_time_extent_attribute(cdf_dst, ["Timestamp", "Timestamp_ID"])

@@ -194,9 +194,9 @@ def test_converted_mit_lp(cdf_src, cdf_dst):
             0b001, # LP MIT poleward edge of the equatorward wall
             0b010, # LP MIT equatorward edge of poleward wall
             0b011, # LP MIT poleward edge of the poleward boundary
-            0b100, # LP SETE equatorward bounding position
-            0b101, # LP SETE poleward bounding position
+            0b100, # LP Te equatorward bounding position
             0b110, # LP Te peak position
+            0b101, # LP Te poleward bounding position
         ]
     )
     error_count += _check_time_extent(cdf_src, cdf_dst, mask_src)
