@@ -32,6 +32,7 @@ from logging import getLogger, DEBUG, StreamHandler, Formatter
 from os.path import exists
 import spacepy
 from spacepy import pycdf
+from numpy import asarray
 
 SPACEPY_NAME = spacepy.__name__
 SPACEPY_VERSION = spacepy.__version__
@@ -129,3 +130,35 @@ def cdf_open(filename, mode="r"):
     else:
         raise ValueError("Invalid mode value %r!" % mode)
     return cdf
+
+
+class CdfTypeDummy():
+    """ CDF dummy type conversions. """
+
+    @staticmethod
+    def decode(values):
+        """ Pass trough and do nothing. """
+        return values
+
+    @staticmethod
+    def encode(values):
+        """ Pass trough and do nothing. """
+        return values
+
+
+class CdfTypeEpoch():
+    """ CDF Epoch Time type conversions. """
+    CDF_EPOCH_1970 = 62167219200000.0
+
+    @classmethod
+    def decode(cls, cdf_raw_time):
+        """ Convert CDF raw time to datetime64[ms]. """
+        return asarray(
+            cdf_raw_time - cls.CDF_EPOCH_1970
+        ).astype('datetime64[ms]')
+
+    @classmethod
+    def encode(cls, time):
+        """ Convert datetime64[ms] to CDF raw time. """
+        time = asarray(time, 'datetime64[ms]').astype('int64')
+        return time + cls.CDF_EPOCH_1970
