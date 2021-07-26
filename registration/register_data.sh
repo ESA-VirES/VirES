@@ -70,8 +70,15 @@ find "$DATA_DIR" -type f -name "SW_OPER_AUX_IMF_2_*.DBL" | sort \
 
 for SAT in A B C
 do
-    COLLECTION="SW_OPER_MAG${SAT}_LR_1B"
+    COLLECTION="SW_OPER_MOD${SAT}_SC_1B"
     # product registration including update of the orbit direction lookup tables
+    find "$DATA_DIR" -type f -name "${COLLECTION}_*\.cdf" | sort \
+    | $MNG product register -c "$COLLECTION" -f - --update
+done
+
+for SAT in A B C
+do
+    COLLECTION="SW_OPER_MAG${SAT}_LR_1B"
     find "$DATA_DIR" -type f -name "SW_OPER_MAG${SAT}*MDR_MAG_LR.cdf" | sort \
     | $MNG product register -c "$COLLECTION" -f - --update
 done
