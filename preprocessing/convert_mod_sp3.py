@@ -27,12 +27,13 @@
 #-------------------------------------------------------------------------------
 # pylint: disable=missing-docstring
 
+import re
 import sys
 from logging import getLogger
 from datetime import datetime
 from os import rename, remove
 from os.path import basename, splitext, exists
-from numpy import asarray, timedelta64
+from numpy import asarray, datetime64, timedelta64
 from eoxmagmod import convert, GEOCENTRIC_CARTESIAN, GEOCENTRIC_SPHERICAL
 from common import (
     setup_logging, cdf_open, CommandError,
@@ -80,6 +81,16 @@ CDF_VARIABLE_ATTRIBUTES = {
     },
 }
 
+RE_PRODUCT_ID = re.compile(
+    r'^[A-Z0-9_]+_(\d{8,8}T\d{6,6})_(\d{8,8}T\d{6,6})_[A-Z0-9_]+$'
+)
+
+RE_TIMESTAMP = re.compile(
+    r'^(?P<year>\d{4,4})(?P<month>\d{2,2})(?P<day>\d{2,2})T'
+    r'(?P<hour>\d{2,2})(?P<minute>\d{2,2})(?P<second>\d{2,2})'
+)
+
+
 def usage(exename, file=sys.stderr):
     """ Print usage. """
     print("USAGE: %s <input SP3> <output CDF>" % basename(exename), file=file)
@@ -120,6 +131,9 @@ def main(filename_input, filename_output):
 
 
 def convert_mod_sp3_product(filename_sp3, filename_cdf):
+    product_id = splitext(basename(filename_sp3))[0]
+    time_start, time_end = extract_time_range(product_id)
+
     header, time_gps, position_cart = read_sp3_data(filename_sp3)
 
     position_sph = convert(
@@ -142,8 +156,23 @@ def convert_mod_sp3_product(filename_sp3, filename_cdf):
 
     time_utc = time_gps - timedelta64(utc_to_gps_offset, 's')
 
+    # subset trimming times to stay within the product's nominal time extent
+    selection = (time_utc >= time_start) & (time_utc < time_end)
+
+    if not selection.all():
+        LOGGER.warn(
+            f"{basename(filename_sp3)}: The content of the product "
+            f"({datetime64(time_utc.min(), 's')}/"
+            f"{datetime64(time_utc.max(), 's')}) "
+            "exceeds the nominal temporal extent of the product "
+            f"({datetime64(time_start, 's')}/"
+            f"{datetime64(time_end, 's') - timedelta64(1, 's')}) "
+            "and it will be trimmed."
+        )
+        time_utc = time_utc[selection]
+        position_sph = position_sph[selection]
+
     with cdf_open(filename_cdf, "w") as cdf:
-        product_id = splitext(basename(filename_sp3))[0]
         cdf.attrs.update({
             "TITLE": product_id,
             "ORIGINAL_PRODUCT_NAME": product_id,
@@ -163,6 +192,26 @@ def convert_mod_sp3_product(filename_sp3, filename_cdf):
         _save_cdf_variable(cdf, 'Latitude', CDF_DOUBLE, position_sph[:, 0])
         _save_cdf_variable(cdf, 'Longitude', CDF_DOUBLE, position_sph[:, 1])
         _save_cdf_variable(cdf, 'Radius', CDF_DOUBLE, position_sph[:, 2])
+
+
+def extract_time_range(product_id):
+
+    def _parse_timestamp(timestamp):
+        match = RE_TIMESTAMP.match(timestamp)
+        if not match:
+            raise ValueError(f"Invalid product timestamp {timestamp}!")
+        return datetime64(
+            "{year}-{month}-{day}T{hour}:{minute}:{second}"
+            "".format(**match.groupdict()), 'ms'
+        )
+
+    match = RE_PRODUCT_ID.match(product_id)
+    if not match:
+        raise ValueError(f"Invalid product id {product_id}!")
+
+    start, end = [_parse_timestamp(item) for item in match.groups()]
+
+    return start, end + timedelta64(1000, 'ms')
 
 
 def _save_cdf_variable(cdf, variable, cdf_type, data, attrs=None):

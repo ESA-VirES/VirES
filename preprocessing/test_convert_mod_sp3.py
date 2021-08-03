@@ -27,10 +27,11 @@
 #-------------------------------------------------------------------------------
 # pylint: disable=missing-docstring
 
+import re
 import sys
 from logging import getLogger
 from os.path import basename, splitext
-from numpy import asarray, timedelta64, stack
+from numpy import asarray, datetime64, timedelta64, stack
 from numpy.testing import assert_equal, assert_allclose
 from eoxmagmod import convert, GEOCENTRIC_CARTESIAN, GEOCENTRIC_SPHERICAL
 from common import (
@@ -41,6 +42,15 @@ from sp3_reader import read_sp3, GPS_TO_TAI_OFFSET
 from leap_seconds import LeapSeconds
 
 LOGGER = getLogger(__name__)
+
+RE_PRODUCT_ID = re.compile(
+    r'^[A-Z0-9_]+_(\d{8,8}T\d{6,6})_(\d{8,8}T\d{6,6})_[A-Z0-9_]+$'
+)
+
+RE_TIMESTAMP = re.compile(
+    r'^(?P<year>\d{4,4})(?P<month>\d{2,2})(?P<day>\d{2,2})T'
+    r'(?P<hour>\d{2,2})(?P<minute>\d{2,2})(?P<second>\d{2,2})'
+)
 
 
 class TestError(Exception):
@@ -79,6 +89,8 @@ def main(filename_source, filename_tested):
 
 
 def test_converted_mod_sp3_product(filename_sp3, filename_cdf):
+    product_id = splitext(basename(filename_sp3))[0]
+    time_start, time_end = extract_time_range(product_id)
 
     sp3_header, time_gps, position_cart = read_sp3_data(filename_sp3)
 
@@ -89,7 +101,7 @@ def test_converted_mod_sp3_product(filename_sp3, filename_cdf):
     error_count = 0
     with cdf_open(filename_cdf) as cdf:
         error_count += test_metadata(cdf, filename_sp3, sp3_header, leap_seconds)
-        error_count += test_data(cdf, time_gps, position_cart)
+        error_count += test_data(cdf, time_gps, position_cart, time_start, time_end)
 
     return error_count
 
@@ -138,12 +150,15 @@ def test_metadata(cdf, filename_sp3, sp3_header, leap_seconds):
     return error_count
 
 
-def test_data(cdf, time_gps_ref, position_cart_ref):
+def test_data(cdf, time_gps_ref, position_cart_ref, time_start, time_end):
     """ Test CDF content. """
-    utc_to_gps_offset = cdf.attrs['UTC_TIME_OFFSET'][0]
+    utc_to_gps_offset = timedelta64(cdf.attrs['UTC_TIME_OFFSET'][0], 's')
+
+    time_start_gps = time_start + utc_to_gps_offset
+    time_end_gps = time_end + utc_to_gps_offset
+
     time_gps = (
-        CdfTypeEpoch.decode(cdf.raw_var('Timestamp')[...])
-        + timedelta64(utc_to_gps_offset, 's')
+        CdfTypeEpoch.decode(cdf.raw_var('Timestamp')[...]) + utc_to_gps_offset
     )
     position_cart = convert(
         stack((
@@ -155,17 +170,19 @@ def test_data(cdf, time_gps_ref, position_cart_ref):
         GEOCENTRIC_CARTESIAN,
     )
 
+    mask = (time_gps_ref >= time_start_gps) & (time_gps_ref < time_end_gps)
+
     error_count = 0
 
     try:
-        assert_equal(time_gps, time_gps_ref)
+        assert_equal(time_gps, time_gps_ref[mask])
     except AssertionError as error:
         error_count += 1
         LOGGER.error("Timestamp values differ! %s", error)
 
     try:
         assert_allclose(
-            position_cart, position_cart_ref, rtol=0, atol=1e-9,
+            position_cart, position_cart_ref[mask], rtol=0, atol=1e-9,
         )
     except AssertionError as error:
         error_count += 1
@@ -186,6 +203,26 @@ def read_sp3_data(filename_sp3):
         asarray(times, 'datetime64[ms]'),
         asarray(positions, 'float64'),
     )
+
+
+def extract_time_range(product_id):
+
+    def _parse_timestamp(timestamp):
+        match = RE_TIMESTAMP.match(timestamp)
+        if not match:
+            raise ValueError(f"Invalid product timestamp {timestamp}!")
+        return datetime64(
+            "{year}-{month}-{day}T{hour}:{minute}:{second}"
+            "".format(**match.groupdict()), 'ms'
+        )
+
+    match = RE_PRODUCT_ID.match(product_id)
+    if not match:
+        raise ValueError(f"Invalid product id {product_id}!")
+
+    start, end = [_parse_timestamp(item) for item in match.groups()]
+
+    return start, end + timedelta64(1000, 'ms')
 
 
 if __name__ == "__main__":
