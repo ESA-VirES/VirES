@@ -42,8 +42,6 @@ from common import (
 
 LOGGER = getLogger()
 
-MAX_TIME_SELECTION = timedelta(days=25*365.25) # max. time selection of ~25 years
-
 CDF_CREATOR = "EOX:fix_efi_lp_u_orbit.py [%s-%s, libcdf-%s]" % (
     SPACEPY_NAME, SPACEPY_VERSION, LIBCDF_VERSION
 )
@@ -105,6 +103,8 @@ def fix_efi_lp(filename_input, filename_output):
         if "U_orbit" in cdf_src and cdf_src["U_orbit"].shape[1:] == (1,):
             with cdf_open(filename_output, "w") as cdf_dst:
                 copy_fixed_efi_lp(cdf_dst, cdf_src)
+        else:
+            raise ConversionSkipped("U_orbit has already the correct dimension.")
 
 
 def copy_fixed_efi_lp(cdf_dst, cdf_src):

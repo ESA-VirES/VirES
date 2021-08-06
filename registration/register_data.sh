@@ -12,6 +12,7 @@ chmod 0755 ~/
 
 $MNG product_type import --default
 $MNG product_collection import --default
+$MNG product deregister --invalid
 
 [ -f "$PWD/Dst_MJD_1998.dat" ] || wget 'ftp://ftp.gfz-potsdam.de/pub/incoming/champ_payload/Nils/Dst_MJD_1998.dat' -O "$PWD/Dst_MJD_1998.dat"
 [ -f "$PWD/Kp_MJD_1998_QL.dat" ] || wget 'ftp://ftp.gfz-potsdam.de/pub/incoming/champ_payload/Nils/Kp_MJD_1998_QL.dat' -O "$PWD/Kp_MJD_1998_QL.dat"
@@ -69,8 +70,15 @@ find "$DATA_DIR" -type f -name "SW_OPER_AUX_IMF_2_*.DBL" | sort \
 
 for SAT in A B C
 do
-    COLLECTION="SW_OPER_MAG${SAT}_LR_1B"
+    COLLECTION="SW_OPER_MOD${SAT}_SC_1B"
     # product registration including update of the orbit direction lookup tables
+    find "$DATA_DIR" -type f -name "${COLLECTION}_*\.cdf" | sort \
+    | $MNG product register -c "$COLLECTION" -f - --update
+done
+
+for SAT in A B C
+do
+    COLLECTION="SW_OPER_MAG${SAT}_LR_1B"
     find "$DATA_DIR" -type f -name "SW_OPER_MAG${SAT}*MDR_MAG_LR.cdf" | sort \
     | $MNG product register -c "$COLLECTION" -f - --update
 done
@@ -128,7 +136,15 @@ done
 for TYPE in 1M 4M
 do
     COLLECTION="SW_OPER_VOBS_${TYPE}_2_"
-    find "$DATA_DIR" -type f -name "SW_OPER_VOBS_${TYPE}_2_*.cdf" | sort \
+    find "$DATA_DIR" -type f -name "${COLLECTION}*\.cdf" | sort \
+    | $MNG product register -c "$COLLECTION" -f - --update
+done
+
+TYPE=4M
+for MISSION in CH CO CR OR
+do
+    COLLECTION="${MISSION}_OPER_VOBS_${TYPE}_2_"
+    find "$DATA_DIR" -type f -name "${COLLECTION}*\.cdf" | sort \
     | $MNG product register -c "$COLLECTION" -f - --update
 done
 
