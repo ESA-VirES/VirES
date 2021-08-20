@@ -203,6 +203,27 @@ do
     | $MNG product register -c "$COLLECTION" -f - --update
 done
 
+for SAT in A B C
+do
+    COLLECTION="SW_OPER_MIT${SAT}_LP_2F"
+    find "$DATA_DIR" -type f -name "${COLLECTION}_*\.cdf" | sort \
+    | $MNG product register -c "$COLLECTION" -f - --update
+done
+
+for SAT in A B C
+do
+    COLLECTION="SW_OPER_MIT${SAT}TEC_2F"
+    find "$DATA_DIR" -type f -name "${COLLECTION}_*\.cdf" | sort \
+    | $MNG product register -c "$COLLECTION" -f - --update
+done
+
+for SAT in A B C
+do
+    COLLECTION="SW_OPER_PPI${SAT}FAC_2F"
+    find "$DATA_DIR" -type f -name "${COLLECTION}_*\.cdf" | sort \
+    | $MNG product register -c "$COLLECTION" -f - --update
+done
+
 # VOBS Swarm
 for TYPE in 1M 4M
 do
