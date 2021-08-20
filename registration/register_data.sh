@@ -45,6 +45,8 @@ $MNG cached_product update MIO_SHA_2C `find $DATA_DIR -name SW_OPER_MIO_SHA_2C_\
 $MNG cached_product update MIO_SHA_2D `find $DATA_DIR -name SW_OPER_MIO_SHA_2D_\*.txt | sort | tail -n 1`
 
 # load orbit counters
+
+# Swarm orbit counters
 for SAT in A B C
 do
     find "$DATA_DIR" -type f -name "SW_OPER_AUX${SAT}ORBCNT_*.TXT" | tail -n 1 | while read FILE
@@ -53,6 +55,31 @@ do
     done
 done
 
+# CryoSat-2 orbit counters
+find "$DATA_DIR" -type f -name "CS_OPER_AUX_ORBCNT_*.TXT" | tail -n 1 | while read FILE
+do
+    $MNG cached_product update "CS2_ORBCNT" "$FILE"
+done
+
+# GRACE orbit counters
+for SAT in 1 2
+do
+    find "$DATA_DIR" -type f -name "GR${SAT}_ORBCNT_*.cdf" | tail -n 1 | while read FILE
+    do
+        $MNG cached_product update "GR${SAT}_ORBCNT" "$FILE"
+    done
+done
+
+# GRACE-FO orbit counters
+for SAT in 1 2
+do
+    find "$DATA_DIR" -type f -name "GF${SAT}_ORBCNT_*.cdf" | tail -n 1 | while read FILE
+    do
+        $MNG cached_product update "GF${SAT}_ORBCNT" "$FILE"
+    done
+done
+
+# OMNI datasets
 COLLECTION="OMNI_HR_1min_avg20min_delay10min"
 find "$DATA_DIR" -type f -name "omni_hro_1min_*_avg20min_delay10min.cdf" | sort \
 | $MNG product register -c "$COLLECTION" -f - --update
@@ -68,6 +95,7 @@ find "$DATA_DIR" -type f -name "SW_OPER_AUX_IMF_2_*.DBL" | sort \
 # re-build orbit direction lookup tables
 #$MNG orbit_directions rebuild
 
+# Swarm products ...
 for SAT in A B C
 do
     COLLECTION="SW_OPER_MOD${SAT}_SC_1B"
@@ -133,6 +161,49 @@ do
     | $MNG product register -c "$COLLECTION" -f - --update
 done
 
+for SAT in A B C
+do
+    COLLECTION="SW_OPER_AEJ${SAT}LPL_2F"
+    find "$DATA_DIR" -type f -name "SW_OPER_AEJ${SAT}LPL_2F_20*.cdf" | sort \
+    | $MNG product register -c "$COLLECTION" -f - --update
+done
+
+for SAT in A B C
+do
+    COLLECTION="SW_OPER_AEJ${SAT}LPL_2F"
+    find "$DATA_DIR" -type f -name "SW_OPER_AEJ${SAT}LPL_2F_20*.cdf" | sort \
+    | $MNG product register -c "$COLLECTION" -f - --update
+done
+
+for SAT in A B C
+do
+    COLLECTION="SW_OPER_AEJ${SAT}PBL_2F"
+    find "$DATA_DIR" -type f -name "SW_OPER_AEJ${SAT}PBL_2F_20*.cdf" | sort \
+    | $MNG product register -c "$COLLECTION" -f - --update
+done
+
+for SAT in A B C
+do
+    COLLECTION="SW_OPER_AEJ${SAT}LPS_2F"
+    find "$DATA_DIR" -type f -name "SW_OPER_AEJ${SAT}LPS_2F_20*.cdf" | sort \
+    | $MNG product register -c "$COLLECTION" -f - --update
+done
+
+for SAT in A B C
+do
+    COLLECTION="SW_OPER_AEJ${SAT}PBS_2F"
+    find "$DATA_DIR" -type f -name "SW_OPER_AEJ${SAT}PBS_2F_20*.cdf" | sort \
+    | $MNG product register -c "$COLLECTION" -f - --update
+done
+
+for SAT in A B C
+do
+    COLLECTION="SW_OPER_AOB${SAT}FAC_2F"
+    find "$DATA_DIR" -type f -name "SW_OPER_AOB${SAT}FAC_2F_20*.cdf" | sort \
+    | $MNG product register -c "$COLLECTION" -f - --update
+done
+
+# VOBS Swarm
 for TYPE in 1M 4M
 do
     COLLECTION="SW_OPER_VOBS_${TYPE}_2_"
@@ -140,6 +211,7 @@ do
     | $MNG product register -c "$COLLECTION" -f - --update
 done
 
+# VOBS non-Swarm
 TYPE=4M
 for MISSION in CH CO CR OR
 do
@@ -148,6 +220,7 @@ do
     | $MNG product register -c "$COLLECTION" -f - --update
 done
 
+# Ground observatory data
 for TYPE in S M
 do
     COLLECTION="SW_OPER_AUX_OBS${TYPE}2_"
@@ -159,50 +232,26 @@ COLLECTION="SW_OPER_AUX_OBSH2_"
 find "$DATA_DIR" -type f -name "SW_OPER_AUX_OBS_2_*.cdf" | sort \
 | $MNG product register -c "$COLLECTION" -f - --update
 
-for SAT in A B C
+
+# GRACE magnetic products
+for SAT in A B
 do
-    COLLECTION="SW_OPER_AEJ${SAT}LPL_2F"
-    $MNG product deregister -c "$COLLECTION" --all
-    find "$DATA_DIR" -type f -name "SW_OPER_AEJ${SAT}LPL_2F_20*.cdf" | sort \
+    set -x
+    COLLECTION="GRACE_${SAT}_MAG"
+    find "$DATA_DIR" -type f -name "${COLLECTION}_*.cdf" | sort \
+    | $MNG product register -c "$COLLECTION" -f - --update
+    set +x
+done
+
+# GRACE-FO magnetic products
+for SAT in 1 2
+do
+    COLLECTION="GF${SAT}_OPER_FGM_ACAL_CORR"
+    find "$DATA_DIR" -type f -name "${COLLECTION}_*.cdf" | sort \
     | $MNG product register -c "$COLLECTION" -f - --update
 done
 
-for SAT in A B C
-do
-    COLLECTION="SW_OPER_AEJ${SAT}LPL_2F"
-    $MNG product deregister -c "$COLLECTION" --all
-    find "$DATA_DIR" -type f -name "SW_OPER_AEJ${SAT}LPL_2F_20*.cdf" | sort \
-    | $MNG product register -c "$COLLECTION" -f - --update
-done
-
-for SAT in A B C
-do
-    COLLECTION="SW_OPER_AEJ${SAT}PBL_2F"
-    $MNG product deregister -c "$COLLECTION" --all
-    find "$DATA_DIR" -type f -name "SW_OPER_AEJ${SAT}PBL_2F_20*.cdf" | sort \
-    | $MNG product register -c "$COLLECTION" -f - --update
-done
-
-for SAT in A B C
-do
-    COLLECTION="SW_OPER_AEJ${SAT}LPS_2F"
-    $MNG product deregister -c "$COLLECTION" --all
-    find "$DATA_DIR" -type f -name "SW_OPER_AEJ${SAT}LPS_2F_20*.cdf" | sort \
-    | $MNG product register -c "$COLLECTION" -f - --update
-done
-
-for SAT in A B C
-do
-    COLLECTION="SW_OPER_AEJ${SAT}PBS_2F"
-    $MNG product deregister -c "$COLLECTION" --all
-    find "$DATA_DIR" -type f -name "SW_OPER_AEJ${SAT}PBS_2F_20*.cdf" | sort \
-    | $MNG product register -c "$COLLECTION" -f - --update
-done
-
-for SAT in A B C
-do
-    COLLECTION="SW_OPER_AOB${SAT}FAC_2F"
-    $MNG product deregister -c "$COLLECTION" --all
-    find "$DATA_DIR" -type f -name "SW_OPER_AOB${SAT}FAC_2F_20*.cdf" | sort \
-    | $MNG product register -c "$COLLECTION" -f - --update
-done
+# CryoSat-2 magnetic products
+COLLECTION="CS_OPER_MAG"
+find "$DATA_DIR" -type f -name "CS_OPER_MAG_*.cdf" | sort \
+| $MNG product register -c "$COLLECTION" -f - --update
