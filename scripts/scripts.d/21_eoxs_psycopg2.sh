@@ -15,4 +15,5 @@ info "Installing psycopg2 (Python-PostgreSQL Database Adapter) ... """
 yum --assumeyes install $PG_DEVEL_PACKAGE
 
 activate_venv "$VIRES_VENV_ROOT"
-pip install --force-reinstall --no-binary :all: psycopg2
+# psycopg2<2.9 see https://github.com/ESA-VirES/VirES/issues/83
+pip install --force-reinstall --no-binary :all: 'psycopg2 < 2.9'

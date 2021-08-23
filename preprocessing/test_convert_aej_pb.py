@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #-------------------------------------------------------------------------------
 #
-# Text converted AEJxPBL and AEJxPBS products with the original file.
+# Test converted AEJxPBL and AEJxPBS products with the original file.
 #
 # Author: Martin Paces <martin.paces@eox.at>
 #-------------------------------------------------------------------------------

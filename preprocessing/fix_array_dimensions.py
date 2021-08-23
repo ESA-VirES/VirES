@@ -42,8 +42,6 @@ from common import (
 
 LOGGER = getLogger()
 
-MAX_TIME_SELECTION = timedelta(days=25*365.25) # max. time selection of ~25 years
-
 CDF_CREATOR = "EOX:fix_array_dimensions.py [%s-%s, libcdf-%s]" % (
     SPACEPY_NAME, SPACEPY_VERSION, LIBCDF_VERSION
 )

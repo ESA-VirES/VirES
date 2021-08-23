@@ -50,8 +50,6 @@ VERSION = "1.1.0"
 RE_AEJ_PBL_2F = re.compile("^SW_OPER_AEJ[ABC]PBL_2F_")
 RE_AEJ_PBS_2F = re.compile("^SW_OPER_AEJ[ABC]PBS_2F_")
 
-MAX_TIME_SELECTION = timedelta(days=25*365.25) # max. time selection of ~25 years
-
 CDF_CREATOR = "EOX:convert_aej_bp-%s [%s-%s, libcdf-%s]" % (
     VERSION, SPACEPY_NAME, SPACEPY_VERSION, LIBCDF_VERSION
 )
