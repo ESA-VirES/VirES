@@ -281,6 +281,7 @@ EOXS_PROCESSES = [
     'vires.processes.get_indices.GetIndices',
     'vires.processes.get_orbit_timerange.GetOrbitTimeRange',
     'vires.processes.get_observatories.GetObservatories',
+    'vires.processes.get_conjunctions.GetConjunctions',
     'vires.processes.eval_model.EvalModel',
     'vires.processes.retrieve_continuous_segments.RetrieveContinuousSegments',
     'vires.processes.retrieve_field_lines.RetrieveFieldLines',

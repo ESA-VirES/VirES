@@ -29,4 +29,4 @@ pandas>=0.20
 dask<2.17.0
 apexpy>=1.0
 END
-pip install $PIP_OPTIONS git+https://github.com/klaundal/pyAMPS.git@0661c5d6faba0f0f0be567118ab4b0307e462d5e#pyamps
+pip install $PIP_OPTIONS git+https://github.com/klaundal/pyAMPS.git@v.1.5.2#pyamps
