@@ -325,7 +325,7 @@ INSTALLED_APPS += [
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
-    'allauth.socialaccount.providers.facebook',
+    #'allauth.socialaccount.providers.facebook', # removed on 2021-10-07
     'allauth.socialaccount.providers.twitter',
     'allauth.socialaccount.providers.linkedin_oauth2',
     'allauth.socialaccount.providers.google',
@@ -521,6 +521,14 @@ if [ -n "$OAUTH_APPS" ]
 then
     python "$MNGCMD" app import --file "$OAUTH_APPS"
 fi
+
+# Facebook removal
+
+# strip all Facebook social accounts
+python "$MNGCMD" shell -c 'from allauth.socialaccount.models import SocialAccount; print(SocialAccount.objects.filter(provider="facebook").delete())'
+
+# remove Facebook client credentials
+python "$MNGCMD" social_provider remove facebook
 
 #-------------------------------------------------------------------------------
 # STEP 9: CHANGE OWNERSHIP OF THE CONFIGURATION FILES
