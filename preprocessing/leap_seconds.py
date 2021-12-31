@@ -142,7 +142,10 @@ class LeapSeconds():
                             expires = convert_timestamp(line)
                             hash_.update(line.encode('ascii'))
                         elif tag == "#h":
-                            sha1_digest = "".join(line.split())
+                            sha1_digest = "".join(
+                                f"{int(item, 16):08x}"
+                                for item in line.split()
+                            )
                     continue
                 line = line.partition("#")[0] # strip remaining comment
                 line = line.rstrip() # strip trailing white-spaces
