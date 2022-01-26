@@ -27,6 +27,7 @@
 #-------------------------------------------------------------------------------
 # pylint: disable=line-too-long,missing-docstring,too-many-arguments
 
+from os import rename, remove
 from logging import getLogger
 from pathlib import Path
 from urllib.request import urlopen
@@ -45,10 +46,6 @@ class LeapSecondError(Exception):
     pass
 
 
-class ExpiredTable(LeapSecondError):
-    pass
-
-
 class IntergityError(LeapSecondError):
     pass
 
@@ -57,37 +54,69 @@ class ParsingError(LeapSecondError):
     pass
 
 
-def main():
+def load_leap_seconds(local_path=LOCAL_PATH, source_url=SOURCE_URL):
+    """ Load leap seconds table. """
+
+    def _load_table(path):
+        with open(path, "rb") as file_:
+            return LeapSeconds(file_, source_url=source_url)
+
+    def _download_new_table(path):
+        tmp_path = Path(path.parent, path.name + ".tmp")
+        try:
+            download(source_url, tmp_path)
+            leap_seconds = _load_table(tmp_path)
+        except:
+            if tmp_path.exists():
+                LOGGER.debug("Removing %s ...", tmp_path)
+                remove(tmp_path)
+            raise
+        else:
+            LOGGER.debug("Moving %s -> %s ... ", tmp_path, path)
+            rename(tmp_path, path)
+            return leap_seconds
+
+        return leap_seconds
+
+    leap_seconds = None
+
     try:
-        leap_seconds = LeapSeconds()
-    except Exception:
-        LOGGER.error("Failed to read the leap-second table.", exc_info=True)
-        return 1
+        leap_seconds = _load_table(local_path)
+    except FileNotFoundError:
+        LOGGER.debug("The cached leap second table %s not found.", local_path)
+    except LeapSecondError as error:
+        LOGGER.warning("%s", error)
+    else:
+        if not leap_seconds.is_expired:
+            return leap_seconds
+        LOGGER.warning("The cached leap seconds table is expired.")
 
-    for key, value in leap_seconds.__dict__.items():
-        padding = max(1, 18 - len(key))
-        print(f"{key}:{' '*padding}{value}")
+    try:
+        leap_seconds = _download_new_table(local_path)
+    except Exception as error:
+        LOGGER.error("%s", error)
+        if not leap_seconds:
+            raise
+        LOGGER.warning("Defaulting to the expired cached leap seconds table.")
 
-    print("leap_seconds:")
-    print("  Timestamp            TAI offset")
-    for timestamp, tai_offset in zip(leap_seconds.timestamps, leap_seconds.tai_offsets):
-        print(f"  {timestamp}  {tai_offset}")
-
-    return 0
+    return leap_seconds
 
 
 class LeapSeconds():
-    """ Leap seconds table class. """
+    """ Leap-seconds table class. """
 
-    def __init__(self, local_path=LOCAL_PATH, source_url=SOURCE_URL):
-        self.source_url = source_url
-        self.local_path = Path(local_path)
-        self.last_update = None
-        self.expires = None
-        self.sha1_digest = None
-        self.timestamps = []
-        self.tai_offsets = []
-        self._read_leap_seconds()
+    def __init__(self, source, **extra_attrs):
+        """ Load leap seconds from a file-like object. """
+
+        self.__dict__.update(extra_attrs)
+
+        records, info = parse_leap_seconds_table(source)
+
+        self.expires = info.get('expires')
+        self.last_update = info.get('last_update')
+        self.sha1_digest = info.get('sha1_digest')
+        self.timestamps = [value for value, _ in records]
+        self.tai_offsets = [value for _, value in records]
 
     def find_utc_to_tai_offset(self, timestamp):
         """ Find UTC to TAI offset for the given timestamp. """
@@ -98,81 +127,81 @@ class LeapSeconds():
             )
         return self.tai_offsets[idx]
 
-    def _read_leap_seconds(self):
-        local_path = Path(self.local_path)
-        file_already_exists = local_path.is_file()
-        if not file_already_exists:
-            LOGGER.info("Leap second table %s not found.", local_path)
-            download(self.source_url, local_path)
-
-        # read table and catch possible issues
-        try:
-            with open(local_path) as source:
-                return self._parse_leap_seconds(source)
-        except LeapSecondError as error:
-            if not file_already_exists:
-                # skip new download for a freshly downloaded table.
-                raise
-            LOGGER.warning("%s", error)
-
-        # re-download the table in case of an issue
-        download(self.source_url, local_path)
-        with open(local_path) as source:
-            return self._parse_leap_seconds(source)
+    @property
+    def is_expired(self):
+        return (
+            self.expires and datetime.utcnow().isoformat("T") > self.expires
+        )
 
 
-    def _parse_leap_seconds(self, source):
-        sha1_digest = ''
-        expires = ''
-        last_update = ''
-        timestamps = []
-        tai_offsets = []
-        hash_ = sha1()
-        line_no = 0
-        try:
-            for line_no, line in enumerate(source, 1):
-                tag = line[:2].rstrip()
-                if tag[:1] == "#":
-                    if len(tag) > 1:
-                        line = line[2:].strip()
-                        if tag == "#$":
-                            last_update = convert_timestamp(line)
-                            hash_.update(line.encode('ascii'))
-                        elif tag == "#@":
-                            expires = convert_timestamp(line)
-                            hash_.update(line.encode('ascii'))
-                        elif tag == "#h":
-                            sha1_digest = "".join(line.split())
-                    continue
-                line = line.partition("#")[0] # strip remaining comment
-                line = line.rstrip() # strip trailing white-spaces
-                if not line:
-                    continue # skip blank lines
-                timestamp, tai_offset = line.split()
-                hash_.update(timestamp.encode('ascii'))
-                hash_.update(tai_offset.encode('ascii'))
-                timestamps.append(convert_timestamp(timestamp))
-                tai_offsets.append(int(tai_offset))
-        except (ValueError, TypeError):
-            raise ParsingError(
-                "line %d: Failed to parse the leap-second table!" % line_no
-            ) from None
+def parse_leap_seconds_table(source):
 
-        if hash_.hexdigest() != sha1_digest:
-            raise IntergityError(
-                "The leap-second table has been corrupted. "
-                "The content does not match the expected SHA1 "
-                "checksum."
-            )
+    hash_ = sha1()
+    records = []
+    info = {}
 
-        if datetime.utcnow().isoformat("T") > expires:
-            raise ExpiredTable("The leap-second table is expired.")
+    try:
+        for line_no, tag, record in _read_records(source):
+            if not tag:
+                _update_digest(hash_, record)
+                timestamp, tai_offset = _decode_record(record)
+                records.append((
+                    convert_timestamp(timestamp),
+                    int(tai_offset),
+                ))
+            elif tag == b"$":
+                _update_digest(hash_, record)
+                timestamp, = _decode_record(record)
+                info['last_update'] = convert_timestamp(timestamp)
+            elif tag == b"@":
+                _update_digest(hash_, record)
+                timestamp, = _decode_record(record)
+                info['expires'] = convert_timestamp(timestamp)
+            elif tag == b"h":
+                info['sha1_digest'] = "".join(
+                    f"{int(item, 16):08x}" for item in _decode_record(record)
+                )
+    except (ValueError, TypeError):
+        raise ParsingError(
+            "line %d: Failed to parse the leap-second table!" % line_no
+        ) from None
 
-        self.last_update = last_update or None
-        self.expires = expires
-        self.sha1_digest = sha1_digest
-        self.timestamps = timestamps
-        self.tai_offsets = tai_offsets
+    sha1_digest = info.get('sha1_digest')
+
+    if not sha1_digest:
+        raise IntergityError("Failed to parse the SHA1 checksum.")
+
+    if hash_.hexdigest() != sha1_digest:
+        raise IntergityError(
+            "The leap-second table has been corrupted. "
+            "The content does not match the expected SHA1 "
+            "checksum."
+        )
+
+    return records, info
+
+
+def _read_records(source):
+    for line_no, line in enumerate(source, 1):
+        if line[:1] == b"#":
+            tag = line[1:2].rstrip()
+            if tag: # metadata
+                yield line_no, tag, line[2:].strip().split()
+            continue
+        line = line.partition(b"#")[0] # strip remaining comment
+        line = line.rstrip() # strip trailing white-spaces
+        if not line:
+            continue # skip blank lines
+        yield line_no, None, line.strip().split()
+
+
+def _update_digest(digest, record):
+    for item in record:
+        digest.update(item)
+
+
+def _decode_record(record):
+    return [item.decode('ascii') for item in record]
 
 
 def convert_timestamp(timestamp):
@@ -183,8 +212,27 @@ def download(source_url, target_path):
     """ Simple URL download. """
     LOGGER.info("Downloading %s -> %s ...", source_url, target_path)
     with urlopen(source_url) as source:
-        with open(target_path, "wb") as target:
+        with open(target_path, "xb") as target:
             copyfileobj(source, target)
+
+
+def main():
+    try:
+        leap_seconds = load_leap_seconds()
+    except Exception:
+        LOGGER.error("Failed to read the leap-second table.", exc_info=True)
+        return 1
+
+    for key in ["expires", "last_update", "sha1_digest"]:
+        value = getattr(leap_seconds, key)
+        padding = max(1, 18 - len(key))
+        print(f"{key}:{' '*padding}{value}")
+
+    print("  Timestamp            TAI offset")
+    for timestamp, tai_offset in zip(leap_seconds.timestamps, leap_seconds.tai_offsets):
+        print(f"  {timestamp}  {tai_offset}")
+
+    return 0
 
 
 if __name__ == "__main__":

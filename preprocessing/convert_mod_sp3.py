@@ -42,7 +42,7 @@ from common import (
     CDF_DOUBLE, CDF_EPOCH, CdfTypeEpoch,
 )
 from sp3_reader import read_sp3, GPS_TO_TAI_OFFSET
-from leap_seconds import LeapSeconds
+from leap_seconds import load_leap_seconds
 
 
 LOGGER = getLogger(__name__)
@@ -142,7 +142,7 @@ def convert_mod_sp3_product(filename_sp3, filename_cdf):
 
     # NOTE: It is assumed the UTC to GPS clock offset is constant for the whole
     #       daily Swarm MOD product and there are no products before 1972-01-01.
-    leap_seconds = LeapSeconds()
+    leap_seconds = load_leap_seconds()
     utc_to_gps_offset = (
         leap_seconds.find_utc_to_tai_offset(header['start_time']) -
         GPS_TO_TAI_OFFSET

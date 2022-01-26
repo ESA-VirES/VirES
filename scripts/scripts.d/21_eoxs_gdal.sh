@@ -16,7 +16,10 @@ yum --assumeyes install gdal gdal-libs proj-epsg gdal-devel
 
 activate_venv "$VIRES_VENV_ROOT"
 
-# NOTE: gdal-python virenv installation requires numpy installed!!!
+# Current version of GDAL requires setuptools<58 (2to3 removed in 58.0.0)
+pip install $PIP_OPTIONS "setuptools<58"
+
+# NOTE: gdal-python virenv installation requires numpy to be installed!
 [ -z "$CONTRIB_DIR" ] && error "Missing the required CONTRIB_DIR variable!"
 PACKAGE="`lookup_package "$CONTRIB_DIR/GDAL-*.tar.gz"`"
 [ -n "$PACKAGE" ] || error "Source distribution package not found!"
