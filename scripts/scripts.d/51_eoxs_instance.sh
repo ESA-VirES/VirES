@@ -15,6 +15,8 @@ info "Configuring VirES-Server instance ... "
 
 activate_venv "$VIRES_VENV_ROOT"
 
+HAPI_SERVER_ID=${HAPI_SERVER_ID:-VirES-dev}
+
 VIRES_PERMISSION=${VIRES_PERMISSION:-swarm}
 
 # Configuration switches - all default to YES
@@ -100,7 +102,7 @@ MANAGERS = ADMINS = (
 )
 
 HAPI_ABOUT = {
-  'id': 'VirES-dev',
+  'id': '$HAPI_SERVER_ID',
   'contact': 'feedback@vires.services',
   'description': 'Web API for the ESA Swarm mission products.',
 }
