@@ -495,6 +495,12 @@ do
         Header set Access-Control-Allow-Origin "*"
     </Directory>
 
+    # Heilophysics API
+    <Location "/hapi">
+        Header unset X-Frame-Options
+        Header set Access-Control-Allow-Origin "*"
+    </Location>
+
     ProxyPass "${BASE_URL_PATH:-/}" "http://$VIRES_SERVER_HOST${BASE_URL_PATH:-/}" connectiontimeout=60 timeout=$HTTP_TIMEOUT
     #ProxyPassReverse "${BASE_URL_PATH:-/}" "http://$VIRES_SERVER_HOST${BASE_URL_PATH:-/}"
     #RequestHeader set SCRIPT_NAME "${BASE_URL_PATH:-/}"
