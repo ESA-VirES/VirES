@@ -9,7 +9,7 @@
 . `dirname $0`/../lib_logging.sh
 . `dirname $0`/../lib_python_venv.sh
 
-SOURCE="https://github.com/ESA-VirES/MagneticModel/releases/download/eoxmagmod-0.9.9/eoxmagmod-0.9.9.tar.gz"
+SOURCE="https://github.com/ESA-VirES/MagneticModel/releases/download/eoxmagmod-0.9.10/eoxmagmod-0.9.10.tar.gz"
 
 info "Installing EOxMagMod from a source distribution package ..."
 
