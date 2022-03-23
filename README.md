@@ -1,8 +1,8 @@
-# VirES
-VirES - installer and utilities
+# VirES for Swarm
+VirES for Swarm - installer and utilities
 
 This repository contains the installation and configuration scripts of the
-VirES system.
+VirES for Swarm system.
 
 The repository contains following directories:
 
@@ -13,9 +13,9 @@ The repository contains following directories:
 NOTE: The repository does not cover the autonomous Cloud-free Coverage
 Assembly.
 
-### VirES installation
+### VirES for Swarm installation
 
-In this section the VirES installation is described.
+This section describes the VirES installation
 
 #### Prerequisites
 
@@ -106,20 +106,12 @@ git clone git@github.com:ESA-VirES/VirES-Server.git
 git clone git@github.com:EOxServer/eoxserver.git
 ```
 
-Switch to `0.4-d1.11` branch of the `eoxserver`
-```bash
-cd eoxserver
-git checkout 0.4-d1.11
-git pull
-```
-
 Currently, the optional built web client can be copied manually to the `contrib`
 directory:
 
 ```bash
 cp WebClient-Framework.tar.gz VirES/contrib/
 ```
-
 
 #### Step 2 - Customisation
 
@@ -171,17 +163,17 @@ use following script located in the `script` folder
 To call the EOxServer's `manage.py` with the activated `virtualenv` environment
 use the following convenience command in the `scripts/` folder
 ```
-./virtualenv_manage.sh [<options>]
+./venv_vires_manage.sh [<options>]
 ```
 
 To call Python with the activated `virtualenv` environment
 use the following convenience command in the `scripts/` folder
 ```
-./virtualenv_python.sh [<options>]
+./venv_vires_python.sh [<options>]
 ```
 
 To call an arbitrary command with activated `virtualenv` environment
 use the following convenience command in the `scripts/` folder
 ```
-./virtualenv_execute.sh <command> [<options>]
+./venv_vires_execute.sh <command> [<options>]
 ```
