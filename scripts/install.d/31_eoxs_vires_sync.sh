@@ -1,0 +1,1 @@
+../scripts.d/31_eoxs_vires_sync.sh

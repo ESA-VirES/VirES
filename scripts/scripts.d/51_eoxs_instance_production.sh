@@ -256,6 +256,11 @@ LOGGING = {
             'level': 'DEBUG' if DEBUG else 'INFO',
             'propagate': False,
         },
+        'vires_sync': {
+            'handlers': ['vires_file', 'vires_email'],
+            'level': 'DEBUG' if DEBUG else 'INFO',
+            'propagate': False,
+        },
         'eoxs_wps_async': {
             'handlers': ['vires_file', 'vires_email'],
             'level': 'DEBUG' if DEBUG else 'INFO',
