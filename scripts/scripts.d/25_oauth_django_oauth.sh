@@ -13,4 +13,4 @@ info "Installing Django OAuth Toolkit ..."
 
 activate_venv "$OAUTH_VENV_ROOT"
 
-pip install $PIP_OPTIONS django-oauth-toolkit
+pip install $PIP_OPTIONS django-oauth-toolkit==1.7.0 # FIXME implement proper support for django-oauth-toolkit >= 2.0.0
