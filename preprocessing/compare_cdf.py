@@ -56,7 +56,7 @@ def parse_inputs(argv):
         elif arg == '--squeeze' and not ignore_options:
             squeeze_src_variables = True
         else:
-            args.append(argv)
+            args.append(arg)
 
     try:
         source = args[1]
