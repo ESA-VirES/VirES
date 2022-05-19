@@ -128,6 +128,27 @@ done
 
 for SAT in A B C
 do
+    COLLECTION="SW_OPER_EFI${SAT}TIE_2_"
+    find "$DATA_DIR" -type f -name "${COLLECTION}_*.cdf" | sort \
+    | $MNG product register -c "$COLLECTION" -f - --update
+done
+
+for SAT in A B C
+do
+    COLLECTION="SW_EXPT_EFI${SAT}_TCT02"
+    find "$DATA_DIR" -type f -name "${COLLECTION}_*.cdf" | sort \
+    | $MNG product register -c "$COLLECTION" -f - --update
+done
+
+for SAT in A B C
+do
+    COLLECTION="SW_EXPT_EFI${SAT}_TCT16"
+    find "$DATA_DIR" -type f -name "${COLLECTION}_*.cdf" | sort \
+    | $MNG product register -c "$COLLECTION" -f - --update
+done
+
+for SAT in A B C
+do
     COLLECTION="SW_OPER_IBI${SAT}TMS_2F"
     find "$DATA_DIR" -type f -name "SW_OPER_IBI${SAT}TMS_2F*.cdf" | sort \
     | $MNG product register -c "$COLLECTION" -f - --update
