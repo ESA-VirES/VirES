@@ -79,6 +79,12 @@ do
     done
 done
 
+# GOCE orbit counters
+find "$DATA_DIR" -type f -name "GO_ORBCNT_*.cdf" | tail -n 1 | while read FILE
+do
+    $MNG cached_product update "GO_ORBCNT" "$FILE"
+done
+
 # OMNI datasets
 COLLECTION="OMNI_HR_1min_avg20min_delay10min"
 find "$DATA_DIR" -type f -name "omni_hro_1min_*_avg20min_delay10min.cdf" | sort \
@@ -296,4 +302,9 @@ done
 # CryoSat-2 magnetic products
 COLLECTION="CS_OPER_MAG"
 find "$DATA_DIR" -type f -name "CS_OPER_MAG_*.cdf" | sort \
+| $MNG product register -c "$COLLECTION" -f - --update
+
+# GOCE magnetic products
+COLLECTION="GO_MAG_ACAL_CORR"
+find "$DATA_DIR" -type f -name "GO_MAG_ACAL_CORR*.cdf" | sort \
 | $MNG product register -c "$COLLECTION" -f - --update
