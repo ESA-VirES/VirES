@@ -134,6 +134,13 @@ done
 
 for SAT in A B C
 do
+    COLLECTION="SW_PREL_EFI${SAT}IDM_2_"
+    find "$DATA_DIR" -type f -name "${COLLECTION}_*.cdf" | sort \
+    | $MNG product register -c "$COLLECTION" -f - --update
+done
+
+for SAT in A B C
+do
     COLLECTION="SW_OPER_EFI${SAT}TIE_2_"
     find "$DATA_DIR" -type f -name "${COLLECTION}_*.cdf" | sort \
     | $MNG product register -c "$COLLECTION" -f - --update
