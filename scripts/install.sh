@@ -28,7 +28,7 @@ set -o pipefail
 # THE SOFTWARE.
 #-------------------------------------------------------------------------------
 
-INSTALL_LOG="./install.log"
+INSTALL_LOG="./install.`date -u +%Y%m%d`.log"
 SYSTEM_NAME="VirES"
 
 #NOTE: The optional 'user.conf' is used the custom user's configuration options
