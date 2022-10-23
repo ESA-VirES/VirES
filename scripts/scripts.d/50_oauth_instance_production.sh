@@ -383,6 +383,7 @@ AUTHENTICATION_BACKENDS = [
 OAUTH2_PROVIDER = {
     'SCOPES_BACKEND_CLASS': 'vires_oauth.scopes.ViresScopes',
     'ALLOWED_REDIRECT_URI_SCHEMES': ['https'],
+    'PKCE_REQUIRED': False,
 }
 
 # Django allauth
