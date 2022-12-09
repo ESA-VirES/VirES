@@ -28,11 +28,11 @@ set -o pipefail
 # THE SOFTWARE.
 #-------------------------------------------------------------------------------
 
-INSTALL_LOG="./install.log"
+INSTALL_LOG="./install.`date -u +%Y%m%d`.log"
 SYSTEM_NAME="VirES"
 
 #NOTE: The optional 'user.conf' is used the custom user's configuration options
-#      overiding the defaults in 'lib_common.sh'.
+#      overriding the defaults in 'lib_common.sh'.
 
 #source common parts
 [ -f "`dirname $0`/user.conf" ] && . `dirname $0`/user.conf

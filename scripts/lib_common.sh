@@ -175,3 +175,8 @@ export PGIS_PACKAGE="${PGIS_PACKAGE:-postgis31_$PG_VERSION}"
 
 # local development URL
 export LOCAL_URL="${LOCAL_URL}"
+
+# compiler options
+export DEVTOOLSET_VERSION=${DEVTOOLSET_VERSION:-11}
+export GCC_MARCH=${GCC_MARCH:-skylake}
+export GCC_MTUNE=${GCC_MTUNE:-$GCC_MARCH}
