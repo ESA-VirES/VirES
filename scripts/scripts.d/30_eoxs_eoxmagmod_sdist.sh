@@ -12,7 +12,7 @@
 
 required_variables DEVTOOLSET_VERSION GCC_MARCH GCC_MTUNE
 
-SOURCE="https://github.com/ESA-VirES/MagneticModel/releases/download/eoxmagmod-0.11.0/eoxmagmod-0.11.0.tar.gz"
+SOURCE="https://github.com/ESA-VirES/MagneticModel/releases/download/eoxmagmod-0.12.0/eoxmagmod-0.12.0.tar.gz"
 
 info "Installing EOxMagMod from a source distribution package ..."
 
