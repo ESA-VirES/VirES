@@ -16,4 +16,4 @@ activate_venv "$VIRES_VENV_ROOT"
 pip install $PIP_OPTIONS python-openid
 pip install $PIP_OPTIONS requests-oauthlib
 pip install $PIP_OPTIONS django-allauth
-pip install $PIP_OPTIONS django-countries
+pip install $PIP_OPTIONS 'django-countries<7.5' # v7.5 drops support for Python 3.6

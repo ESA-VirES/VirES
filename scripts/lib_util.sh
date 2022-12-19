@@ -58,3 +58,14 @@ link_file() {
     fi
     ln -sf "$1" "$2"
 }
+
+required_variables()
+{
+    for __VARIABLE___
+    do
+        if [ -z "${!__VARIABLE___}" ]
+        then
+            error "Missing the required ${__VARIABLE___} variable!"
+        fi
+    done
+}

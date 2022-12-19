@@ -16,7 +16,7 @@ info "Configuring OAuth instance ... "
 # number of server processes
 OAUTH_SERVER_NPROC=${OAUTH_SERVER_NPROC:-2}
 
-# number of threds per server process
+# number of threads per server process
 OAUTH_SERVER_NTHREAD=${OAUTH_SERVER_NTHREAD:-2}
 
 DEBUG="True"
@@ -331,6 +331,7 @@ AUTHENTICATION_BACKENDS = [
 OAUTH2_PROVIDER = {
     'SCOPES_BACKEND_CLASS': 'vires_oauth.scopes.ViresScopes',
     'ALLOWED_REDIRECT_URI_SCHEMES': ['http'], # change to 'https' in production!
+    'PKCE_REQUIRED': False,
 }
 
 # Django allauth
