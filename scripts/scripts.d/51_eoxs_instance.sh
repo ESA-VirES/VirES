@@ -274,7 +274,6 @@ EOXS_PROCESSES = [
     'vires.processes.get_conjunctions.GetConjunctions',
     'vires.processes.eval_model.EvalModel',
     'vires.processes.retrieve_continuous_segments.RetrieveContinuousSegments',
-    'vires.processes.retrieve_field_lines.RetrieveFieldLines',
     'vires.processes.retrieve_bubble_index.RetrieveBubbleIndex',
     'vires.processes.fetch_data.FetchData',
     'vires.processes.fetch_filtered_data.FetchFilteredData',
