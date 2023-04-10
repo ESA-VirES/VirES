@@ -54,6 +54,12 @@ export VIRES_TMPDIR=${VIRES_TMPDIR:-/tmp/vires}
 # location of the data cache directory
 export VIRES_CACHE_DIR=${VIRES_CACHE_DIR:-$VIRES_ROOT/cache}
 
+# mode of the model cache operation (options: RW, *RO)
+export VIRES_MODEL_CACHE_MODE=${VIRES_MODEL_CACHE_MODE:-"RW"}
+
+# location of the model cache directory
+export VIRES_MODEL_CACHE_DIR=${VIRES_MODEL_CACHE_DIR:-/mnt/cache}
+
 # location of the data upload directory
 export VIRES_UPLOAD_DIR=${VIRES_UPLOAD_DIR:-$VIRES_ROOT/upload}
 
