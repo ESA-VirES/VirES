@@ -41,6 +41,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.synced_folder "../", "/home/vagrant/VirES", owner: "vagrant", group: "vagrant"
   # data directory (Change to your custom data directory if necessary.)
   config.vm.synced_folder "../data", "/mnt/data", owner: "root", group: "root"
+  # cache directory (Uncomment after the first provisioning. Change to your custom data directory if necessary.)
+  #config.vm.synced_folder "../cache", "/mnt/cache", owner: "vires", group: "vires"
 
   # Shell provisioning
   config.vm.provision :shell, :inline => "cd /home/vagrant/VirES/scripts/ ; /bin/sh ./install.sh -d"
