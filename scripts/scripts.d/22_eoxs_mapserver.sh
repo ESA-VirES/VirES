@@ -17,7 +17,12 @@ yum --assumeyes install mapserver mapserver-devel gdal-devel proj-devel libxml2-
 
 activate_venv "$VIRES_VENV_ROOT"
 
+if [ -n "`pip3 list | grep python-mapscript`" ]
+then
+    pip3 uninstall python-mapscript -y
+fi
+
 [ -z "$CONTRIB_DIR" ] && error "Missing the required CONTRIB_DIR variable!"
-PACKAGE="`lookup_package "$CONTRIB_DIR/python-mapscript-*.tar.gz"`"
+PACKAGE="`lookup_package "$CONTRIB_DIR/mapscript-*.tar.gz"`"
 [ -n "$PACKAGE" ] || error "Source distribution package not found!"
 pip install $PIP_OPTIONS "$PACKAGE"
