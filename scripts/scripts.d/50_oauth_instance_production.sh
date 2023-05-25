@@ -326,7 +326,7 @@ INSTALLED_APPS += [
     'allauth.account',
     'allauth.socialaccount',
     #'allauth.socialaccount.providers.facebook', # removed on 2021-10-07
-    'allauth.socialaccount.providers.twitter',
+    #'allauth.socialaccount.providers.twitter', # removed on 2023-05-25
     'allauth.socialaccount.providers.linkedin_oauth2',
     'allauth.socialaccount.providers.google',
     'allauth.socialaccount.providers.github',
@@ -523,6 +523,14 @@ if [ -n "$OAUTH_APPS" ]
 then
     python "$MNGCMD" app import --file "$OAUTH_APPS"
 fi
+
+# Twitter removal
+
+# strip all Twitter social accounts
+python "$MNGCMD" shell -c 'from allauth.socialaccount.models import SocialAccount; print(SocialAccount.objects.filter(provider="twitter").delete())'
+
+# remove Twitter client credentials
+python "$MNGCMD" social_provider remove twitter
 
 #-------------------------------------------------------------------------------
 # STEP 9: CHANGE OWNERSHIP OF THE CONFIGURATION FILES
