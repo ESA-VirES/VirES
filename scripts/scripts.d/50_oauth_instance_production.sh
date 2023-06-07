@@ -505,13 +505,13 @@ then
     python "$MNGCMD" app import --file "$OAUTH_APPS"
 fi
 
-# Facebook removal
+# Twitter removal
 
-# strip all Facebook social accounts
-python "$MNGCMD" shell -c 'from allauth.socialaccount.models import SocialAccount; print(SocialAccount.objects.filter(provider="facebook").delete())'
+# strip all Twitter social accounts
+python "$MNGCMD" shell -c 'from allauth.socialaccount.models import SocialAccount; print(SocialAccount.objects.filter(provider="twitter").delete())'
 
-# remove Facebook client credentials
-python "$MNGCMD" social_provider remove facebook
+# remove Twitter client credentials
+python "$MNGCMD" social_provider remove twitter
 
 #-------------------------------------------------------------------------------
 # STEP 9: CHANGE OWNERSHIP OF THE CONFIGURATION FILES
