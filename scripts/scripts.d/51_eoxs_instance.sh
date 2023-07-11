@@ -19,6 +19,12 @@ HAPI_SERVER_ID=${HAPI_SERVER_ID:-VirES-dev}
 
 VIRES_PERMISSION=${VIRES_PERMISSION:-swarm}
 
+VIRES_MODEL_CACHE_READ_ONLY="True"
+if [ "${VIRES_MODEL_CACHE_MODE:-RO}" == "RW" ]
+then
+    VIRES_MODEL_CACHE_READ_ONLY="False"
+fi
+
 # Configuration switches - all default to YES
 CONFIGURE_VIRES=${CONFIGURE_VIRES:-YES}
 CONFIGURE_ALLAUTH=${CONFIGURE_ALLAUTH:-YES}
@@ -29,6 +35,7 @@ required_variables VIRES_SERVER_HOST VIRES_SERVICE_NAME
 required_variables VIRES_SERVER_NPROC VIRES_SERVER_NTHREAD
 required_variables VIRES_USER VIRES_GROUP VIRES_INSTALL_USER VIRES_INSTALL_GROUP
 required_variables VIRES_LOGDIR VIRES_TMPDIR VIRES_CACHE_DIR
+required_variables VIRES_MODEL_CACHE_DIR VIRES_MODEL_CACHE_READ_ONLY
 required_variables VIRES_WPS_SERVICE_NAME VIRES_WPS_URL_PATH
 required_variables VIRES_WPS_TEMP_DIR VIRES_WPS_PERM_DIR VIRES_WPS_TASK_DIR
 required_variables VIRES_WPS_SOCKET VIRES_WPS_NPROC VIRES_WPS_MAX_JOBS
@@ -274,7 +281,6 @@ EOXS_PROCESSES = [
     'vires.processes.get_conjunctions.GetConjunctions',
     'vires.processes.eval_model.EvalModel',
     'vires.processes.retrieve_continuous_segments.RetrieveContinuousSegments',
-    'vires.processes.retrieve_field_lines.RetrieveFieldLines',
     'vires.processes.retrieve_bubble_index.RetrieveBubbleIndex',
     'vires.processes.fetch_data.FetchData',
     'vires.processes.fetch_filtered_data.FetchFilteredData',
@@ -290,6 +296,8 @@ EOXS_ASYNC_BACKENDS = [
 
 VIRES_UPLOAD_DIR = "$VIRES_UPLOAD_DIR"
 VIRES_CACHE_DIR = "$VIRES_CACHE_DIR"
+VIRES_MODEL_CACHE_DIR = "$VIRES_MODEL_CACHE_DIR"
+VIRES_MODEL_CACHE_READ_ONLY = $VIRES_MODEL_CACHE_READ_ONLY
 
 END
 
