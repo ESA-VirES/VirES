@@ -39,7 +39,10 @@ Run
 ```
 ./start_pod.sh
 ```
-and go to `http://localhost:8200` in your browser.
+and go to `http://localhost:8200` in your browser. Please note that it takes
+some time to initialize the containers. Do not panic if the service shows
+initially `503 Service Unavailable` it may not be initialized yet.
+Give it a minute and try it again.
 
 See below how to configure data location and register data.
 How to get the data is not part of this guide.
@@ -99,7 +102,7 @@ See also other `podman volume` commands
 podman pod ps --help
 ```
 
-## Pod managment
+## Pod management
 
 To start the pod run the `start_pod.sh` script witch creates and start the pod
 named `vires-server-dev` and bootstraps the required containers

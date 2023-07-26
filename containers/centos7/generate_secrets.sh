@@ -1,5 +1,4 @@
 #!/bin/bash
-set -x
 
 DIR="$(cd "$(dirname $0)" ; pwd )"
 . $DIR/common.sh
