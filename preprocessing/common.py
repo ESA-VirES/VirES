@@ -27,6 +27,7 @@
 #-------------------------------------------------------------------------------
 
 import sys
+import time
 import ctypes
 from logging import getLogger, DEBUG, StreamHandler, Formatter
 from os.path import exists
@@ -94,10 +95,10 @@ class CommandError(Exception):
 def setup_logging(level=DEBUG, stream=sys.stderr):
     """ Setup logging stream handler. """
     formatter = Formatter(
-        fmt="%(levelname)s: %(message)s",
-        #datefmt="%Y%m%dT%H%M%SZ",
+        fmt="%(asctime)s %(levelname)s: %(message)s",
+        datefmt="%Y-%m-%dT%H:%M:%SZ",
     )
-    #formatter.converter = time.gmtime
+    formatter.converter = time.gmtime
     handler = StreamHandler(stream)
     handler.setLevel(level)
     handler.setFormatter(formatter)
