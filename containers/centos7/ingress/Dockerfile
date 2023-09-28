@@ -16,4 +16,5 @@ RUN yum clean all
 
 EXPOSE 80
 
-CMD ["httpd", "-D", "FOREGROUND"]
+COPY entrypoint.sh /usr/local/bin/
+ENTRYPOINT ["entrypoint.sh"]
