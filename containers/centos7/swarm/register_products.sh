@@ -2,10 +2,25 @@
 #
 # Register VirES-for-Swarm data products
 #
+# USAGE:
+#
+#    register_products.sh
+#        register all applicable products found in the data directory
+#
+#    register_products.sh <directory> [<directory> ...]
+#        register all applicable products found in one or more given
+#        directories
+#
+#    register_products.sh <file> [<file> ...]
+#        register one or more products passed as the CLI arguments
+#
+#    register_products.sh -
+#        register products passed via standard input
+#
 
 search_products () {
     # recursively search for all products in the data folder
-    find "$VIRES_DATA_DIR" -type f
+    find "$1" -type f
 }
 
 filter_by_status () {
@@ -39,4 +54,34 @@ register_products() {
     vires_sync_watch stdin vires -m "$INSTANCE_NAME.settings" -p "$INSTANCE_DIR" --fix-logging --unique
 }
 
-search_products | filter_by_status | register_products
+
+{
+    _STDIN=
+    if [ "$#" -eq 0 ]
+    then
+        # by default search the mounted data volume
+        search_products "$VIRES_DATA_DIR"
+    else
+        # for each argument
+        for ARG
+        do
+            if [ "$ARG" = "-" ]
+            then
+                # pass trough standard input, but not more than once
+                [ -z "$_STDIN" ] && cat
+                _STDIN="1"
+            elif [ -d "$ARG" ]
+            then
+                # recursively search files in a directory
+                search_products "$ARG"
+            elif [ -f "$ARG" ]
+            then
+                # pass files directly
+                echo "$ARG"
+            else
+                # or just ignore the invalid argument
+                echo "$ARG is ignored." >&2
+            fi
+        done
+    fi
+} | filter_by_status | register_products
