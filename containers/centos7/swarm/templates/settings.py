@@ -3,7 +3,7 @@ from os.path import join, abspath, dirname
 
 PROJECT_DIR = dirname(abspath(__file__))
 
-DEBUG = False
+DEBUG = True
 
 MANAGERS = ADMINS = ()
 
@@ -196,7 +196,7 @@ EOXS_ASYNC_BACKENDS = [
 VIRES_UPLOAD_DIR = "{{VIRES_UPLOAD_DIR}}"
 VIRES_CACHE_DIR = "{{VIRES_PRODUCT_CACHE_DIR}}"
 VIRES_MODEL_CACHE_DIR = "{{VIRES_MODEL_CACHE_DIR}}"
-VIRES_MODEL_CACHE_READ_ONLY = True
+VIRES_MODEL_CACHE_READ_ONLY = False
 
 
 # Django-Allauth settings
