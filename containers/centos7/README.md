@@ -39,7 +39,7 @@ Step 1, pull or build the container images.
 
 Step 2, pun
 ```
-./start_pod.sh
+./pod create
 ```
 and go to `http://localhost:8200` in your browser. Please note that it takes
 some time to initialize the containers. Do not panic if the service shows
@@ -106,24 +106,32 @@ The named volumes attached to this can be removed by
 
 ## Pod management
 
-To start the pod run the `start_pod.sh` script witch creates and start the pod
+To start the pod run following script witch creates and start the pod
 named `vires-server-dev` and bootstraps the required containers
 
 ```
-./start_pod.sh
+./pod create
 ```
 
-To check that the pod was created successfully try, e.g.,
-
+The status of the container can be checked by
 ```
-podman pod ps
-```
-
-See also other `podman pod` commands
-```
-podman pod ps --help
+./pod status
 ```
 
+The containers and their status can be checked by
+```
+./pod ps
+```
+
+To restart pod, e.g., after the computer restart run
+```
+./pod restart
+```
+
+To remove the pod and all its containers run
+```
+./pod remove
+```
 
 ## PosgreSQL database initialization and management
 

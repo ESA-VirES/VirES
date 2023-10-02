@@ -2,52 +2,60 @@
 #
 # pod management helper script
 #
-
-DIR="$(cd "$(dirname $0)" ; pwd )"
-. $DIR/common.sh
-
+#
+info() {
+    echo "$*" >&2
+}
 
 error() {
     echo "ERROR: $*" >&2
 }
 
-
 usage() {
-    echo "USAGE: pod.sh start|remove|status|ps" >&2
+    echo "USAGE: pod create|start|stop|remove|restart|status|ps" >&2
 }
 
-_exists() {
+_pod_exists() {
     podman pod exists "$POD_NAME"
 }
 
-_start() {
+_create() {
     # start pod and its containers
-    if ! _exists
+    if ! _pod_exists
     then
+        info "Creating $POD_NAME pod ..."
         podman pod create -n "$POD_NAME" -p "$POD_PORT:80"
         echo "SERVICE_URL=http://localhost:$POD_PORT" > $DIR/volumes/options.conf
     fi
 
-    exit
-
-    # NOTE: it takes some time to initialize the components
-    # TODO: implement check that DB is up and running
-
-    $DIR/start.sh database \
-      && sleep 30 \
-      && $DIR/exec.sh database -i create_db < $DIR/volumes/secrets/oauth.conf \
-      && $DIR/exec.sh database -i create_db < $DIR/volumes/secrets/swarm.conf \
-      && $DIR/start.sh oauth \
-      && $DIR/start.sh swarm \
-      && $DIR/start.sh ingress
+    $DIR/container database start \
+      && $DIR/container database exec /bin/sh -c 'while ! pg_isready ; do sleep 1 ; done' \
+      && $DIR/container database exec -i create_db < $DIR/volumes/secrets/oauth.conf \
+      && $DIR/container database exec -i create_db < $DIR/volumes/secrets/swarm.conf \
+      && $DIR/container oauth start \
+      && $DIR/container swarm start \
+      && $DIR/container ingress start
 }
 
 _remove() {
     # remove pod and its containers
-    if _exists
+    if _pod_exists
     then
+        info "Removing $POD_NAME pod ..."
         podman pod rm --force "$POD_NAME"
     fi
+}
+
+_stop() {
+    podman pod stop "$POD_NAME"
+}
+
+_start() {
+    podman pod start "$POD_NAME"
+}
+
+_restart() {
+    podman pod restart "$POD_NAME"
 }
 
 _status() {
@@ -57,17 +65,25 @@ _status() {
 
 _ps() {
     # list pod containers
-    podman ps --filter "pod=^$POD_NAME$" "$@"
+    podman ps --filter "pod=$POD_NAME" "$@"
 }
+
+# -----------------------------------------------------------------------------
+
+DIR="$(cd "$(dirname $0)" ; pwd )"
+. $DIR/common.sh
 
 COMMAND="$1"
 [ "$#" -ge 1 ] && shift
 
 case "$COMMAND" in
-    start) _start ;;
+    create) _create ;;
     remove) _remove ;;
-    status) _status ;;
-    ps) _ps ;;
+    start) _start ;;
+    stop) _stop ;;
+    restart) _restart ;;
+    status) _status "$@" ;;
+    ps) _ps "$@" ;;
     *)
         if [ -z "$COMMAND" ]
         then
@@ -79,13 +95,3 @@ case "$COMMAND" in
         exit 1
         ;;
 esac
-
-
-
-
-
-
-
-
-
-
