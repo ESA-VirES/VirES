@@ -1,0 +1,91 @@
+#!/bin/sh
+#
+# pod management helper script
+#
+
+DIR="$(cd "$(dirname $0)" ; pwd )"
+. $DIR/common.sh
+
+
+error() {
+    echo "ERROR: $*" >&2
+}
+
+
+usage() {
+    echo "USAGE: pod.sh start|remove|status|ps" >&2
+}
+
+_exists() {
+    podman pod exists "$POD_NAME"
+}
+
+_start() {
+    # start pod and its containers
+    if ! _exists
+    then
+        podman pod create -n "$POD_NAME" -p "$POD_PORT:80"
+        echo "SERVICE_URL=http://localhost:$POD_PORT" > $DIR/volumes/options.conf
+    fi
+
+    exit
+
+    # NOTE: it takes some time to initialize the components
+    # TODO: implement check that DB is up and running
+
+    $DIR/start.sh database \
+      && sleep 30 \
+      && $DIR/exec.sh database -i create_db < $DIR/volumes/secrets/oauth.conf \
+      && $DIR/exec.sh database -i create_db < $DIR/volumes/secrets/swarm.conf \
+      && $DIR/start.sh oauth \
+      && $DIR/start.sh swarm \
+      && $DIR/start.sh ingress
+}
+
+_remove() {
+    # remove pod and its containers
+    if _exists
+    then
+        podman pod rm --force "$POD_NAME"
+    fi
+}
+
+_status() {
+    # get pod status
+    podman pod ps --filter "name=^$POD_NAME$" "$@"
+}
+
+_ps() {
+    # list pod containers
+    podman ps --filter "pod=^$POD_NAME$" "$@"
+}
+
+COMMAND="$1"
+[ "$#" -ge 1 ] && shift
+
+case "$COMMAND" in
+    start) _start ;;
+    remove) _remove ;;
+    status) _status ;;
+    ps) _ps ;;
+    *)
+        if [ -z "$COMMAND" ]
+        then
+            error "Missing pod command!"
+        else
+            error "$COMMAND not found!"
+        fi
+        usage
+        exit 1
+        ;;
+esac
+
+
+
+
+
+
+
+
+
+
