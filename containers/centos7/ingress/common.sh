@@ -5,7 +5,7 @@ IMAGE_NAME="centos7-apache"
 IMAGE="$REGISTRY/$IMAGE_NAME:$IMAGE_TAG"
 
 BUILD_OPTIONS="--squash --no-cache --build-arg=SOURCE_IMAGE=$SOURCE_IMAGE"
-CONTAINER_NAME="ingress"
+CONTAINER_NAME="${POD_NAME:-vires-server}--ingress"
 CREATE_OPTIONS="\
     --pod $POD_NAME \
     --volume ${POD_NAME:-vires-server}--oauth-static:/var/www/vires/oauth_static:ro \

@@ -7,7 +7,7 @@ IMAGE="$REGISTRY/$IMAGE_NAME:$IMAGE_TAG"
 VIRES_DATA=${VIRES_DATA:-../../data}
 
 BUILD_OPTIONS="--squash --no-cache --build-arg=SOURCE_IMAGE=$SOURCE_IMAGE"
-CONTAINER_NAME="swarm"
+CONTAINER_NAME="${POD_NAME:-vires-server}--swarm"
 CREATE_OPTIONS="\
     --pod $POD_NAME \
     --volume ../../../VirES-Server:/usr/local/vires \
