@@ -166,7 +166,7 @@ case "$COMMAND" in
     *)
         if [ -z "$COMMAND" ]
         then
-            error "Missing pod command!"
+            error "Missing container command!"
         else
             error "$COMMAND not found!"
         fi
