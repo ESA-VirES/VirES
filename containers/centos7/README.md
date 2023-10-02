@@ -27,15 +27,17 @@ The VirES images are stored in a private repository which require
 access credentials. These credentials are not included in this repository.
 
 It is not necessary to have access to the repository to be able to build
-and use the container images 
+and use the container images. 
 
-If you needs the access credentials for the container repository contact
+If you need the access credentials for the container repository contact
 the VirES team.
 
 
 ## Quick start
 
-Run
+Step 1, pull or build the container images.
+
+Step 2, pun
 ```
 ./start_pod.sh
 ```
@@ -82,7 +84,7 @@ Then the newly created containers will use the up-to-date container images
 This can be achieved by the provided helper scripts, e.g.,
 
 ```
-./reload.sh swarm ; ./show_logs.sh swarm -f
+./cnt swarm reload ; ./cnt swarm logs -f
 ```
 (Note that the reload does not show any output. To see the container
 initialization it is recommended to show the output of the podman logs)
@@ -129,8 +131,8 @@ The database container is started without any database created. The database
 and the associated roles need to be generated from the credentials.
 
 ```
-./exec.sh database -i create_db < ./volumes/secrets/oauth.conf
-./exec.sh database -i create_db < ./volumes/secrets/swarm.conf
+./cnt database exec -i create_db < ./volumes/secrets/oauth.conf
+./cnt database exec -i create_db < ./volumes/secrets/swarm.conf
 ```
 
 The `start_pod.sh` command takes care of the databases but
@@ -139,10 +141,10 @@ it needs executed manually to force an update of the credentials.
 In addition, a few helper commands are provide to manage the instance databases:
 
 ```
-./exec.sh database list_dbs
-./exec.sh database list_db_users
-./exec.sh database drop_db <db-name>
-./exec.sh database drop_db_user <db-user>
+./cnt database exec list_dbs
+./cnt database exec list_db_users
+./cnt database exec drop_db <db-name>
+./cnt database exec drop_db_user <db-user>
 ```
 
 
@@ -153,13 +155,13 @@ creation do not require manual intervention.
 
 Instance data are updated at each container creation (reload of the container)
 ```
-./reload.sh swarm
+./cnt swarm reload
 ```
 
 To force update the of the Django persistent instance configuration
 (e.g., settings.py) remove the instance and restart the container
 ```
-rm -fR ./volumes/swarm/{manage.py,swarm} ; ./reload.sh swarm
+rm -fR ./volumes/swarm/{manage.py,swarm} ; ./cnt swarm reload
 ```
 
 Since the VirES server components are mounted from their local development
@@ -167,12 +169,12 @@ folders any changes are visible immediately in the container, though,
 in order to take an effect the running daemons must be restarted.
 This is achieved by restarting of the containers.
 ```
-./restart.sh swarm
+./cnt swarm restart
 ```
 
 For a running container, the `manage.py` scripts can be executed as
 ```
-./exec.sh swarm runuser -u vires manage.py
+./cnt swarm exec runuser -u vires manage.py
 ```
 
 ## Web client installation
@@ -184,7 +186,7 @@ upon the reload of the `swarm` container.
 
 To register products in batch run the following command
 ```
-./exec.sh swarm register_products
+./cnt swarm exec register_products
 ```
 
 This command scans for data products in the configured data directory
@@ -193,7 +195,7 @@ and registers them to the server.
 Beside the batch registration you can control the registered data
 by the `manage.py` command
 ```
-./exec.sh swarm manage.py --help
+./cnt swarm exec manage.py --help
 ```
 
 ### Data location
@@ -206,7 +208,7 @@ reload the `swarm` container.
 
 ```
 export VIRES_DATA=<your custom data directory>
-./reload.sh swarm ; ./show_logs.sh swarm -f
+./cnt swarm reload ; ./cnt swarm logs -f
 ```
 
 ## Building new containers
