@@ -35,6 +35,18 @@ remove_db() {
     fi
 }
 
+clear_db_access() {
+    # remove any DB-specific access restrictions
+    PG_HBA="$PGDATA/pg_hba.conf"
+    { ex "$PG_HBA" || /bin/true ; } <<END
+g/^\s*local\s*$DBNAME/d
+g/^\s*host\s*$DBNAME/d
+wq
+END
+    psql -q -c "SELECT pg_reload_conf();" >/dev/null
+}
+
 DBNAME="$1"
 
 remove_db
+clear_db_access

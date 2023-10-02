@@ -76,7 +76,7 @@ create_new_db() {
     then
         echo "$DBEXTENSIONS" | tr ',' '\n' | while read DBEXTENSION
         do
-            psql -q -d "$DBNAME" -c "CREATE EXTENSION IF NOT EXISTS postgis ;" \
+            psql -q -d "$DBNAME" -c "CREATE EXTENSION IF NOT EXISTS $DBEXTENSION ;" \
                 && info "The '$DBEXTENSION' extension of the '$DBNAME' database was created." \
                 || error "Failed to create '$DBEXTENSION' extension of the '$DBNAME' database."
         done
@@ -102,6 +102,19 @@ END
     psql -q -c "SELECT pg_reload_conf();" >/dev/null
 
 }
+
+
+clear_db_access() {
+    # remove any DB-specific access restrictions
+    PG_HBA="$PGDATA/pg_hba.conf"
+    { ex "$PG_HBA" || /bin/true ; } <<END
+g/^\s*local\s*$DBNAME/d
+g/^\s*host\s*$DBNAME/d
+wq
+END
+    psql -q -c "SELECT pg_reload_conf();" >/dev/null
+}
+
 
 create_update_db_user() {
     # check if the user already exists
@@ -151,6 +164,7 @@ else
     stop_if_db_exists
 fi
 
+clear_db_access
 create_update_db_user
 create_new_db
 restrict_db_access
