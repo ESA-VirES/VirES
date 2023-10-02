@@ -24,6 +24,7 @@ fi
 export DOCKER_CONFIG="${DOCKER_CONFIG:-$(dirname "$0")}"
 export REGISTRY_AUTH_FILE="${REGISTRY_AUTH_FILE:-$DOCKER_CONFIG/config.json}"
 
+export POD_PORT="8200"
 export POD_NAME="vires-server-dev"
 
 . ./tag.conf
