@@ -92,16 +92,16 @@ initialization it is recommended to show the output of the podman logs)
 ## Container volumes
 
 The containers use a mixture of named volumes and volumes mounded from
-the host file-system (see the `./voluemes` folder).
+the host file-system (see the `./volumes` folder).
 
-The named volumes can be listed by (check for `vires-` prefix)
+The named volumes attached to this pod can be listed by 
 ```
-podman volume ls
+./vlm list
 ```
 
-See also other `podman volume` commands
+The named volumes attached to this can be removed by
 ```
-podman pod ps --help
+./vlm remove
 ```
 
 ## Pod management
