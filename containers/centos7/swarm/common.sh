@@ -23,9 +23,9 @@ CREATE_OPTIONS="\
     --volume ./volumes/swarm:/srv/vires/swarm \
     --volume ./volumes/cache/products:/srv/vires/cache/products \
     --volume ./volumes/cache/models:/srv/vires/cache/models \
-    --volume vires-swarm-static:/srv/vires/swarm_static \
-    --volume vires-swarm-upload:/srv/vires/upload \
-    --volume vires-swarm-wps:/srv/vires/wps \
+    --volume ${POD_NAME:-vires-server}--swarm-static:/srv/vires/swarm_static \
+    --volume ${POD_NAME:-vires-server}--swarm-upload:/srv/vires/upload \
+    --volume ${POD_NAME:-vires-server}--swarm-wps:/srv/vires/wps \
     --volume $VIRES_DATA:/srv/vires/data:ro \
 "
 EXEC_OPTIONS="--user vires"

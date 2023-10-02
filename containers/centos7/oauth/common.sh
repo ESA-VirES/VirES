@@ -11,7 +11,7 @@ CREATE_OPTIONS="\
     --volume ../../../VirES-Server:/usr/local/vires \
     --volume ./volumes/logs/oauth:/var/log/vires/oauth \
     --volume ./volumes/oauth:/srv/vires/oauth \
-    --volume vires-oauth-static:/srv/vires/oauth_static \
+    --volume ${POD_NAME:-vires-server}--oauth-static:/srv/vires/oauth_static \
     --volume ./volumes/secrets/oauth.conf:/srv/vires/secrets.conf:ro \
     --volume ./volumes/secrets/vires.conf:/srv/vires/vires.conf:ro \
     --volume ./volumes/options.conf:/srv/vires/options.conf:ro \
