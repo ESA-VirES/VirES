@@ -1,0 +1,168 @@
+#!/bin/sh
+#
+# image management helper script
+#
+#
+
+info() {
+    echo "$*" >&2
+}
+
+error() {
+    echo "ERROR: $*" >&2
+}
+
+usage() {
+    echo "USAGE: image [<image-dir> build|push|pull|remove]|[build_all|push_all|pull_all|remove_all|retag]" >&2
+}
+
+_list_images() {
+    cat - << END
+centos7
+ingress
+database
+django-base
+oauth-base
+oauth
+swarm-base
+swarm
+END
+}
+
+_build_all() {
+    _list_images | while read IMAGE_DIR
+    do
+        if $DIR/image "$IMAGE_DIR" exists
+        then
+            echo "$IMAGE_DIR image already exists. Build is skipped."
+        else
+            $DIR/image "$IMAGE_DIR" build || break
+        fi
+    done
+}
+
+_push_all() {
+    _list_images | while read IMAGE_DIR
+    do
+        $DIR/image "$IMAGE_DIR" push || break
+    done
+}
+
+_pull_all() {
+    _list_images | while read IMAGE_DIR
+    do
+        $DIR/image "$IMAGE_DIR" pull || break
+    done
+}
+
+_remove_all() {
+    _list_images | while read IMAGE_DIR
+    do
+        $DIR/image "$IMAGE_DIR" remove || break
+    done
+}
+
+
+_require_image_dir() {
+    if [ -z "$IMAGE_DIR" ]
+    then
+        error "Container name is not configured."
+        exit 1
+    fi
+}
+
+_build() {
+    {
+        cd $DIR/$IMAGE_DIR
+        $CT_COMMAND build $BUILD_OPTIONS -t "$IMAGE" .
+    } 2>&1 | tee "$DIR/$IMAGE_DIR/build.log"
+}
+
+_push() {
+    $CT_COMMAND push "$IMAGE"
+}
+
+_pull() {
+    $CT_COMMAND pull "$IMAGE"
+}
+
+_exists() {
+    $CT_COMMAND image exists "$IMAGE"
+}
+
+_remove() {
+    _exists && $CT_COMMAND rmi "$IMAGE"
+}
+
+_retag() {
+    echo "IMAGE_TAG=\"$( date -u +"%Y%m%dT%H%M" )\"" > "$DIR/tag.conf"
+}
+
+# -----------------------------------------------------------------------------
+
+
+DIR="$(cd "$(dirname $0)" ; pwd )"
+. $DIR/common.sh
+
+
+# check if the first arguments is an image directory
+if [ -n "$1" -a -n "$( _list_images | grep "$1" )" ]
+then
+    IMAGE_DIR="$1"
+    . $DIR/$1/common.sh
+    shift
+fi
+
+COMMAND="$1"
+[ "$#" -ge 1 ] && shift
+
+case "$COMMAND" in
+    build_all)
+        _build_all
+        ;;
+    push_all)
+        _push_all
+        ;;
+    pull_all)
+        _pull_all
+        ;;
+    remove_all)
+        _remove_all
+        ;;
+    retag)
+        _retag
+        ;;
+    build)
+        _require_image_dir
+        _build
+        ;;
+    push)
+        _require_image_dir
+        _push
+        ;;
+    pull)
+        _require_image_dir
+        _pull
+        ;;
+    remove)
+        _require_image_dir
+        _remove
+        ;;
+    exists)
+        _require_image_dir
+        _exists
+        ;;
+    retag)
+        _retag
+        ;;
+    *)
+        if [ -z "$COMMAND" ]
+        then
+            error "Missing image command!"
+        else
+            error "$COMMAND not found!"
+        fi
+        usage
+        exit 1
+        ;;
+esac

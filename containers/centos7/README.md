@@ -35,9 +35,16 @@ the VirES team.
 
 ## Quick start
 
-Step 1, pull or build the container images.
+Step 1, pull container images from the registry
+```
+./image pull_all
+```
+or build them from scratch
+```
+./image build_all
+```
 
-Step 2, pun
+Step 2, run the pod containers
 ```
 ./pod create
 ```
@@ -84,7 +91,7 @@ Then the newly created containers will use the up-to-date container images
 This can be achieved by the provided helper scripts, e.g.,
 
 ```
-./cnt swarm reload ; ./cnt swarm logs -f
+./container swarm reload ; ./container swarm logs -f
 ```
 (Note that the reload does not show any output. To see the container
 initialization it is recommended to show the output of the podman logs)
@@ -96,12 +103,12 @@ the host file-system (see the `./volumes` folder).
 
 The named volumes attached to this pod can be listed by 
 ```
-./vlm list
+./volume list
 ```
 
 The named volumes attached to this can be removed by
 ```
-./vlm remove
+./volume remove
 ```
 
 ## Pod management
@@ -139,8 +146,8 @@ The database container is started without any database created. The database
 and the associated roles need to be generated from the credentials.
 
 ```
-./cnt database exec -i create_db < ./volumes/secrets/oauth.conf
-./cnt database exec -i create_db < ./volumes/secrets/swarm.conf
+./container database exec -i create_db < ./volumes/secrets/oauth.conf
+./container database exec -i create_db < ./volumes/secrets/swarm.conf
 ```
 
 The `start_pod.sh` command takes care of the databases but
@@ -149,10 +156,10 @@ it needs executed manually to force an update of the credentials.
 In addition, a few helper commands are provide to manage the instance databases:
 
 ```
-./cnt database exec list_dbs
-./cnt database exec list_db_users
-./cnt database exec drop_db <db-name>
-./cnt database exec drop_db_user <db-user>
+./container database exec list_dbs
+./container database exec list_db_users
+./container database exec drop_db <db-name>
+./container database exec drop_db_user <db-user>
 ```
 
 
@@ -163,13 +170,13 @@ creation do not require manual intervention.
 
 Instance data are updated at each container creation (reload of the container)
 ```
-./cnt swarm reload
+./container swarm reload
 ```
 
 To force update the of the Django persistent instance configuration
 (e.g., settings.py) remove the instance and restart the container
 ```
-rm -fR ./volumes/swarm/{manage.py,swarm} ; ./cnt swarm reload
+rm -fR ./volumes/swarm/{manage.py,swarm} ; ./container swarm reload
 ```
 
 Since the VirES server components are mounted from their local development
@@ -177,12 +184,12 @@ folders any changes are visible immediately in the container, though,
 in order to take an effect the running daemons must be restarted.
 This is achieved by restarting of the containers.
 ```
-./cnt swarm restart
+./container swarm restart
 ```
 
 For a running container, the `manage.py` scripts can be executed as
 ```
-./cnt swarm exec runuser -u vires manage.py
+./container swarm exec runuser -u vires manage.py
 ```
 
 ## Web client installation
@@ -194,7 +201,7 @@ upon the reload of the `swarm` container.
 
 To register products in batch run the following command
 ```
-./cnt swarm exec register_products
+./container swarm exec register_products
 ```
 
 This command scans for data products in the configured data directory
@@ -203,7 +210,7 @@ and registers them to the server.
 Beside the batch registration you can control the registered data
 by the `manage.py` command
 ```
-./cnt swarm exec manage.py --help
+./container swarm exec manage.py --help
 ```
 
 ### Data location
@@ -216,7 +223,7 @@ reload the `swarm` container.
 
 ```
 export VIRES_DATA=<your custom data directory>
-./cnt swarm reload ; ./cnt swarm logs -f
+./container swarm reload ; ./container swarm logs -f
 ```
 
 ## Building new containers
@@ -232,13 +239,21 @@ Make the tag is set to the time-stamp produced by the following command
 ```
 date -u +"%Y%m%dT%H%M"
 ```
+though the tag name can be arbitrary and it is recommended to use own tag-name
+to distinguish your build from the official ones.
+
 
 The run the build scripts for the individual containers
 ```
-./build.sh <name>
+./image <name> build
 ```
 
 Or build all containers in one shot (skips existing containers).
 ```
-./build.sh
+./image build_all
+```
+
+Once build the containers can be pushed to the repository by
+```
+./image push_all
 ```
