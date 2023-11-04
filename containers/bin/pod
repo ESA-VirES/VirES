@@ -3,13 +3,6 @@
 # pod management helper script
 #
 #
-info() {
-    echo "$*" >&2
-}
-
-error() {
-    echo "ERROR: $*" >&2
-}
 
 usage() {
     echo "USAGE: pod create|start|stop|remove|restart|status|ps" >&2
@@ -25,16 +18,16 @@ _create() {
     then
         info "Creating $POD_NAME pod ..."
         podman pod create -n "$POD_NAME" -p "$POD_PORT:80"
-        echo "SERVICE_URL=http://localhost:$POD_PORT" > $DIR/volumes/options.conf
+        echo "SERVICE_URL=http://localhost:$POD_PORT" > $VIRES_CONTAINER_ROOT/volumes/options.conf
     fi
 
-    $DIR/container database start \
-      && $DIR/container database exec /bin/sh -c 'while ! pg_isready ; do sleep 1 ; done' \
-      && $DIR/container database exec -i create_db < $DIR/volumes/secrets/oauth.conf \
-      && $DIR/container database exec -i create_db < $DIR/volumes/secrets/swarm.conf \
-      && $DIR/container oauth start \
-      && $DIR/container swarm start \
-      && $DIR/container ingress start
+    $BIN_DIR/container database start \
+      && $BIN_DIR/container database exec /bin/sh -c 'while ! pg_isready ; do sleep 1 ; done' \
+      && $BIN_DIR/container database exec -i create_db < $VIRES_CONTAINER_ROOT/volumes/secrets/oauth.conf \
+      && $BIN_DIR/container database exec -i create_db < $VIRES_CONTAINER_ROOT/volumes/secrets/swarm.conf \
+      && $BIN_DIR/container oauth start \
+      && $BIN_DIR/container swarm start \
+      && $BIN_DIR/container ingress start
 }
 
 _remove() {
@@ -70,8 +63,9 @@ _ps() {
 
 # -----------------------------------------------------------------------------
 
-DIR="$(cd "$(dirname $0)" ; pwd )"
-. $DIR/common.sh
+BIN_DIR="$(cd "$(dirname $0)" ; pwd )"
+. $BIN_DIR/common.sh
+. $VIRES_CONTAINER_ROOT/common.sh
 
 COMMAND="$1"
 [ "$#" -ge 1 ] && shift

@@ -4,14 +4,6 @@
 #
 #
 
-info() {
-    echo "$*" >&2
-}
-
-error() {
-    echo "ERROR: $*" >&2
-}
-
 usage() {
     echo "USAGE: volume list|remove" >&2
 }
@@ -31,8 +23,9 @@ _remove() {
 
 # -----------------------------------------------------------------------------
 
-DIR="$(cd "$(dirname $0)" ; pwd )"
-. $DIR/common.sh
+BIN_DIR="$(cd "$(dirname $0)" ; pwd )"
+. $BIN_DIR/common.sh
+. $VIRES_CONTAINER_ROOT/common.sh
 
 COMMAND="$1"
 [ "$#" -ge 1 ] && shift

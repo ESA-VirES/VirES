@@ -3,14 +3,6 @@
 # container management helper script
 #
 
-info() {
-    echo "$*" >&2
-}
-
-error() {
-    echo "ERROR: $*" >&2
-}
-
 usage() {
     echo "USAGE: container <image> start|stop|remove|status|logs|restart|reload|exec|run" >&2
 }
@@ -95,9 +87,11 @@ then
     exit 1
 fi
 
-DIR="$(cd "$(dirname $0)" ; pwd )"
-. $DIR/common.sh
-. $DIR/$1/common.sh
+BIN_DIR="$(cd "$(dirname $0)" ; pwd )"
+. $BIN_DIR/common.sh
+. $VIRES_CONTAINER_ROOT/common.sh
+. $VIRES_CONTAINER_ROOT/$1/common.sh
+
 shift
 
 if [ -z "$CONTAINER_NAME" ]

@@ -4,14 +4,6 @@
 #
 #
 
-info() {
-    echo "$*" >&2
-}
-
-error() {
-    echo "ERROR: $*" >&2
-}
-
 usage() {
     echo "USAGE: image [<image-dir> build|push|pull|remove]|[build_all|push_all|pull_all|remove_all|retag]" >&2
 }
@@ -32,11 +24,11 @@ END
 _build_all() {
     _list_images | while read IMAGE_DIR
     do
-        if $DIR/image "$IMAGE_DIR" exists
+        if $BIN_DIR/image "$IMAGE_DIR" exists
         then
             echo "$IMAGE_DIR image already exists. Build is skipped."
         else
-            $DIR/image "$IMAGE_DIR" build || break
+            $BIN_DIR/image "$IMAGE_DIR" build || break
         fi
     done
 }
@@ -44,21 +36,21 @@ _build_all() {
 _push_all() {
     _list_images | while read IMAGE_DIR
     do
-        $DIR/image "$IMAGE_DIR" push || break
+        $BIN_DIR/image "$IMAGE_DIR" push || break
     done
 }
 
 _pull_all() {
     _list_images | while read IMAGE_DIR
     do
-        $DIR/image "$IMAGE_DIR" pull || break
+        $BIN_DIR/image "$IMAGE_DIR" pull || break
     done
 }
 
 _remove_all() {
     _list_images | while read IMAGE_DIR
     do
-        $DIR/image "$IMAGE_DIR" remove || break
+        $BIN_DIR/image "$IMAGE_DIR" remove || break
     done
 }
 
@@ -73,9 +65,9 @@ _require_image_dir() {
 
 _build() {
     {
-        cd $DIR/$IMAGE_DIR
+        cd $VIRES_CONTAINER_ROOT/$IMAGE_DIR
         $CT_COMMAND build $BUILD_OPTIONS -t "$IMAGE" .
-    } 2>&1 | tee "$DIR/$IMAGE_DIR/build.log"
+    } 2>&1 | tee "$VIRES_CONTAINER_ROOT/$IMAGE_DIR/build.log"
 }
 
 _push() {
@@ -95,21 +87,22 @@ _remove() {
 }
 
 _retag() {
-    echo "IMAGE_TAG=\"$( date -u +"%Y%m%dT%H%M" )\"" > "$DIR/tag.conf"
+    echo "IMAGE_TAG=\"$( date -u +"%Y%m%dT%H%M" )\"" > "$VIRES_CONTAINER_ROOT/tag.conf"
 }
 
 # -----------------------------------------------------------------------------
 
 
-DIR="$(cd "$(dirname $0)" ; pwd )"
-. $DIR/common.sh
+BIN_DIR="$(cd "$(dirname $0)" ; pwd )"
+. $BIN_DIR/common.sh
+. $VIRES_CONTAINER_ROOT/common.sh
 
 
 # check if the first arguments is an image directory
 if [ -n "$1" -a -n "$( _list_images | grep "$1" )" ]
 then
     IMAGE_DIR="$1"
-    . $DIR/$1/common.sh
+    . $VIRES_CONTAINER_ROOT/$1/common.sh
     shift
 fi
 
