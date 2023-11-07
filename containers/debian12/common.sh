@@ -1,11 +1,11 @@
 # common settings
 
-export POD_PORT="8200"
-export POD_NAME="vires-server-dev"
+export POD_PORT="8300"
+export POD_NAME="vires-server-debian12-dev"
 
 list_images() {
     cat - << END
-centos7
+debian12
 ingress
 database
 django-base

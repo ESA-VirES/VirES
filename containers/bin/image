@@ -8,21 +8,8 @@ usage() {
     echo "USAGE: image [<image-dir> build|push|pull|remove]|[build_all|push_all|pull_all|remove_all|retag]" >&2
 }
 
-_list_images() {
-    cat - << END
-centos7
-ingress
-database
-django-base
-oauth-base
-oauth
-swarm-base
-swarm
-END
-}
-
 _build_all() {
-    _list_images | while read IMAGE_DIR
+    list_images | while read IMAGE_DIR
     do
         if $BIN_DIR/image "$IMAGE_DIR" exists
         then
@@ -34,21 +21,21 @@ _build_all() {
 }
 
 _push_all() {
-    _list_images | while read IMAGE_DIR
+    list_images | while read IMAGE_DIR
     do
         $BIN_DIR/image "$IMAGE_DIR" push || break
     done
 }
 
 _pull_all() {
-    _list_images | while read IMAGE_DIR
+    list_images | while read IMAGE_DIR
     do
         $BIN_DIR/image "$IMAGE_DIR" pull || break
     done
 }
 
 _remove_all() {
-    _list_images | while read IMAGE_DIR
+    list_images | while read IMAGE_DIR
     do
         $BIN_DIR/image "$IMAGE_DIR" remove || break
     done
@@ -99,7 +86,7 @@ BIN_DIR="$(cd "$(dirname $0)" ; pwd )"
 
 
 # check if the first arguments is an image directory
-if [ -n "$1" -a -n "$( _list_images | grep "$1" )" ]
+if [ -n "$1" -a -n "$( list_images | grep "$1" )" ]
 then
     IMAGE_DIR="$1"
     . $VIRES_CONTAINER_ROOT/$1/common.sh

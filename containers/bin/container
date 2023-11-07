@@ -71,6 +71,12 @@ _exec() {
 }
 
 _run() {
+    case "$1" in
+        -i) TI_OPTIONS="-i" ; shift ;;
+        --) TI_OPTIONS="" ; shift ;;
+        *) TI_OPTIONS="-ti" ;;
+    esac
+
     exec $CT_COMMAND run $TI_OPTIONS --rm $RUN_OPTIONS $IMAGE "$@"
 }
 
@@ -93,12 +99,6 @@ BIN_DIR="$(cd "$(dirname $0)" ; pwd )"
 . $VIRES_CONTAINER_ROOT/$1/common.sh
 
 shift
-
-if [ -z "$CONTAINER_NAME" ]
-then
-    error "Container name is not configured."
-    exit 1
-fi
 
 COMMAND="$1"
 [ "$#" -ge 1 ] && shift
