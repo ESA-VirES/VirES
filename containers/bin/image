@@ -21,14 +21,14 @@ _build_all() {
 }
 
 _push_all() {
-    list_images | while read IMAGE_DIR
+    list_images | tac | while read IMAGE_DIR
     do
         $BIN_DIR/image "$IMAGE_DIR" push || break
     done
 }
 
 _pull_all() {
-    list_images | while read IMAGE_DIR
+    list_images | tac | while read IMAGE_DIR
     do
         $BIN_DIR/image "$IMAGE_DIR" pull || break
     done
@@ -73,9 +73,18 @@ _remove() {
     _exists && $CT_COMMAND rmi "$IMAGE"
 }
 
-_retag() {
-    echo "IMAGE_TAG=\"$( date -u +"%Y%m%dT%H%M" )\"" > "$VIRES_CONTAINER_ROOT/tag.conf"
-}
+_retag() (
+    TAG_CONF="$VIRES_CONTAINER_ROOT/tag.conf"
+    IMAGE_TAG="$( date -u +"%Y%m%dT%H%M" )"
+    [ ! -f "$TAG_CONF" -o "$( grep "^\s*IMAGE_TAG\s*=.*" "$TAG_CONF" | wc -l )" -eq 0 ] && echo echo "IMAGE_TAG=" >> "$TAG_CONF"
+    { ed -vs "$TAG_CONF" || /bin/true ; } <<END
+g/^\s*IMAGE_TAG\s*=.*$/d
+0a
+IMAGE_TAG="$IMAGE_TAG"
+.
+wq
+END
+)
 
 # -----------------------------------------------------------------------------
 
@@ -131,9 +140,6 @@ case "$COMMAND" in
     exists)
         _require_image_dir
         _exists
-        ;;
-    retag)
-        _retag
         ;;
     *)
         if [ -z "$COMMAND" ]

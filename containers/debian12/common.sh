@@ -16,4 +16,5 @@ swarm
 END
 }
 
-. ./tag.conf
+VIRES_CONTAINER_ROOT="${VIRES_CONTAINER_ROOT:-.}"
+[ -f "$VIRES_CONTAINER_ROOT/tag.conf" ] && . "$VIRES_CONTAINER_ROOT/tag.conf"
