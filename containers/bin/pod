@@ -21,13 +21,7 @@ _create() {
         echo "SERVICE_URL=http://localhost:$POD_PORT" > $VIRES_CONTAINER_ROOT/volumes/options.conf
     fi
 
-    $BIN_DIR/container database start \
-      && $BIN_DIR/container database exec /bin/sh -c 'while ! pg_isready ; do sleep 1 ; done' \
-      && $BIN_DIR/container database exec -i create_db < $VIRES_CONTAINER_ROOT/volumes/secrets/oauth.conf \
-      && $BIN_DIR/container database exec -i create_db < $VIRES_CONTAINER_ROOT/volumes/secrets/swarm.conf \
-      && $BIN_DIR/container oauth start \
-      && $BIN_DIR/container swarm start \
-      && $BIN_DIR/container ingress start
+    start_containers
 }
 
 _remove() {
