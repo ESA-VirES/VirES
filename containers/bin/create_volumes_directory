@@ -24,9 +24,11 @@ volumes/logs
 volumes/logs/http
 volumes/logs/oauth
 volumes/logs/swarm
+volumes/logs/jhub
 volumes/secrets
 volumes/oauth
 volumes/swarm
+volumes/jhub
 END
 
 # initial user accounts

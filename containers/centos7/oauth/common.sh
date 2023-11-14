@@ -13,7 +13,8 @@ CREATE_OPTIONS="\
     --volume ./volumes/oauth:/srv/vires/oauth \
     --volume ${POD_NAME:-vires-server}--oauth-static:/srv/vires/oauth_static \
     --volume ./volumes/secrets/oauth.conf:/srv/vires/secrets.conf:ro \
-    --volume ./volumes/secrets/vires.conf:/srv/vires/vires.conf:ro \
+    --volume ./volumes/secrets/oauth_swarm.conf:/srv/vires/swarm.conf:ro \
+    --volume ./volumes/secrets/oauth_jhub.conf:/srv/vires/jhub.conf:ro \
     --volume ./volumes/options.conf:/srv/vires/options.conf:ro \
     --volume ./volumes/secrets/users.json:/srv/vires/users.json:ro \
 "

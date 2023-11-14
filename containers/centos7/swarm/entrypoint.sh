@@ -97,7 +97,7 @@ initialize_instance() {
     python3 "$INSTANCE_DIR/manage.py" product_collection import --default
 
     # initialize identity provider
-    render_template "$CONFIGURATION_TEMPLATES_DIR/oauth_idp.json" "$VIRES_ROOT/vires.conf" \
+    render_template "$CONFIGURATION_TEMPLATES_DIR/oauth_idp.json" "$VIRES_ROOT/oauth.conf" \
       | python3 "$INSTANCE_DIR/manage.py" social_provider import
 }
 

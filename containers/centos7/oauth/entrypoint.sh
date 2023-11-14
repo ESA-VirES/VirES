@@ -67,7 +67,9 @@ initialize_instance() {
 
     # initialize OAuth apps
     echo "Configuring OAuth apps ..."
-    render_template "$CONFIGURATION_TEMPLATES_DIR/swarm_app.json" "$VIRES_ROOT/vires.conf" "$VIRES_ROOT/options.conf" \
+    render_template "$CONFIGURATION_TEMPLATES_DIR/swarm_app.json" "$VIRES_ROOT/swarm.conf" "$VIRES_ROOT/options.conf" \
+      | python3 "$INSTANCE_DIR/manage.py" app import
+    render_template "$CONFIGURATION_TEMPLATES_DIR/jhub_app.json" "$VIRES_ROOT/jhub.conf" "$VIRES_ROOT/options.conf" \
       | python3 "$INSTANCE_DIR/manage.py" app import
 }
 

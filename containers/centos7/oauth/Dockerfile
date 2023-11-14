@@ -35,9 +35,6 @@ RUN mkdir -p "$LOG_DIR"
 RUN mkdir -p "$INSTANCE_DIR"
 RUN mkdir -p "$STATIC_DIR"
 
-# mount point for developemnt sources
-RUN mkdir -p "/usr/local/vires"
-
 COPY entrypoint.sh /usr/local/bin/
 ENTRYPOINT ["entrypoint.sh"]
 

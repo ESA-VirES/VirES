@@ -13,6 +13,8 @@ oauth-base
 oauth
 swarm-base
 swarm
+jhub-base
+jhub
 END
 }
 
