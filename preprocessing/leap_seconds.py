@@ -38,7 +38,7 @@ from bisect import bisect_right
 
 EPOCH_1900 = datetime(1900, 1, 1)
 LOGGER = getLogger(__name__)
-SOURCE_URL = 'https://www.ietf.org/timezones/data/leap-seconds.list'
+SOURCE_URL = 'https://hpiers.obspm.fr/iers/bul/bulc/ntp/leap-seconds.list'
 LOCAL_PATH = Path(Path.home(), 'leap-seconds.list')
 
 
