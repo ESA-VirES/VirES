@@ -158,7 +158,7 @@ def usage(exename, file=sys.stderr):
     """ Print usage. """
     print(
         f"USAGE: {basename(exename)} [--delete-old] <start-date> [<output dir>]"
-        " [--previous-outputs=<directory>]", file=file
+        " [--previous-outputs=<directory>][--temp-dir=<directory>]", file=file
     )
     print("\n".join([
         "DESCRIPTION:",
@@ -171,7 +171,7 @@ def usage(exename, file=sys.stderr):
         "  values if CDF files from the previous runs are available.",
         "  By default, the existing files are searched in the output",
         "  or other location if given.",
-        "  When requested, the old replaced indices removed removed.",
+        "  When requested, the old replaced indices are removed.",
         "  Optionally, a custom directory to hold intermediate temporary",
         "  files can be specified. By default, all temporary files",
         "  are held in the output directory.",
@@ -202,7 +202,7 @@ def parse_inputs(argv):
                 elif arg == "-p":
                     context = "previous output directory"
                     previous_output_dir = next(it_args)
-                if arg.startswith("--temp-dir="):
+                elif arg.startswith("--temp-dir="):
                     context = "temporary file directory"
                     temp_dir = arg.partition("=")[2]
                 elif arg in ("-d", "--delete-old"):
@@ -394,20 +394,20 @@ def split_chunks_by_year(chunks):
             for year in unique_years:
                 mask = years == year
                 start = datetime64_to_datetime(year)
-                yield DataChunk(
-                    data={
-                        key: values[mask]
-                        for key, values in chunk.data.items()
-                    },
-                    metadata={
-                        **chunk.metadata,
-                        "start": start,
-                        "end": min(
-                            datetime(start.year + 1, 1, 1),
-                            chunk.metadata["end"]
-                        ),
-                    }
-                )
+                data = {
+                    key: values[mask]
+                    for key, values in chunk.data.items()
+                }
+                metadata = {
+                    **chunk.metadata,
+                    "start": start,
+                    "end": min(
+                        datetime(start.year + 1, 1, 1),
+                        chunk.metadata["end"]
+                    ),
+                }
+                metadata["data_start"], metadata["data_end"] = get_data_extent(data)
+                yield DataChunk(data=data, metadata=metadata)
 
 
 def compare_chunks_with_previous_products(chunks, products):
