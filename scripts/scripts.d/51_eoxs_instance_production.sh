@@ -506,7 +506,7 @@ END
 info "Mapping VirES-Server instance '${INSTANCE}' to URL path '${INSTANCE}' ..."
 
 # locate proper configuration file (see also apache configuration)
-[ -z `locate_apache_conf 443 $HOSTNAME` -a -z `locate_apache_conf 80 $HOSTNAME`] && error "Failed to locate Apache virtual host $HOSTNAME configuration!"
+[ -z "`locate_apache_conf 80 $HOSTNAME`" -a -z "`locate_apache_conf 443 $HOSTNAME`" ] && error "Failed to locate Apache virtual host $HOSTNAME configuration!"
 {
     locate_apache_conf 80 $HOSTNAME
     locate_apache_conf 443 $HOSTNAME
