@@ -31,7 +31,7 @@ CONFIGURE_ALLAUTH=${CONFIGURE_ALLAUTH:-YES}
 CONFIGURE_WPSASYNC=${CONFIGURE_WPSASYNC:-YES}
 
 # decode base64 encoded password
-if [ -z "$DBPASSWD" -a -n "$DBPASSWD_B64" ]
+if [ -n "$DBPASSWD_B64" ]
 then
     DBPASSWD="`echo -n "$DBPASSWD_B64" | base64 -d`"
 fi
