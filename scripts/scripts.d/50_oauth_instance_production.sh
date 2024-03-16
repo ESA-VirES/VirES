@@ -21,6 +21,12 @@ OAUTH_SERVER_NTHREAD=${OAUTH_SERVER_NTHREAD:-2}
 
 DEBUG="False"
 
+# decode base64 encoded password
+if [ -n "$DBPASSWD_B64" ]
+then
+    DBPASSWD="`echo -n "$DBPASSWD_B64" | base64 -d`"
+fi
+
 required_variables OAUTH_VENV_ROOT
 activate_venv "$OAUTH_VENV_ROOT"
 
@@ -100,6 +106,7 @@ fi
 
 ALLOWED_HOSTS="'${VIRES_IP_ADDRESS}', '${HOSTNAME}'"
 [ -z "$VIRES_HOSTNAME_INTERNAL" ] || ALLOWED_HOSTS="'${VIRES_HOSTNAME_INTERNAL}', $ALLOWED_HOSTS"
+[ -z "$VIRES_HOSTNAMES_ALT" ] || ALLOWED_HOSTS="'${VIRES_HOSTNAMES_ALT}', $ALLOWED_HOSTS"
 
 # enter new settings
 { ex "$SETTINGS" || /bin/true ; } <<END
@@ -244,11 +251,11 @@ END
 #info "Mapping OAuth server instance '${INSTANCE}' to URL path '${INSTANCE}' ..."
 
 # locate proper configuration file (see also apache configuration)
-_PORT=443 # HTTPS only
-[ -z `locate_apache_conf $_PORT $HOSTNAME` ] && error "Failed to locate Apache virtual host $HOSTNAME:$_PORT configuration!"
+[ -z "`locate_apache_conf 80 $HOSTNAME`" -a -z "`locate_apache_conf 443 $HOSTNAME`" ] && error "Failed to locate Apache virtual host $HOSTNAME configuration!"
 {
-    locate_apache_conf $_PORT $HOSTNAME
-    [ -z "$VIRES_HOSTNAME_INTERNAL" ] || locate_apache_conf $_PORT $VIRES_HOSTNAME_INTERNAL
+    locate_apache_conf 80 $HOSTNAME
+    locate_apache_conf 443 $HOSTNAME
+    [ -z "$VIRES_HOSTNAME_INTERNAL" ] || locate_apache_conf 443 $VIRES_HOSTNAME_INTERNAL
 } | while read CONF
 do
     { ex "$CONF" || /bin/true ; } <<END
