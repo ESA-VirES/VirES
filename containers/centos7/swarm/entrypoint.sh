@@ -64,6 +64,7 @@ _fix_permissions() {
     chown "$VIRES_USER:$VIRES_GROUP" -R "$VIRES_MODEL_CACHE_DIR"
     chown "$VIRES_USER:$VIRES_GROUP" -R "$VIRES_SOCKET_DIR"
     chown "$VIRES_USER:$VIRES_GROUP" -R "$VIRES_WPS_DIR"
+    chown "$VIRES_USER:$VIRES_GROUP" -R "$VIRES_UPLOAD_DIR"
 }
 
 initialize_instance() {
