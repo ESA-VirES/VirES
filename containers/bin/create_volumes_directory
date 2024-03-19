@@ -21,7 +21,7 @@ volumes/cache
 volumes/cache/models
 volumes/cache/products
 volumes/logs
-volumes/logs/http
+volumes/logs/httpd
 volumes/logs/oauth
 volumes/logs/swarm
 volumes/logs/jhub
