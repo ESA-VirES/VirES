@@ -889,7 +889,7 @@ class JsonCache:
         try:
             with open(self._get_file_path(name), encoding="utf8") as file:
                 return json.load(file)
-        except FileNotFoundError:
+        except (FileNotFoundError, json.decoder.JSONDecodeError):
             return None
 
     def write_data(self, name, data):
