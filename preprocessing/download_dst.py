@@ -61,7 +61,7 @@ ONE_DAY = datetime.timedelta(days=1)
 class App:
     """ The app. """
     NAME = "download_dst"
-    VERSION = "1.0.0"
+    VERSION = "1.1.0"
 
     @classmethod
     def run(cls, *argv):
@@ -91,7 +91,7 @@ class App:
             f"USAGE: {os.path.basename(exename)} [--delete-old] <start-date> [<output dir>]"
             "[--temp-dir=<directory>][--cache-dir=<directory>]"
             "[--verbosity=<level>][--log-file=<path>][--log-level=<level>]"
-            "[--force-write]", file=file
+            "[--force-write][--no-update-check]", file=file
         )
         print("\n".join([
             "DESCRIPTION:",
@@ -112,6 +112,7 @@ class App:
     def parse_inputs(cls, argv):
         """ Parse input arguments. """
 
+        check_for_updates = True
         force_write = False
         verbosity = logging.INFO
         log_file = None
@@ -159,6 +160,8 @@ class App:
                         delete_old = False
                     elif arg == "--force-write":
                         force_write = True
+                    elif arg == "--no-update-check":
+                        check_for_updates = False
                     elif arg == "--":
                         ignore_options = True
                         continue
@@ -199,11 +202,12 @@ class App:
             "log_file": log_file,
             "log_level": log_level,
             "force_write": force_write,
+            "check_for_updates": check_for_updates,
         }
 
     @classmethod
     def main(cls, start_date, output_dir=None, temp_dir=None, cache_dir=None,
-             delete_old=False, force_write=False, **_):
+             delete_old=False, force_write=False, check_for_updates=True, **_):
         """ Main subroutine. """
 
         dst_store = DstProductStore(
@@ -217,7 +221,9 @@ class App:
         ranges = cls.yield_request_ranges(start_date)
 
         with dst_source:
-            chunks = dst_source.retrieve_request_ranges(ranges)
+            chunks = dst_source.retrieve_request_ranges(
+                ranges, check_for_updates=check_for_updates
+            )
 
         if not force_write:
             chunks = dst_store.filter_unchanged_chunks(chunks)
@@ -408,7 +414,7 @@ class DstProductStore:
     def _compare_data(data1, data2):
         """ Compare Dst data. """
         if set(data1) != set(data2):
-            raise ValueError("Dictionary keys must be the same!")
+            return False
         for key in data1:
             if not numpy.array_equal(data1[key], data2[key], equal_nan=True):
                 return False
@@ -442,6 +448,15 @@ class DstProduct:
                 "Hourly geomagnetic equatorial Dst index"
             ),
             "UNITS": "nT",
+            "FORMAT": "F6.3",
+        },
+        "dDst": {
+            "DESCRIPTION": (
+                "Absolute rate of change of the hourly Dst index"
+                " (calculated as an absolute value of the difference between"
+                " two consecutive hourly Dst values)"
+            ),
+            "UNITS": "nT/h",
             "FORMAT": "F6.3",
         },
         "Dst_Flag": {
@@ -502,6 +517,7 @@ class DstProduct:
                 cdf, "Timestamp", CDF_EPOCH, CdfTypeEpoch.encode(data["Timestamp"])
             )
             _save_cdf_variable(cdf, "Dst", CDF_DOUBLE, data["Dst"])
+            _save_cdf_variable(cdf, "dDst", CDF_DOUBLE, data["dDst"])
             _save_cdf_variable(cdf, "Dst_Version", CDF_INT2, data["Dst_Version"])
             _save_cdf_variable(cdf, "Dst_Flag", CDF_UINT1, data["Dst_Flag"])
 
@@ -519,6 +535,7 @@ class DstProduct:
             return {
                 "Timestamp": _load_cdf_data(cdf, "Timestamp", CdfTypeEpoch.decode),
                 "Dst": _load_cdf_data(cdf, "Dst"),
+                "dDst": _load_cdf_data(cdf, "dDst"),
                 "Dst_Version": _load_cdf_data(cdf, "Dst_Version"),
                 "Dst_Flag": _load_cdf_data(cdf, "Dst_Flag"),
             }
@@ -574,7 +591,7 @@ class DstDataSource:
         """ Reset tried Dst sources """
         self._tested_sources = self._get_fresh_sources()
 
-    def retrieve_request_ranges(self, ranges):
+    def retrieve_request_ranges(self, ranges, check_for_updates=True):
         """ Handle sequence of request time ranges. """
 
         def _yield_request_range_chunks(start, end):
@@ -588,13 +605,35 @@ class DstDataSource:
             if start.year != (end - ONE_DAY).year:
                 raise ValueError("Time selection crosses calendar year boundary!")
             for month in reversed(range(start.month, (end - ONE_DAY).month + 1)):
-                yield self.retrieve_monthly_data(start.year, month)
-
-        for start, end in ranges:
-            if end >= start:
-                yield self.concatenate_chunks(
-                    _yield_request_range_chunks(start, end)
+                yield self.retrieve_monthly_data(
+                    start.year, month, check_for_updates=check_for_updates
                 )
+
+        def _calculate_ddst(chunks):
+            """ Calculate dDst from a stream of time-ordered yearly chunks. """
+            last_chunk = None
+            for chunk in chunks:
+                if (
+                    last_chunk and
+                    last_chunk.metadata["start"] != chunk.metadata["end"]
+                ):
+                    self.logger.warning(
+                        "Disconnected data chunks! %s != %s",
+                        Timestamp.format(last_chunk.metadata["start"]),
+                        Timestamp.format(chunk.metadata["end"]),
+                    )
+                    last_chunk = None
+                yield self.calculate_ddst(chunk, last_chunk)
+                last_chunk = chunk
+
+        def _ranges_to_yearly_chunks(ranges):
+            for start, end in ranges:
+                if end >= start:
+                    yield self.concatenate_chunks(
+                        _yield_request_range_chunks(start, end)
+                    )
+
+        yield from _calculate_ddst(_ranges_to_yearly_chunks(ranges))
 
     def retrieve_monthly_data(self, year, month, check_for_updates=True):
         """ Retrieve monthly Dst data for the give year and month.
@@ -750,12 +789,47 @@ class DstDataSource:
 
         return result
 
+    @classmethod
+    def calculate_ddst(cls, chunk, next_chunk):
+        """ Calculate the dDst as absolute value of the rate of the Dst.
+        The rate of change is calculated from the difference of two consecutive
+        values.
+        """
+        # check the equidistant time sampling
+        times = chunk.data["Timestamp"]
+        time_tail = next_chunk.data["Timestamp"][0] if next_chunk else None
+
+        if (
+            ((times[1:] - times[:-1]) != DstFile.SAMPLING).any() or
+            (next_chunk and (time_tail - times[-1]) != DstFile.SAMPLING)
+        ):
+            raise ValueError("Irregular time sampling!")
+
+        # calculate dDst
+        dst = chunk.data["Dst"]
+        dst_tail = next_chunk.data["Dst"][0] if next_chunk else numpy.nan
+
+        chunk.data["dDst"] = numpy.abs(
+            numpy.concatenate((dst[1:], [dst_tail])) - dst
+        ) / DstFile.SAMPLING_H
+
+        # update metadata
+        if next_chunk:
+            chunk.metadata["urls"].append(next_chunk.metadata["urls"][0])
+            chunk.metadata["timestamps"].append(next_chunk.metadata["timestamps"][0])
+            chunk.metadata["timestamp"] = max(chunk.metadata["timestamps"])
+
+        return chunk
+
 
 class DstFile:
     """ Dst file parser. """
 
     class ParsingError(Exception):
         """ Exception raised when the requested Dst file cannot be parsed. """
+
+    SAMPLING_H = 1 # sapling rate in hours
+    SAMPLING = numpy.timedelta64(60, "m") # sapling rate as numpy.timedelta64
 
     DST_FLAG = {"realtime": 2, "provisional": 1, "final": 0}
 
