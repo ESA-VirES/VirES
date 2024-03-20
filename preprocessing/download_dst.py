@@ -90,7 +90,8 @@ class App:
         print(
             f"USAGE: {os.path.basename(exename)} [--delete-old] <start-date> [<output dir>]"
             "[--temp-dir=<directory>][--cache-dir=<directory>]"
-            "[--verbosity=<level>][--log-file=<path>][--log-level=<level>]", file=file
+            "[--verbosity=<level>][--log-file=<path>][--log-level=<level>]"
+            "[--force-write]", file=file
         )
         print("\n".join([
             "DESCRIPTION:",
@@ -111,6 +112,7 @@ class App:
     def parse_inputs(cls, argv):
         """ Parse input arguments. """
 
+        force_write = False
         verbosity = logging.INFO
         log_file = None
         log_level = logging.INFO
@@ -155,6 +157,8 @@ class App:
                         delete_old = True
                     elif arg in ("+d", "--preserve-old"):
                         delete_old = False
+                    elif arg == "--force-write":
+                        force_write = True
                     elif arg == "--":
                         ignore_options = True
                         continue
@@ -194,11 +198,12 @@ class App:
             "verbosity": verbosity,
             "log_file": log_file,
             "log_level": log_level,
+            "force_write": force_write,
         }
 
     @classmethod
     def main(cls, start_date, output_dir=None, temp_dir=None, cache_dir=None,
-             delete_old=False, **_):
+             delete_old=False, force_write=False, **_):
         """ Main subroutine. """
 
         dst_store = DstProductStore(
@@ -214,7 +219,8 @@ class App:
         with dst_source:
             chunks = dst_source.retrieve_request_ranges(ranges)
 
-        chunks = dst_store.filter_unchanged_chunks(chunks)
+        if not force_write:
+            chunks = dst_store.filter_unchanged_chunks(chunks)
 
         for chunk in chunks:
             dst_store.save_chunk(chunk)
@@ -435,7 +441,7 @@ class DstProduct:
             "DESCRIPTION": (
                 "Hourly geomagnetic equatorial Dst index"
             ),
-            "UNITS": "-",
+            "UNITS": "nT",
             "FORMAT": "F6.3",
         },
         "Dst_Flag": {
@@ -448,7 +454,7 @@ class DstProduct:
         },
         "Dst_Version": {
             "DESCRIPTION": (
-                "Version of the sample as a number of applied corrections."
+                "Version of the sample as a number of applied corrections"
             ),
             "UNITS": "-",
             "FORMAT": "I1",
@@ -482,7 +488,11 @@ class DstProduct:
         with cdf_open(filename, "w") as cdf:
             cdf.attrs.update({
                 "TITLE": metadata["identifier"],
-                "REQUEST_URL": metadata["urls"],
+                "SOURCE_URL": metadata["urls"],
+                "SOURCE_TIMESTAMP": [
+                    _format_datetime(timestamp)
+                    for timestamp in metadata["timestamps"]
+                ],
                 "LAST_MODIFIED": _format_datetime(metadata["timestamp"]),
                 **cls.CDF_GLOBAL_ATTRIBUTES,
                 "CREATED": Timestamp.format(Timestamp.now()),
@@ -722,6 +732,7 @@ class DstDataSource:
                 "data_start": min(item.metadata["data_start"] for item in chunks),
                 "data_end": max(item.metadata["data_end"] for item in chunks),
                 "timestamp": max(item.metadata["timestamp"] for item in chunks),
+                "timestamps": [item.metadata["timestamp"] for item in chunks],
             }
         )
 
@@ -889,7 +900,7 @@ class JsonCache:
         try:
             with open(self._get_file_path(name), encoding="utf8") as file:
                 return json.load(file)
-        except FileNotFoundError:
+        except (FileNotFoundError, json.decoder.JSONDecodeError):
             return None
 
     def write_data(self, name, data):
