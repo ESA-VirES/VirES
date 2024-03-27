@@ -59,6 +59,7 @@ required_variables OAUTH_SERVER_HOST
 required_variables DBENGINE VIRES_DBNAME
 required_variables SMTP_HOSTNAME SMTP_DEFAULT_SENDER SERVER_EMAIL
 
+HTTP_USE_TLS=${HTTP_USE_TLS:-NO}
 SMTP_USE_TLS=${SMTP_USE_TLS:-YES}
 SMTP_PORT=${SMTP_PORT:-25}
 
@@ -509,11 +510,16 @@ END
 info "Mapping VirES-Server instance '${INSTANCE}' to URL path '${INSTANCE}' ..."
 
 # locate proper configuration file (see also apache configuration)
-[ -z "`locate_apache_conf 80 $HOSTNAME`" -a -z "`locate_apache_conf 443 $HOSTNAME`" ] && error "Failed to locate Apache virtual host $HOSTNAME configuration!"
+if [ "$HTTP_USE_TLS" = "YES" ]
+then
+    _PORT=443
+else
+    _PORT=80
+fi
+[ -z "`locate_apache_conf $_PORT $HOSTNAME`" ] && error "Failed to locate Apache virtual host $HOSTNAME:$_PORT configuration!"
 {
-    locate_apache_conf 80 $HOSTNAME
-    locate_apache_conf 443 $HOSTNAME
-    [ -z "$VIRES_HOSTNAME_INTERNAL" ] || locate_apache_conf 443 $VIRES_HOSTNAME_INTERNAL
+    locate_apache_conf $_PORT $HOSTNAME
+    [ -z "$VIRES_HOSTNAME_INTERNAL" ] || locate_apache_conf $_PORT $VIRES_HOSTNAME_INTERNAL
 } | while read CONF
 do
     { ex "$CONF" || /bin/true ; } <<END
