@@ -9,8 +9,7 @@
 . `dirname $0`/../lib_logging.sh
 . `dirname $0`/../lib_python_venv.sh
 
-#TODO: fix the backend version
-SOURCE_URL="https://github.com/DAMATS/WPS-Backend/archive/0.5.9.tar.gz"
+SOURCE_URL="https://github.com/DAMATS/WPS-Backend/archive/0.5.11.tar.gz"
 
 info "Installing EOxServer asynchronous WPS backend."
 
