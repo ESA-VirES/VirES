@@ -56,6 +56,7 @@ from common import (
 )
 
 ONE_DAY = datetime.timedelta(days=1)
+ONE_HOUR = datetime.timedelta(hours=1)
 
 
 class App:
@@ -237,7 +238,9 @@ class App:
     @staticmethod
     def yield_request_ranges(start_date):
         """ Yield yearly request ranges.  """
-        end_date = Date.today() + ONE_DAY
+        # NOTE: a new monthly file is created one hour after UTC midnight
+        #       on the first day the new month
+        end_date = (Timestamp.now() + ONE_DAY - ONE_HOUR).date()
         for year in reversed(range(start_date.year, (end_date - ONE_DAY).year + 1)):
             yield Date.create(year, 1, 1), min(Date.create(year + 1, 1, 1), end_date)
 
