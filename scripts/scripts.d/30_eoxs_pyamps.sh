@@ -28,4 +28,7 @@ dask<2.17.0
 apexpy>=1.0
 END
 # installing pyAMPS directly from the Git repo
-pip install $PIP_OPTIONS git+https://github.com/klaundal/pyAMPS.git@1.6#pyamps
+#pip install $PIP_OPTIONS git+https://github.com/klaundal/pyAMPS.git@1.6#pyamps
+
+# temporary fix of PyAMPS v1.6.0 - see https://github.com/klaundal/pyAMPS/pull/18
+pip install $PIP_OPTIONS git+https://github.com/pacesm/pyAMPS.git@fixing_filenames#pyamps
