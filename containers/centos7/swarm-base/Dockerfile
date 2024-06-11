@@ -58,7 +58,8 @@ RUN pip3 install $PIP_OPTIONS jsonfield
 
 # AMPS model
 RUN pip3 install $PIP_OPTIONS -r "$BUILD_DIR/amps-requirements.txt"
-RUN pip3 install $PIP_OPTIONS 'git+https://github.com/klaundal/pyAMPS.git@v.1.5.2#pyamps'
+#RUN pip3 install $PIP_OPTIONS 'git+https://github.com/klaundal/pyAMPS.git@1.6#pyamps'
+RUN pip3 install $PIP_OPTIONS 'git+https://github.com/pacesm/pyAMPS.git@1.6_fixed#pyamps'
 RUN pip3 cache purge
 
 # clear build packages
