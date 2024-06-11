@@ -170,7 +170,7 @@ class App:
 class ChampMagProduct:
     """ Conversion of original CHAMP magnetic products to Swarm-like format. """
 
-    ID_TEMPLATE = "CH_ME_3_MAG_{start:%Y%m%dT%H%M%S}_{end:%Y%m%dT%H%M%S}_0000"
+    ID_TEMPLATE = "CH_ME_MAG_LR_3_{start:%Y%m%dT%H%M%S}_{end:%Y%m%dT%H%M%S}_0100"
 
     CDF_CREATOR = (
         f"EOX:{App.NAME}-{App.VERSION} [{SPACEPY_NAME}-{SPACEPY_VERSION}, "
@@ -224,14 +224,14 @@ class ChampMagProduct:
         cls._copy_radius_from_altitude(
             cdf_dst, cdf_src, "Radius", "GEO_ALT", CDF_DOUBLE,
         )
-        cls._copy_variable(cdf_dst, cdf_src, "B_FGM", "FGM_VEC", CDF_DOUBLE)
         cls._copy_variable(cdf_dst, cdf_src, "F", "FGM_SCAL", CDF_DOUBLE)
+        cls._copy_variable(cdf_dst, cdf_src, "B_VFM", "FGM_VEC", CDF_DOUBLE)
         cls._copy_variable(cdf_dst, cdf_src, "B_NEC", "NEC_VEC", CDF_DOUBLE)
-        cls._copy_variable(cdf_dst, cdf_src, "q_ASC_CRF", "ASC_QUAT", CDF_DOUBLE)
-        cls._copy_variable(cdf_dst, cdf_src, "GEO_STAT")
-        cls._copy_variable(cdf_dst, cdf_src, "FGM_FLAGS")
-        cls._copy_variable(cdf_dst, cdf_src, "ASC_MODE")
-        cls._copy_variable(cdf_dst, cdf_src, "ASC_STAT")
+        cls._copy_variable(cdf_dst, cdf_src, "Flags_Position", "GEO_STAT")
+        cls._copy_variable(cdf_dst, cdf_src, "Flags_B", "FGM_FLAGS")
+        cls._copy_variable(cdf_dst, cdf_src, "Flags_q", "ASC_STAT")
+        cls._copy_variable(cdf_dst, cdf_src, "Mode_q", "ASC_MODE")
+        cls._copy_variable(cdf_dst, cdf_src, "q_ICRF_CRF", "ASC_QUAT", CDF_DOUBLE)
 
     @classmethod
     def _copy_variable(cls, cdf_dst, cdf_src, variable_dst, variable_src=None,
