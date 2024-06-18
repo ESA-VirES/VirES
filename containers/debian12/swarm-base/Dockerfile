@@ -110,7 +110,7 @@ RUN sh -c 'cd "$BUILD_DIR/MagneticModel/qdipole" \
 RUN sh -c 'cd "$BUILD_DIR/MagneticModel/libcdf" \
   && make all install clean INSTALLDIR="$VENV_ROOT"'
 
-RUN pip3 install $PIP_OPTIONS numpy
+RUN pip3 install $PIP_OPTIONS 'numpy<2' # FIXME module build
 RUN pip3 install $PIP_OPTIONS scipy
 RUN pip3 install $PIP_OPTIONS msgpack-python
 RUN pip3 install $PIP_OPTIONS 'ply<4'
