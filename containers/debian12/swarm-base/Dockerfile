@@ -106,7 +106,7 @@ RUN sh -c 'cd "$BUILD_DIR/MagneticModel/qdipole" \
   && ./configure --prefix="$VENV_ROOT" CFLAGS="$CFLAGS" \
   && make all install clean'
 
-# Build and install QDipole
+# Build and install libCDF
 RUN sh -c 'cd "$BUILD_DIR/MagneticModel/libcdf" \
   && make all install clean INSTALLDIR="$VENV_ROOT"'
 
@@ -134,7 +134,8 @@ RUN pip3 install $PIP_OPTIONS 'python-swiftclient<5.0.0'
 RUN pip3 install $PIP_OPTIONS jsonfield
 
 # AMPS model
-RUN pip3 install $PIP_OPTIONS 'pyamps==1.5.2'
+#RUN pip3 install $PIP_OPTIONS 'pyamps==1.6'
+RUN pip3 install $PIP_OPTIONS 'git+https://github.com/pacesm/pyAMPS.git@1.6_fixed#pyamps'
 
 # -----------------------------------------------------------------------------
 
