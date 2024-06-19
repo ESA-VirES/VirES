@@ -53,7 +53,8 @@ RUN pip3 install $PIP_OPTIONS wheel
 RUN pip3 install $PIP_OPTIONS Jinja2
 RUN pip3 install --force-reinstall --no-binary :all: psycopg2
 RUN pip3 install $PIP_OPTIONS setproctitle
-RUN pip3 install $PIP_OPTIONS gunicorn
+#RUN pip3 install $PIP_OPTIONS gunicorn
+RUN pip3 install $PIP_OPTIONS 'gunicorn<22' # 22.0.0 regression see https://github.com/benoitc/gunicorn/pull/3192
 RUN pip3 install $PIP_OPTIONS jsonschema
 RUN pip3 install $PIP_OPTIONS pyyaml
 RUN pip3 install $PIP_OPTIONS 'Django>=3.2,<4.0'

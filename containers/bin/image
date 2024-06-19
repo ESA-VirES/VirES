@@ -9,7 +9,7 @@ usage() {
 }
 
 _build_all() {
-    list_images | while read IMAGE_DIR
+    list_managed_images | while read IMAGE_DIR
     do
         if $BIN_DIR/image "$IMAGE_DIR" exists
         then
@@ -21,31 +21,38 @@ _build_all() {
 }
 
 _push_all() {
-    list_images | tac | while read IMAGE_DIR
+    list_managed_images | tac | while read IMAGE_DIR
     do
         $BIN_DIR/image "$IMAGE_DIR" push || break
     done
 }
 
 _pull_all() {
-    list_images | tac | while read IMAGE_DIR
+    list_managed_images | tac | while read IMAGE_DIR
     do
         $BIN_DIR/image "$IMAGE_DIR" pull || break
     done
 }
 
 _remove_all() {
-    list_images | while read IMAGE_DIR
+    list_managed_images | tac | while read IMAGE_DIR
     do
         $BIN_DIR/image "$IMAGE_DIR" remove || break
     done
 }
 
-
 _require_image_dir() {
     if [ -z "$IMAGE_DIR" ]
     then
         error "Container name is not configured."
+        exit 1
+    fi
+}
+
+_assert_no_image_dir() {
+    if [ -n "$IMAGE_DIR" ]
+    then
+        error "Container name is not expected."
         exit 1
     fi
 }
@@ -95,7 +102,7 @@ BIN_DIR="$(cd "$(dirname $0)" ; pwd )"
 
 
 # check if the first arguments is an image directory
-if [ -n "$1" -a -n "$( list_images | grep "$1" )" ]
+if [ -n "$1" -a -n "$( list_all_images | grep "$1" )" ]
 then
     IMAGE_DIR="$1"
     . $VIRES_CONTAINER_ROOT/$1/common.sh
@@ -107,18 +114,23 @@ COMMAND="$1"
 
 case "$COMMAND" in
     build_all)
+        _assert_no_image_dir
         _build_all
         ;;
     push_all)
+        _assert_no_image_dir
         _push_all
         ;;
     pull_all)
+        _assert_no_image_dir
         _pull_all
         ;;
     remove_all)
+        _assert_no_image_dir
         _remove_all
         ;;
     retag)
+        _assert_no_image_dir
         _retag
         ;;
     build)
