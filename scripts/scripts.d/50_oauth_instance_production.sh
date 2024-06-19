@@ -21,6 +21,12 @@ OAUTH_SERVER_NTHREAD=${OAUTH_SERVER_NTHREAD:-2}
 
 DEBUG="False"
 
+# decode base64 encoded password
+if [ -n "$DBPASSWD_B64" ]
+then
+    DBPASSWD="`echo -n "$DBPASSWD_B64" | base64 -d`"
+fi
+
 required_variables OAUTH_VENV_ROOT
 activate_venv "$OAUTH_VENV_ROOT"
 
@@ -39,6 +45,7 @@ required_variables OAUTH_BASE_URL_PATH
 required_variables DBENGINE OAUTH_DBNAME
 required_variables SMTP_HOSTNAME SMTP_DEFAULT_SENDER SERVER_EMAIL
 
+HTTP_USE_TLS=${HTTP_USE_TLS:-NO}
 SMTP_USE_TLS=${SMTP_USE_TLS:-YES}
 SMTP_PORT=${SMTP_PORT:-25}
 
@@ -100,6 +107,7 @@ fi
 
 ALLOWED_HOSTS="'${VIRES_IP_ADDRESS}', '${HOSTNAME}'"
 [ -z "$VIRES_HOSTNAME_INTERNAL" ] || ALLOWED_HOSTS="'${VIRES_HOSTNAME_INTERNAL}', $ALLOWED_HOSTS"
+[ -z "$VIRES_HOSTNAMES_ALT" ] || ALLOWED_HOSTS="'${VIRES_HOSTNAMES_ALT}', $ALLOWED_HOSTS"
 
 # enter new settings
 { ex "$SETTINGS" || /bin/true ; } <<END
@@ -244,8 +252,13 @@ END
 #info "Mapping OAuth server instance '${INSTANCE}' to URL path '${INSTANCE}' ..."
 
 # locate proper configuration file (see also apache configuration)
-_PORT=443 # HTTPS only
-[ -z `locate_apache_conf $_PORT $HOSTNAME` ] && error "Failed to locate Apache virtual host $HOSTNAME:$_PORT configuration!"
+if [ "$HTTP_USE_TLS" = "YES" ]
+then
+    _PORT=443
+else
+    _PORT=80
+fi
+[ -z "`locate_apache_conf $_PORT $HOSTNAME`" ] && error "Failed to locate Apache virtual host $HOSTNAME:$_PORT configuration!"
 {
     locate_apache_conf $_PORT $HOSTNAME
     [ -z "$VIRES_HOSTNAME_INTERNAL" ] || locate_apache_conf $_PORT $VIRES_HOSTNAME_INTERNAL

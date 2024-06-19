@@ -38,7 +38,7 @@ from bisect import bisect_right
 
 EPOCH_1900 = datetime(1900, 1, 1)
 LOGGER = getLogger(__name__)
-SOURCE_URL = 'https://www.ietf.org/timezones/data/leap-seconds.list'
+SOURCE_URL = 'https://hpiers.obspm.fr/iers/bul/bulc/ntp/leap-seconds.list'
 LOCAL_PATH = Path(Path.home(), 'leap-seconds.list')
 
 
@@ -89,12 +89,12 @@ def load_leap_seconds(local_path=LOCAL_PATH, source_url=SOURCE_URL):
     else:
         if not leap_seconds.is_expired:
             return leap_seconds
-        LOGGER.warning("The cached leap seconds table is expired.")
+        LOGGER.info("The cached leap seconds table is expired.")
 
     try:
         leap_seconds = _download_new_table(local_path)
     except Exception as error:
-        LOGGER.error("%s", error)
+        LOGGER.error("Failed to retrieve the leap seconds table! %s", error)
         if not leap_seconds:
             raise
         LOGGER.warning("Defaulting to the expired cached leap seconds table.")
