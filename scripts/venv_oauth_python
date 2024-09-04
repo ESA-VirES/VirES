@@ -1,2 +1,0 @@
-#!/bin/bash
-`dirname $0`/venv_oauth_execute python "$@"

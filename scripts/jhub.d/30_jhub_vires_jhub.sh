@@ -1,1 +1,0 @@
-../scripts.d/30_jhub_vires_jhub.sh

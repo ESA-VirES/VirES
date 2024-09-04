@@ -1,1 +1,0 @@
-../scripts.d/50_jhub_instance.sh

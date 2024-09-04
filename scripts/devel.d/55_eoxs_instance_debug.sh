@@ -1,1 +1,0 @@
-../scripts.d/55_eoxs_instance_debug.sh

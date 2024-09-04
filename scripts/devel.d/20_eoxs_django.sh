@@ -1,1 +1,0 @@
-../scripts.d/20_eoxs_django.sh
