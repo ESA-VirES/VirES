@@ -3,7 +3,7 @@
 export POD_PORT="8300"
 export POD_NAME="vires-server-debian12-dev"
 
-list_images() {
+list_managed_images() {
     cat - << END
 debian12
 ingress
@@ -14,6 +14,16 @@ oauth
 swarm-base
 swarm
 END
+}
+
+list_nonmanaged_images() {
+    cat - << END
+END
+}
+
+list_all_images() {
+    list_managed_images
+    list_nonmanaged_images
 }
 
 start_containers() {

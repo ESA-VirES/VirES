@@ -3,7 +3,7 @@
 export POD_PORT="8200"
 export POD_NAME="vires-server-dev"
 
-list_images() {
+list_managed_images() {
     cat - << END
 centos7
 ingress
@@ -16,6 +16,16 @@ swarm
 jhub-base
 jhub
 END
+}
+
+list_nonmanaged_images() {
+    cat - << END
+END
+}
+
+list_all_images() {
+    list_managed_images
+    list_nonmanaged_images
 }
 
 start_containers() {
