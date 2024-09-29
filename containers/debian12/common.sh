@@ -8,6 +8,7 @@ list_managed_images() {
 debian12
 ingress
 database
+redis
 django-base
 oauth-base
 oauth
@@ -28,6 +29,7 @@ list_all_images() {
 
 start_containers() {
     $BIN_DIR/container database start \
+      && $BIN_DIR/container redis start \
       && $BIN_DIR/container database exec /bin/sh -c 'while ! pg_isready ; do sleep 1 ; done' \
       && $BIN_DIR/container database exec -i create_db < $VIRES_CONTAINER_ROOT/volumes/secrets/oauth.conf \
       && $BIN_DIR/container database exec -i create_db < $VIRES_CONTAINER_ROOT/volumes/secrets/swarm.conf \
