@@ -114,6 +114,7 @@ RUN pip3 install $PIP_OPTIONS 'numpy<2' # FIXME module build
 RUN pip3 install $PIP_OPTIONS scipy
 RUN pip3 install $PIP_OPTIONS msgpack-python
 RUN pip3 install $PIP_OPTIONS 'ply<4'
+RUN pip3 install $PIP_OPTIONS redis
 # See https://github.com/spacepy/spacepy/issues/717
 # To be reviewed once SpacePy v0.5 is released.
 RUN pip3 install $PIP_OPTIONS --no-build-isolation 'SpacePy<0.5'
