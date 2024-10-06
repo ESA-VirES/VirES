@@ -59,7 +59,7 @@ RUN pip3 install $PIP_OPTIONS jsonschema
 RUN pip3 install $PIP_OPTIONS pyyaml
 RUN pip3 install $PIP_OPTIONS 'Django>=3.2,<4.0'
 RUN pip3 install $PIP_OPTIONS django-requestlogging
-RUN pip3 install $PIP_OPTIONS django-allauth
+RUN pip3 install $PIP_OPTIONS 'django-allauth<64.0' # django-allauth 64.0 drops support for Django 3.2
 RUN pip3 install $PIP_OPTIONS django-countries
 
 RUN pip3 cache purge && rm -fR "/root/.cache"
