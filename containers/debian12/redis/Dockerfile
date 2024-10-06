@@ -24,7 +24,7 @@ VOLUME "$DATA_DIR"
 
 
 # logging volume
-ENV LOG_DIR="/var/log/dir"
+ENV LOG_DIR="/var/log/redis"
 RUN mkdir -p "$LOG_DIR" && chown -R redis:redis "$LOG_DIR" && chmod 0700 "$LOG_DIR"
 VOLUME "$LOG_DIR"
 
