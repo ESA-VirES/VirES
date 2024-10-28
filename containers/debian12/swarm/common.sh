@@ -19,6 +19,7 @@ CREATE_OPTIONS="\
     --volume ./volumes/secrets/swarm.conf:/srv/vires/secrets.conf:ro \
     --volume ./volumes/secrets/vires.conf:/srv/vires/vires.conf:ro \
     --volume ./volumes/options.conf:/srv/vires/options.conf:ro \
+    --volume ./volumes/home:/srv/vires/home\
     --volume ./volumes/logs/swarm:/var/log/vires/swarm \
     --volume ./volumes/swarm:/srv/vires/swarm \
     --volume ./volumes/cache/products:/srv/vires/cache/products \
