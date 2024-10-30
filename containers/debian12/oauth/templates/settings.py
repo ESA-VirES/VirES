@@ -62,6 +62,16 @@ AUTHENTICATION_BACKENDS = [
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
 
+# Altcha parameters
+ALTCHA = {
+    "ENABLED": True,
+    "INCLUDE_MAXNUMBER": True,
+    "ALGORITHM": "SHA-256",
+    "MAX_NUMBER": 500000,
+    "SALT_LENGTH": 12,
+    "EXPIRE_SECONDS": 24 * 3600,
+}
+
 # Django oauth2_provider
 OAUTH2_PROVIDER = {
     'SCOPES_BACKEND_CLASS': 'vires_oauth.scopes.ViresScopes',
