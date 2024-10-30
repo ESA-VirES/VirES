@@ -9,6 +9,7 @@ CONTAINER_NAME="${POD_NAME:-vires-server}--oauth"
 CREATE_OPTIONS="\
     --pod $POD_NAME \
     --volume ../../../VirES-Server:/usr/local/vires \
+    --volume ./volumes/home:/srv/vires/home\
     --volume ./volumes/logs/oauth:/var/log/vires/oauth \
     --volume ./volumes/oauth:/srv/vires/oauth \
     --volume ${POD_NAME:-vires-server}--oauth-static:/srv/vires/oauth_static \

@@ -33,6 +33,7 @@ RUN mkdir -p "$STATIC_DIR"
 
 # extra pip pacakges
 RUN pip3 install $PIP_OPTIONS 'django-oauth-toolkit>=2.0,<3.0' # django-oauth-toolkit drops support for Django 3.2
+RUN pip3 install $PIP_OPTIONS altcha
 RUN pip3 cache purge && rm -fR "/root/.cache"
 
 # FIXME: find a better way to strip the cached compiled Python code
