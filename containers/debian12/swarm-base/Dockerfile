@@ -96,7 +96,7 @@ RUN mkdir -p "$BUILD_DIR"
 
 # Get libCDF and QDipole sources
 RUN sh -c 'cd "$BUILD_DIR" \
-  && TAG=cdf-3.9.0.a \
+  && TAG=eoxmagmod-0.13.0 \
   && curl -sSL "https://github.com/ESA-VirES/MagneticModel/archive/refs/tags/$TAG.tar.gz" | tar xvz \
   && mv -v MagneticModel-$TAG MagneticModel'
 

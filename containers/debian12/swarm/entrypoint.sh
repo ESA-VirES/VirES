@@ -5,10 +5,10 @@ FLAG_FILE="$VIRES_ROOT/.intialized"
 # -----------------------------------------------------------------------------
 
 _build_from_sdist() (
-    cd /usr/local/eoxmagmod
-    rm -fR sdist/ build/
+    cd "$1"
+    rm -fR dist/ build/
     python3 ./setup.py sdist
-    SDIST="`ls ./dist/*.tar.gz | head -n 1`"
+    SDIST="`ls ./dist/*.tar.gz | tail -n 1`"
     [ -n "$SDIST" ] && pip3 install $PIP_OPTIONS "$SDIST"
 )
 
@@ -19,7 +19,8 @@ install_deployment_packages() {
     )
     # NOTE: in Python 3.11 imp.find_module('eoxserver') does not work in the development mode.
     #pip3 install -e /usr/local/eoxserver
-    pip3 install /usr/local/eoxserver
+    #pip3 install /usr/local/eoxserver
+    _build_from_sdist /usr/local/eoxserver
     pip3 install -e /usr/local/vires/vires
     pip3 install -e /usr/local/vires/eoxs_allauth
     pip3 install -e /usr/local/vires_sync
