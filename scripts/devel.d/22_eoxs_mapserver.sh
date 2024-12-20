@@ -1,1 +1,0 @@
-../scripts.d/22_eoxs_mapserver.sh

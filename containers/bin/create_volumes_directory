@@ -1,0 +1,35 @@
+#!/bin/sh
+#
+# create volumes directory tree
+#
+
+BIN_DIR="$(cd "$(dirname $0)" ; pwd )"
+. $BIN_DIR/common.sh
+. $VIRES_CONTAINER_ROOT/common.sh
+
+
+cd "$VIRES_CONTAINER_ROOT"
+
+# create directory tree
+while read DIR
+do
+    mkdir -p "$DIR"
+    [ -f "$DIR/.gitignore" ] || echo "*" > "$DIR/.gitignore"
+done <<END
+volumes
+volumes/cache
+volumes/cache/models
+volumes/cache/products
+volumes/logs
+volumes/logs/httpd
+volumes/logs/oauth
+volumes/logs/swarm
+volumes/logs/jhub
+volumes/secrets
+volumes/oauth
+volumes/swarm
+volumes/jhub
+END
+
+# initial user accounts
+echo '[]' > volumes/secrets/users.json

@@ -1,1 +1,0 @@
-../scripts.d/30_eoxs_eoxserver_devel.sh

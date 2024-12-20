@@ -1,1 +1,0 @@
-../scripts.d/26_jhub_oauthenticator.sh

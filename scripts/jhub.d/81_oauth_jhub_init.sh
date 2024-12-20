@@ -1,1 +1,0 @@
-../scripts.d/81_oauth_jhub_init.sh

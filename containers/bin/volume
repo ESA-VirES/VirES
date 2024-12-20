@@ -1,0 +1,46 @@
+#!/bin/sh
+#
+# volume management helper script
+#
+#
+
+usage() {
+    echo "USAGE: volume list|remove" >&2
+}
+
+_list() {
+    $CT_COMMAND volume list --filter="name=^${POD_NAME}--" "$@"
+}
+
+_remove() {
+    VOLUMES="` _list --noheading --format "{{.Name}}" `"
+    if [ -n "$VOLUMES" ]
+    then
+        info "Removing $POD_NAME volumes ..."
+        $CT_COMMAND volume remove ` _list --noheading --format "{{.Name}}" `
+    fi
+}
+
+# -----------------------------------------------------------------------------
+
+BIN_DIR="$(cd "$(dirname $0)" ; pwd )"
+. $BIN_DIR/common.sh
+. $VIRES_CONTAINER_ROOT/common.sh
+
+COMMAND="$1"
+[ "$#" -ge 1 ] && shift
+
+case "$COMMAND" in
+    list) _list "$@" ;;
+    remove) _remove ;;
+    *)
+        if [ -z "$COMMAND" ]
+        then
+            error "Missing volume command!"
+        else
+            error "$COMMAND not found!"
+        fi
+        usage
+        exit 1
+        ;;
+esac

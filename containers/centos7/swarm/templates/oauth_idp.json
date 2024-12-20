@@ -1,0 +1,8 @@
+[
+  {
+    "provider": "vires",
+    "name": "VirES IdP",
+    "client_id": "{{ CLIENT_ID }}",
+    "secret": "{{ CLIENT_SECRET }}"
+  }
+]

@@ -1,0 +1,7 @@
+SOURCE_IMAGE_NAME="centos7-vires-django-base"
+SOURCE_IMAGE="$REGISTRY/$SOURCE_IMAGE_NAME:$IMAGE_TAG"
+
+IMAGE_NAME="centos7-vires-swarm-base"
+IMAGE="$REGISTRY/$IMAGE_NAME:$IMAGE_TAG"
+
+BUILD_OPTIONS="--squash --no-cache --build-arg=SOURCE_IMAGE=$SOURCE_IMAGE"

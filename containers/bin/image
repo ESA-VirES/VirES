@@ -1,0 +1,166 @@
+#!/bin/sh
+#
+# image management helper script
+#
+#
+
+usage() {
+    echo "USAGE: image [<image-dir> build|push|pull|remove]|[build_all|push_all|pull_all|remove_all|retag]" >&2
+}
+
+_build_all() {
+    list_managed_images | while read IMAGE_DIR
+    do
+        if $BIN_DIR/image "$IMAGE_DIR" exists
+        then
+            echo "$IMAGE_DIR image already exists. Build is skipped."
+        else
+            $BIN_DIR/image "$IMAGE_DIR" build || break
+        fi
+    done
+}
+
+_push_all() {
+    list_managed_images | tac | while read IMAGE_DIR
+    do
+        $BIN_DIR/image "$IMAGE_DIR" push || break
+    done
+}
+
+_pull_all() {
+    list_managed_images | tac | while read IMAGE_DIR
+    do
+        $BIN_DIR/image "$IMAGE_DIR" pull || break
+    done
+}
+
+_remove_all() {
+    list_managed_images | tac | while read IMAGE_DIR
+    do
+        $BIN_DIR/image "$IMAGE_DIR" remove || break
+    done
+}
+
+_require_image_dir() {
+    if [ -z "$IMAGE_DIR" ]
+    then
+        error "Container name is not configured."
+        exit 1
+    fi
+}
+
+_assert_no_image_dir() {
+    if [ -n "$IMAGE_DIR" ]
+    then
+        error "Container name is not expected."
+        exit 1
+    fi
+}
+
+_build() {
+    {
+        cd $VIRES_CONTAINER_ROOT/$IMAGE_DIR
+        $CT_COMMAND build $BUILD_OPTIONS -t "$IMAGE" .
+    } 2>&1 | tee "$VIRES_CONTAINER_ROOT/$IMAGE_DIR/build.log"
+}
+
+_push() {
+    $CT_COMMAND push "$IMAGE"
+}
+
+_pull() {
+    $CT_COMMAND pull "$IMAGE"
+}
+
+_exists() {
+    $CT_COMMAND image exists "$IMAGE"
+}
+
+_remove() {
+    _exists && $CT_COMMAND rmi "$IMAGE"
+}
+
+_retag() (
+    TAG_CONF="$VIRES_CONTAINER_ROOT/tag.conf"
+    IMAGE_TAG="$( date -u +"%Y%m%dT%H%M" )"
+    [ ! -f "$TAG_CONF" -o "$( grep "^\s*IMAGE_TAG\s*=.*" "$TAG_CONF" | wc -l )" -eq 0 ] && echo echo "IMAGE_TAG=" >> "$TAG_CONF"
+    { ed -vs "$TAG_CONF" || /bin/true ; } <<END
+g/^\s*IMAGE_TAG\s*=.*$/d
+0a
+IMAGE_TAG="$IMAGE_TAG"
+.
+wq
+END
+)
+
+# -----------------------------------------------------------------------------
+
+
+BIN_DIR="$(cd "$(dirname $0)" ; pwd )"
+. $BIN_DIR/common.sh
+. $VIRES_CONTAINER_ROOT/common.sh
+
+
+# check if the first arguments is an image directory
+if [ -n "$1" -a -n "$( list_all_images | grep "$1" )" ]
+then
+    IMAGE_DIR="$1"
+    . $VIRES_CONTAINER_ROOT/$1/common.sh
+    shift
+fi
+
+COMMAND="$1"
+[ "$#" -ge 1 ] && shift
+
+case "$COMMAND" in
+    build_all)
+        _assert_no_image_dir
+        _build_all
+        ;;
+    push_all)
+        _assert_no_image_dir
+        _push_all
+        ;;
+    pull_all)
+        _assert_no_image_dir
+        _pull_all
+        ;;
+    remove_all)
+        _assert_no_image_dir
+        _remove_all
+        ;;
+    retag)
+        _assert_no_image_dir
+        _retag
+        ;;
+    build)
+        _require_image_dir
+        _build
+        ;;
+    push)
+        _require_image_dir
+        _push
+        ;;
+    pull)
+        _require_image_dir
+        _pull
+        ;;
+    remove)
+        _require_image_dir
+        _remove
+        ;;
+    exists)
+        _require_image_dir
+        _exists
+        ;;
+    *)
+        if [ -z "$COMMAND" ]
+        then
+            error "Missing image command!"
+        else
+            error "$COMMAND not found!"
+        fi
+        usage
+        exit 1
+        ;;
+esac

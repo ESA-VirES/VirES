@@ -1,1 +1,0 @@
-../scripts.d/21_eoxs_gunicorn.sh

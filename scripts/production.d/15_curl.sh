@@ -1,1 +1,0 @@
-../scripts.d/15_curl.sh

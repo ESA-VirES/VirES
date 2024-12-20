@@ -1,1 +1,0 @@
-../scripts.d/25_eoxs_spacepy.sh

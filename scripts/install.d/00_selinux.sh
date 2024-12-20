@@ -1,1 +1,0 @@
-../scripts.d/00_selinux.sh

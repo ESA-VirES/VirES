@@ -1,1 +1,0 @@
-../scripts.d/12_python.sh

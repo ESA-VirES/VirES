@@ -1,1 +1,0 @@
-../scripts.d/18_eoxs_pyinotify.sh

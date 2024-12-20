@@ -1,0 +1,9 @@
+setuptools>=30.3.0,<58
+future>=0.16
+numpy>=1.14
+matplotlib
+scipy>=0.9
+toolz>=0.8
+pandas>=0.20
+dask<2.17.0
+apexpy>=1.0

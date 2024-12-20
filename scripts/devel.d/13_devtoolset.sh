@@ -1,1 +1,0 @@
-../scripts.d/13_devtoolset.sh
