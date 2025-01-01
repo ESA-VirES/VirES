@@ -32,6 +32,11 @@
 # pylint: disable=broad-exception-caught,bare-except,superfluous-parens
 # pylint: disable=too-many-branches,too-many-statements
 
+import warnings
+
+# suppress excessive spacepy and spacepy.pycdf warnings
+warnings.filterwarnings("ignore", category=UserWarning, module="spacepy")
+
 import sys
 import re
 import os

@@ -34,6 +34,11 @@
 # pylint: disable=too-many-branches,too-many-statements,too-many-arguments
 # pylint: disable=too-many-locals,too-few-public-methods,too-many-lines
 
+import warnings
+
+# suppress excessive spacepy and spacepy.pycdf warnings
+warnings.filterwarnings("ignore", category=UserWarning, module="spacepy")
+
 import sys
 import re
 import os
@@ -57,7 +62,6 @@ from common import (
 
 ONE_DAY = datetime.timedelta(days=1)
 ONE_HOUR = datetime.timedelta(hours=1)
-
 
 class App:
     """ The app. """
