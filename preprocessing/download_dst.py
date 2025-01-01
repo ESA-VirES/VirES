@@ -782,13 +782,15 @@ class DstDataSource:
         time = result.data[list(result.data)[0]]
         time_delta = time[1:] - time[:-1]
 
-        # assert strictly ascending time sampling
-        if time_delta.min() <= datetime.timedelta(0):
-            raise ValueError("Time is not strictly ascending!")
+        if time_delta.size > 0:
 
-        # assert uniform time sampling
-        if time_delta.max() > time_delta.min():
-            raise ValueError("Time is not uniformly sampled!")
+            # assert strictly ascending time sampling
+            if time_delta.min() <= datetime.timedelta(0):
+                raise ValueError("Time is not strictly ascending!")
+
+            # assert uniform time sampling
+            if time_delta.max() > time_delta.min():
+                raise ValueError("Time is not uniformly sampled!")
 
         return result
 
