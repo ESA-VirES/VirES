@@ -8,6 +8,7 @@ VIRES_DATA=${VIRES_DATA:-../../data}
 
 BUILD_OPTIONS="--squash --no-cache --build-arg=SOURCE_IMAGE=$SOURCE_IMAGE"
 CONTAINER_NAME="${POD_NAME:-vires-server}--swarm"
+#    --volume ../../../VirES-Server_alt:/usr/local/vires \
 CREATE_OPTIONS="\
     --pod $POD_NAME \
     --volume ../../../VirES-Server:/usr/local/vires \
@@ -30,4 +31,4 @@ CREATE_OPTIONS="\
     --volume $VIRES_DATA:/srv/vires/data:ro \
 "
 EXEC_OPTIONS="--user vires"
-RUN_OPTIONS="$CREATE_OPTIONS"
+RUN_OPTIONS="$CREATE_OPTIONS --entrypoint /bin/bash"

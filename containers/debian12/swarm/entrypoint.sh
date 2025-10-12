@@ -19,7 +19,6 @@ install_deployment_packages() {
     )
     # NOTE: in Python 3.11 imp.find_module('eoxserver') does not work in the development mode.
     #pip3 install -e /usr/local/eoxserver
-    #pip3 install /usr/local/eoxserver
     _build_from_sdist /usr/local/eoxserver
     pip3 install -e /usr/local/vires/vires
     pip3 install -e /usr/local/vires/eoxs_allauth
