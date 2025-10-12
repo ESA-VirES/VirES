@@ -125,7 +125,7 @@ RUN pip3 install $PIP_OPTIONS "GDAL==$(gdal-config --version)"
 RUN pip3 install $PIP_OPTIONS python-dateutil
 RUN pip3 install $PIP_OPTIONS 'django-model-utils<5.0.0'
 RUN pip3 install $PIP_OPTIONS 'django-utils-six==2.0'
-RUN pip3 install $PIP_OPTIONS django-prometheus
+RUN pip3 install $PIP_OPTIONS 'django-prometheus<2.4.0' # 2.4.0 requires Django >=4.2
 RUN pip3 install $PIP_OPTIONS tzdata
 RUN pip3 install $PIP_OPTIONS zipstream
 RUN pip3 install $PIP_OPTIONS lxml
@@ -133,7 +133,7 @@ RUN pip3 install $PIP_OPTIONS 'pycql==0.0.8'
 RUN pip3 install $PIP_OPTIONS 'pyows>=0.2.6'
 RUN pip3 install $PIP_OPTIONS 'python-keystoneclient<6.0.0'
 RUN pip3 install $PIP_OPTIONS 'python-swiftclient<5.0.0'
-RUN pip3 install $PIP_OPTIONS jsonfield
+RUN pip3 install $PIP_OPTIONS 'jsonfield<3.2.0' # 3.2.0 requires Django >=4.2
 
 # AMPS model
 #RUN pip3 install $PIP_OPTIONS 'pyamps==1.6'
