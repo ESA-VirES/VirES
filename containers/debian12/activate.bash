@@ -19,7 +19,7 @@ if [ "$0" != "$BASH_SOURCE" ]
 then
     export VIRES_CONTAINER_ROOT="$( get_absolute_path "$(dirname "$BASH_SOURCE")" )"
     export PATH="$( extend_path "$( get_absolute_path "$VIRES_CONTAINER_ROOT/../bin" )" )"
-    export PS1="{$( basename "$VIRES_CONTAINER_ROOT" )} $(echo -n "$PS1" | sed -e 's/{.*} //g')"
+    export PS1="{$( basename "$VIRES_CONTAINER_ROOT" )} $(echo -n "$PS1" | sed -e 's/{.*} //g') "
 else
     echo "ERROR: This script should be sourced from bash!" >&2
 fi

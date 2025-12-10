@@ -6,11 +6,12 @@ from eoxserver.services.views import ows
 from eoxs_allauth.views import wrap_protected_api, wrap_open_api, workspace
 from eoxs_allauth.urls import document_urlpatterns
 from vires.client_state import parse_client_state
-from vires.views import custom_data #, custom_model, client_state
+from vires.views import probe, custom_data #, custom_model, client_state
 from vires.hapi.urls import urlpatterns as hapi_urlpatterns
 
 urlpatterns = [
     path('', workspace(parse_client_state), name="workspace"),
+    path('probe', probe, name="probe"),
     path('ows', wrap_protected_api(ows), name="ows"),
     path('hapi/', include(hapi_urlpatterns)),
     path('accounts/', include('eoxs_allauth.urls')),

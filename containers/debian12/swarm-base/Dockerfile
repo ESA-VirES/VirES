@@ -29,6 +29,7 @@ ENV STATIC_DIR="$VIRES_ROOT/${INSTANCE_NAME}_static"
 
 ENV VIRES_DATA_DIR="$VIRES_ROOT/data"
 ENV VIRES_UPLOAD_DIR="$VIRES_ROOT/upload"
+ENV VIRES_UPLOAD_CUSTOM_DATA_DIR="$VIRES_UPLOAD_DIR/custom_data"
 ENV VIRES_WPS_DIR="$VIRES_ROOT/wps"
 ENV VIRES_PRODUCT_CACHE_DIR="$VIRES_ROOT/cache/products"
 ENV VIRES_MODEL_CACHE_DIR="$VIRES_ROOT/cache/models"
@@ -96,7 +97,7 @@ RUN mkdir -p "$BUILD_DIR"
 
 # Get libCDF and QDipole sources
 RUN sh -c 'cd "$BUILD_DIR" \
-  && TAG=eoxmagmod-0.13.0 \
+  && TAG=cdf-3.9.1.a \
   && curl -sSL "https://github.com/ESA-VirES/MagneticModel/archive/refs/tags/$TAG.tar.gz" | tar xvz \
   && mv -v MagneticModel-$TAG MagneticModel'
 
@@ -108,7 +109,7 @@ RUN sh -c 'cd "$BUILD_DIR/MagneticModel/qdipole" \
 
 # Build and install libCDF
 RUN sh -c 'cd "$BUILD_DIR/MagneticModel/libcdf" \
-  && make all install clean INSTALLDIR="$VENV_ROOT"'
+  && make all test install clean INSTALLDIR="$VENV_ROOT"'
 
 RUN pip3 install $PIP_OPTIONS 'numpy<2' # FIXME module build
 RUN pip3 install $PIP_OPTIONS scipy
@@ -124,7 +125,7 @@ RUN pip3 install $PIP_OPTIONS "GDAL==$(gdal-config --version)"
 RUN pip3 install $PIP_OPTIONS python-dateutil
 RUN pip3 install $PIP_OPTIONS 'django-model-utils<5.0.0'
 RUN pip3 install $PIP_OPTIONS 'django-utils-six==2.0'
-RUN pip3 install $PIP_OPTIONS django-prometheus
+RUN pip3 install $PIP_OPTIONS 'django-prometheus<2.4.0' # 2.4.0 requires Django >=4.2
 RUN pip3 install $PIP_OPTIONS tzdata
 RUN pip3 install $PIP_OPTIONS zipstream
 RUN pip3 install $PIP_OPTIONS lxml
@@ -132,7 +133,7 @@ RUN pip3 install $PIP_OPTIONS 'pycql==0.0.8'
 RUN pip3 install $PIP_OPTIONS 'pyows>=0.2.6'
 RUN pip3 install $PIP_OPTIONS 'python-keystoneclient<6.0.0'
 RUN pip3 install $PIP_OPTIONS 'python-swiftclient<5.0.0'
-RUN pip3 install $PIP_OPTIONS jsonfield
+RUN pip3 install $PIP_OPTIONS 'jsonfield<3.2.0' # 3.2.0 requires Django >=4.2
 
 # AMPS model
 #RUN pip3 install $PIP_OPTIONS 'pyamps==1.6'

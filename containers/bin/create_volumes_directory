@@ -17,6 +17,7 @@ do
     [ -f "$DIR/.gitignore" ] || echo "*" > "$DIR/.gitignore"
 done <<END
 volumes
+volumes/home
 volumes/cache
 volumes/cache/models
 volumes/cache/products
