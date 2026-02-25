@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 #
 # pg_ctl -D /var/lib/postgresql/data - logfile start
-# 
+#
 export PGDATA=/var/lib/postgresql/data
 
 if [ ! -s "$PGDATA/PG_VERSION" ]

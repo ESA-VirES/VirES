@@ -17,7 +17,7 @@ warn() {
 
 error() {
   echo "ERROR: $*" >&2
-  exit 1 
+  exit 1
 }
 
 remove_db() {

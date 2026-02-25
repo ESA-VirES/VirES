@@ -36,7 +36,7 @@ The VirES images are stored in a private repository which require
 access credentials. These credentials are not included in this repository.
 
 It is not necessary to have access to the repository to be able to build
-and use the container images. 
+and use the container images.
 
 If you need the access credentials for the container repository contact
 the VirES team.
@@ -110,7 +110,7 @@ initialization it is recommended to show the output of the podman logs)
 The containers use a mixture of named volumes and volumes mounded from
 the host file-system (see the `./volumes` folder).
 
-The named volumes attached to this pod can be listed by 
+The named volumes attached to this pod can be listed by
 ```
 volume list
 ```

@@ -17,7 +17,7 @@ warn() {
 
 error() {
   echo "ERROR: $*" >&2
-  exit 1 
+  exit 1
 }
 
 remove_db_user() {
@@ -27,7 +27,7 @@ remove_db_user() {
     then
         psql -q -c "DROP USER $DBUSER ;" \
             && info "The existing user '$DBUSER' user was removed." \
-            || error "Failed to remove the existing user '$DBUSER'." 
+            || error "Failed to remove the existing user '$DBUSER'."
     else
         warn "The database user '$DBUSER' does not exist."
     fi
