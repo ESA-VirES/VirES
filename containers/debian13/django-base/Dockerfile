@@ -2,7 +2,7 @@
 #
 #  VirES - Debian 13 VirES common base Django sever image
 #
-# Copyright (C) 2025 EOX IT Services GmbH
+# Copyright (C) 2025-2026 EOX IT Services GmbH
 #-----------------------------------------------------------------------
 
 ARG SOURCE_IMAGE
@@ -50,13 +50,12 @@ RUN pip3 install $PIP_OPTIONS wheel
 RUN pip3 install $PIP_OPTIONS Jinja2
 RUN pip3 install --force-reinstall --no-binary :all: psycopg2
 RUN pip3 install $PIP_OPTIONS setproctitle
-#RUN pip3 install $PIP_OPTIONS gunicorn
-RUN pip3 install $PIP_OPTIONS 'gunicorn<22' # 22.0.0 regression see https://github.com/benoitc/gunicorn/pull/3192
+RUN pip3 install $PIP_OPTIONS gunicorn
 RUN pip3 install $PIP_OPTIONS jsonschema
 RUN pip3 install $PIP_OPTIONS pyyaml
-RUN pip3 install $PIP_OPTIONS 'Django>=3.2,<4.0'
+RUN pip3 install $PIP_OPTIONS 'Django>=5.2,<6.0'
 RUN pip3 install $PIP_OPTIONS django-requestlogging
-RUN pip3 install $PIP_OPTIONS 'django-allauth<64.0' # django-allauth 64.0 drops support for Django 3.2
+RUN pip3 install $PIP_OPTIONS django-allauth
 RUN pip3 install $PIP_OPTIONS django-countries
 
 RUN pip3 cache purge && rm -fR "/root/.cache"

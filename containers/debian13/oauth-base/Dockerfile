@@ -2,7 +2,7 @@
 #
 #  VirES - Debian 13 VirES base OAuth server image
 #
-# Copyright (C) 2025 EOX IT Services GmbH
+# Copyright (C) 2025-2026 EOX IT Services GmbH
 #-----------------------------------------------------------------------
 
 ARG SOURCE_IMAGE
@@ -32,7 +32,7 @@ RUN mkdir -p "$INSTANCE_DIR"
 RUN mkdir -p "$STATIC_DIR"
 
 # extra pip pacakges
-RUN pip3 install $PIP_OPTIONS 'django-oauth-toolkit>=2.0,<3.0' # django-oauth-toolkit drops support for Django 3.2
+RUN pip3 install $PIP_OPTIONS django-oauth-toolkit
 RUN pip3 install $PIP_OPTIONS altcha
 RUN pip3 cache purge && rm -fR "/root/.cache"
 
