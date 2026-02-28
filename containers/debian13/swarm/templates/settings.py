@@ -181,6 +181,7 @@ EOXS_PROCESSES = [
     'vires.processes.get_observatories.GetObservatories',
     'vires.processes.get_conjunctions.GetConjunctions',
     'vires.processes.eval_model.EvalModel',
+    'vires.processes.eval_model_at_time_and_location.EvalModelAtTimeAndLocation',
     'vires.processes.retrieve_continuous_segments.RetrieveContinuousSegments',
     'vires.processes.retrieve_bubble_index.RetrieveBubbleIndex',
     'vires.processes.fetch_data.FetchData',
