@@ -1,0 +1,13 @@
+[
+  {
+    "name": "VirES for Swarm - local",
+    "client_id": "{{ CLIENT_ID }}",
+    "client_secret": "{{ CLIENT_SECRET }}",
+    "redirect_uris": [
+        "{{ SERVICE_URL }}/accounts/vires/login/callback/"
+    ],
+    "client_type": "confidential",
+    "authorization_grant_type": "authorization-code",
+    "skip_authorization": false
+  }
+]
