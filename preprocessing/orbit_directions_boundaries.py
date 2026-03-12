@@ -27,12 +27,11 @@
 # THE SOFTWARE.
 #-------------------------------------------------------------------------------
 
-from __future__ import print_function
 import sys
 import ctypes
 from os import remove
 from os.path import basename, exists
-from datetime import datetime
+from datetime import datetime, timezone
 from bisect import bisect_left, bisect_right
 from numpy import (
     asarray, datetime64, timedelta64, concatenate, searchsorted, full, dtype,
@@ -72,19 +71,16 @@ CDF_CREATOR = "EOX:%s [%s-%s, libcdf-%s]" % (
 
 class CommandError(Exception):
     """ Command error exception. """
-    pass
 
 
 class DataIntegrityError(ValueError):
     """ Command error exception. """
-    pass
 
 
 def usage(exename, file=sys.stderr):
     """ Print usage. """
     print(
-        "USAGE: %s <manifest> <geo-output> <mag-output>"
-        % basename(exename), file=file
+        f"USAGE: {basename(exename)} <manifest> <geo-output> <mag-output>", file=file
     )
     print("\n".join([
         "DESCRIPTION:",
@@ -100,15 +96,17 @@ def parse_inputs(argv):
         output_geo = argv[2]
         output_mag = argv[3]
     except IndexError:
-        raise CommandError("Not enough input arguments!")
+        raise CommandError("Not enough input arguments!") from None
     return input_, output_geo, output_mag
 
 
 def main(manifest_filename, output_geo, output_mag):
     """ main subroutine. """
     print("registering products ...")
-    products = open(manifest_filename) if manifest_filename != '-' else sys.stdin
-    with products:
+    with (
+        open(manifest_filename, encoding="UTF-8")
+        if manifest_filename != '-' else sys.stdin
+    ) as products:
         product_registry = register_products(
             (f.strip() for f in products), gap_threshold=(SAMPLING * 1.5)
         )
@@ -160,15 +158,15 @@ def _write_orbit_direction_boudaries(cdf, orbit_direction_boundaries,
 
     cdf.attrs["CREATOR"] = CDF_CREATOR
     cdf.attrs["CREATED"] = (
-        datetime.utcnow().replace(microsecond=0)
-    ).isoformat() + "Z"
+        datetime.now(timezone.utc).replace(microsecond=0)
+    ).isoformat().replace("+00:00", "Z")
     cdf.attrs["TITLE"] = product_id
     cdf.attrs["PRODUCT_DESCRIPTION"] = orbit_direction_boundaries.label
     cdf.attrs["SOURCES"] = [
         _get_product_id(product) for _, _, product in product_registry.ranges
     ]
     cdf.attrs["SOURCE_TIME_RANGES"] = [
-        "%sZ/%sZ" % (start, end) for start, end, _ in product_registry.ranges
+        f"{start}Z/{end}Z" for start, end, _ in product_registry.ranges
     ]
 
     _set_variable(cdf, "Timestamp", orbit_direction_boundaries.times, {
@@ -179,9 +177,8 @@ def _write_orbit_direction_boudaries(cdf, orbit_direction_boundaries,
     _set_variable(cdf, "BoundaryType", orbit_direction_boundaries.type_flags, {
         "UNITS": "-",
         "DESCRIPTION": (
-            "Boundary type (regular %s, block start %s, block end %s)" % (
-                FLAG_MIDDLE, FLAG_START, FLAG_END
-            )
+            f"Boundary type (regular {FLAG_MIDDLE}, block start {FLAG_START},"
+            f" block end {FLAG_END})"
         )
     })
 
@@ -189,9 +186,8 @@ def _write_orbit_direction_boudaries(cdf, orbit_direction_boundaries,
         "UNITS": "-",
         "DESCRIPTION": (
             "Orbit direction after this point. "
-            "(ascending %s, descending %s, undefined %s)" % (
-                FLAG_ASCENDING, FLAG_DESCENDING, FLAG_UNDEFINED
-            )
+            f"(ascending {FLAG_ASCENDING}, descending {FLAG_DESCENDING},"
+            f" undefined {FLAG_UNDEFINED})"
         )
     })
 
@@ -243,7 +239,7 @@ def process_ranges(product_registry, sampling):
     return accumulators
 
 
-class ExtremaBase(object):
+class ExtremaBase:
     """ base extrema class """
 
     def get_values(self, times, lats, lons, rads):
@@ -465,7 +461,7 @@ def register_products(products, gap_threshold):
     return product_registry
 
 
-class ProductRegistry(object):
+class ProductRegistry:
     """ Product registry class. """
 
     def __init__(self, gap_threshold):
@@ -495,20 +491,22 @@ class ProductRegistry(object):
 
         if times.size < 1: # empty product
             return
-        elif times.size < 2: # single point
-            yield (times[0], times[-1])
-        else: # multiple points
-            gap_index, = (
-                (times[1:] - times[:-1]) > self.gap_threshold
-            ).nonzero()
-            gap_index = [0] + list(gap_index + 1) + [times.size]
 
-            ranges = (
-                (start, gap_index[index+1]-1)
-                for index, start in enumerate(gap_index[:-1])
-            )
-            for start, end in ranges:
-                yield (times[start], times[end])
+        if times.size < 2: # single point
+            yield (times[0], times[-1])
+
+        # multiple points
+        gap_index, = (
+            (times[1:] - times[:-1]) > self.gap_threshold
+        ).nonzero()
+        gap_index = [0] + list(gap_index + 1) + [times.size]
+
+        ranges = (
+            (start, gap_index[index+1]-1)
+            for index, start in enumerate(gap_index[:-1])
+        )
+        for start, end in ranges:
+            yield (times[start], times[end])
 
     @staticmethod
     def _extract_times(product):
@@ -555,11 +553,11 @@ def cdf_open(filename, mode="r"):
             pycdf.lib.set_backward(False) # produce CDF version 3
             cdf = pycdf.CDF(filename, "")
     else:
-        raise ValueError("Invalid mode value %r!" % mode)
+        raise ValueError(f"Invalid mode value {mode!r}!")
     return cdf
 
 
-class CdfTypeDummy(object):
+class CdfTypeDummy:
     """ CDF dummy type conversions. """
 
     @staticmethod
@@ -573,7 +571,7 @@ class CdfTypeDummy(object):
         return values
 
 
-class CdfTypeEpoch(object):
+class CdfTypeEpoch:
     """ CDF Epoch Time type conversions. """
     CDF_EPOCH_1970 = 62167219200000.0
 

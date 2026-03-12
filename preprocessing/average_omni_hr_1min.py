@@ -30,10 +30,10 @@
 
 import sys
 import ctypes
-from datetime import datetime
+from datetime import datetime, timezone
 from os import makedirs, remove
 from os.path import basename, splitext, join, exists
-from numpy import concatenate, copy
+from numpy import concatenate, copy, empty, nan
 from numpy.lib.stride_tricks import as_strided
 import spacepy
 from spacepy import pycdf
@@ -118,7 +118,7 @@ METADATA.update({
     "Count_" + variable: {
         "type": CDF_UINT1,
         "attributes": {
-            "DESCRIPTION": "Averaging window number of samples of %s" % variable,
+            "DESCRIPTION": f"Averaging window number of samples of {variable}",
             "UNITS": "-"
         }
     }
@@ -132,7 +132,7 @@ class CommandError(Exception):
 
 def usage(exename, file=sys.stderr):
     """ Print usage. """
-    print("USAGE: %s <output-dir> [<input-file-list>]" % basename(exename), file=file)
+    print(f"USAGE: {basename(exename)} <output-dir> [<input-file-list>]", file=file)
     print("\n".join([
         "DESCRIPTION:",
         "  Perform the delayed 20min averaging of the OMNI 1min data. ",
@@ -150,7 +150,7 @@ def parse_inputs(argv):
         output_dir = argv[1]
         input_files = argv[2]
     except IndexError:
-        raise CommandError("Not enough input arguments!")
+        raise CommandError("Not enough input arguments!") from None
     return output_dir, input_files
 
 
@@ -159,13 +159,14 @@ def main(output_dir, input_files):
 
     def _get_output_filename(filename, suffix):
         base, ext = splitext(basename(filename))
-        return join(output_dir, "%s%s%s" % (base, suffix, ext))
+        return join(output_dir, f"{base}{suffix}{ext}")
 
 
     makedirs(output_dir, exist_ok=True)
 
-    file_list = sys.stdin if input_files == "-" else open(input_files)
-    with file_list:
+    with (
+        sys.stdin if input_files == "-" else open(input_files, encoding="ascii")
+    ) as file_list:
         previous = None
         for input_ in (line.strip() for line in file_list):
             output = _get_output_filename(input_, "_avg20min_delay10min")
@@ -212,7 +213,10 @@ def boxcar(data, mask, size):
     data = copy(data)
     data[~mask] = 0.0
     count = _reshape(mask).sum(axis=1)
-    average = _reshape(data).sum(axis=1) / count
+    average = empty(count.shape, dtype="float64")
+    nonzero_mask = count > 0
+    average[nonzero_mask] = _reshape(data).sum(axis=1)[nonzero_mask] / count[nonzero_mask]
+    average[~nonzero_mask] = nan
     return average, count
 
 
@@ -238,8 +242,8 @@ def _write_global_attrs(cdf, extra_attrs=None):
     cdf.attrs.update({
         "CREATOR": CDF_CREATOR,
         "CREATED": (
-            datetime.utcnow().replace(microsecond=0)
-        ).isoformat() + "Z",
+            datetime.now(timezone.utc).replace(microsecond=0)
+        ).isoformat().replace("+00:00", "Z"),
     })
     cdf.attrs.update(extra_attrs or {})
 
@@ -288,7 +292,7 @@ def cdf_open(filename, mode="r"):
         pycdf.lib.set_backward(False) # produce CDF version 3
         cdf = pycdf.CDF(filename, "")
     else:
-        raise ValueError("Invalid mode value %r!" % mode)
+        raise ValueError(f"Invalid mode value {mode!r}!")
     return cdf
 
 

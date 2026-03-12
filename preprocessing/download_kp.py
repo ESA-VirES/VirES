@@ -31,6 +31,7 @@
 # pylint: disable=missing-docstring
 # pylint: disable=broad-exception-caught,bare-except,superfluous-parens
 # pylint: disable=too-many-branches,too-many-statements
+# pylint: disable=wrong-import-position
 
 import warnings
 
@@ -496,7 +497,7 @@ class KpProduct:
                 "REQUEST_URL": metadata["url"],
                 "REQUESTED": _format_datetime(metadata["timestamp"]),
                 **cls.CDF_GLOBAL_ATTRIBUTES,
-                "CREATED": _format_datetime(Timestamp.now()),
+                "CREATED": Timestamp.format(Timestamp.now().replace(microsecond=0)),
                 "CREATOR": cls.CDF_CREATOR,
             })
             _save_cdf_variable(
@@ -796,7 +797,7 @@ class Date:
     @staticmethod
     def today():
         """ Get current UTC date. """
-        return datetime.datetime.utcnow().date()
+        return datetime.datetime.now(datetime.timezone.utc).date()
 
     @staticmethod
     def parse(value):

@@ -37,7 +37,7 @@ LOGGER = getLogger(__name__)
 
 def usage(exename, file=sys.stderr):
     """ Print usage. """
-    print("USAGE: %s [--squeeze] <source-CDF> <re-packed-CDF>" % basename(exename), file=file)
+    print(f"USAGE: {basename(exename)} [--squeeze] <source-CDF> <re-packed-CDF>", file=file)
     print("\n".join([
         "DESCRIPTION:",
         "  Compare content of two CDF files.",
@@ -62,7 +62,7 @@ def parse_inputs(argv):
         source = args[1]
         tested = args[2]
     except IndexError:
-        raise CommandError("Not enough input arguments!")
+        raise CommandError("Not enough input arguments!") from None
 
     return source, tested, squeeze_src_variables
 
@@ -119,7 +119,7 @@ def compare_variable(name, var_src, var_dst, squeeze_src=False, index_src=None):
         return "[%s]" % ",".join(str(v) for v in shape)
 
     error_count = compare_attributes(
-        var_src.attrs, var_dst.attrs, "%s variable" % name
+        var_src.attrs, var_dst.attrs, f"{name} variable"
     )
 
     if var_src.type() != var_dst.type():

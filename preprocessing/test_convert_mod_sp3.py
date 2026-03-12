@@ -59,7 +59,7 @@ class TestError(Exception):
 
 def usage(exename, file=sys.stderr):
     """ Print usage. """
-    print("USAGE: %s <input SP3> <output CDF>" % basename(exename), file=file)
+    print(f"USAGE: {basename(exename)} <input SP3> <output CDF>", file=file)
     print("\n".join([
         "DESCRIPTION:",
         "  Convert Swarm MOD orbit products to CDF format.",
@@ -193,7 +193,7 @@ def test_data(cdf, time_gps_ref, position_cart_ref, time_start, time_end):
 
 def read_sp3_data(filename_sp3):
     times, positions  = [], []
-    with open(filename_sp3) as fin:
+    with open(filename_sp3, encoding="UTF-8") as fin:
         header, records = read_sp3(fin)
         for record in records:
             times.append(record['timestamp'])

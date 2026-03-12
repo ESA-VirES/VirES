@@ -44,7 +44,7 @@ TIMESTAMP_VARIABLE = "Timestamp"
 
 def usage(exename, file=sys.stderr):
     """ Print usage. """
-    print("USAGE: %s <source-CDF> <re-packed-CDF>" % basename(exename), file=file)
+    print(f"USAGE: {basename(exename)} <source-CDF> <re-packed-CDF>", file=file)
     print("\n".join([
         "DESCRIPTION:",
         "  Test a re-packed ground observatory product against its source.",
@@ -57,7 +57,7 @@ def parse_inputs(argv):
         source = argv[1]
         tested = argv[2]
     except IndexError:
-        raise CommandError("Not enough input arguments!")
+        raise CommandError("Not enough input arguments!") from None
     return source, tested
 
 

@@ -28,7 +28,7 @@
 
 import sys
 from logging import getLogger
-from datetime import datetime
+from datetime import datetime, timezone
 from os import remove, rename
 from os.path import basename, exists, splitext
 from numpy import unique, concatenate, asarray, argsort, stack
@@ -132,7 +132,7 @@ class ConversionSkipped(Exception):
 
 def usage(exename, file=sys.stderr):
     """ Print usage. """
-    print("USAGE: %s <input> [<output>]" % basename(exename), file=file)
+    print(f"USAGE: {basename(exename)} <input> [<output>]", file=file)
     print("\n".join([
         "DESCRIPTION:",
         "  Re-pack virtual observatory product and save them into a new CDF file.",
@@ -146,7 +146,7 @@ def parse_inputs(argv):
         input_ = argv[1]
         output = argv[2]
     except IndexError:
-        raise CommandError("Not enough input arguments!")
+        raise CommandError("Not enough input arguments!") from None
     return input_, output
 
 
@@ -304,8 +304,8 @@ def _update_creator(cdf):
     _update_attributes(cdf, {
         "CREATOR": CDF_CREATOR,
         "CREATED": (
-            datetime.utcnow().replace(microsecond=0)
-        ).isoformat() + "Z",
+            datetime.now(timezone.utc).replace(microsecond=0)
+        ).isoformat().replace("+00:00", "Z"),
     })
 
 
@@ -321,10 +321,6 @@ def _copy_variable(cdf_dst, cdf_src, variable_src, variable_dst, index):
         compress_param=GZIP_COMPRESSION_LEVEL4,
     )
     cdf_dst[variable_dst].attrs.update(raw_var.attrs)
-
-
-def _covert_rtp_to_nec(data):
-    return stack((-data[:, 1], +data[:, 2], -data[:, 0]), axis=1)
 
 
 def _set_variable(cdf_dst, variable, data, cdf_type, attrs=None):

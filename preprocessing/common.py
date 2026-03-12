@@ -27,7 +27,6 @@
 #-------------------------------------------------------------------------------
 
 import sys
-import time
 import ctypes
 #from logging import getLogger, DEBUG, StreamHandler, Formatter
 import logging
@@ -190,7 +189,7 @@ def cdf_open(filename, mode="r"):
             pycdf.lib.set_backward(False) # produce CDF version 3
             cdf = pycdf.CDF(filename, "")
     else:
-        raise ValueError("Invalid mode value %r!" % mode)
+        raise ValueError(f"Invalid mode value {mode!r}!")
     return cdf
 
 

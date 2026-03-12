@@ -313,7 +313,7 @@ class ChampMagProduct:
         cdf_dst.attrs.update({
             "TITLE": f"{cls.get_swarm_id(cdf_src)}.cdf",
             "SOURCE": os.path.basename(cdf_src.pathname),
-            "CREATED": f"{datetime.datetime.utcnow():%Y-%m-%dT%H:%M:%S}Z",
+            "CREATED": f"{datetime.datetime.now(datetime.timezone.utc):%Y-%m-%dT%H:%M:%S}Z",
             "CREATOR": cls.CDF_CREATOR,
         })
 

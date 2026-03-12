@@ -28,7 +28,7 @@
 
 import sys
 from logging import getLogger
-from datetime import datetime
+from datetime import datetime, timezone
 from os import remove, rename
 from os.path import basename, exists, splitext
 from numpy import unique, concatenate, squeeze
@@ -65,7 +65,7 @@ class ConversionSkipped(Exception):
 
 def usage(exename, file=sys.stderr):
     """ Print usage. """
-    print("USAGE: %s <input> [<output>]" % basename(exename), file=file)
+    print(f"USAGE: {basename(exename)} <input> [<output>]", file=file)
     print("\n".join([
         "DESCRIPTION:",
         "  Re-pack observatory data CDF and save them into a new CDF file.",
@@ -79,7 +79,7 @@ def parse_inputs(argv):
         input_ = argv[1]
         output = argv[2]
     except IndexError:
-        raise CommandError("Not enough input arguments!")
+        raise CommandError("Not enough input arguments!") from None
     return input_, output
 
 
@@ -128,8 +128,8 @@ def repack_aux_obs(filename_input, filename_output):
             cdf_src.raw_var(TIMESTAMP_VARIABLE)[...],
             squeeze(cdf_src[OBS_CODE_VARIABLE][...])
         )
-        if _does_not_need_repacking():
-            raise ConversionSkipped("repacking is not needed")
+        #if _does_not_need_repacking():
+        #    raise ConversionSkipped("repacking is not needed")
         extra_attributes[OBS_CODES_ATTRIBUTE] = list(ranges)
         extra_attributes[OBS_RANGES_ATTRIBUTE] = list(ranges.values())
         with cdf_open(filename_output, "w") as cdf_dst:
@@ -199,8 +199,8 @@ def _update_creator(cdf):
     _update_attributes(cdf, {
         "CREATOR": CDF_CREATOR,
         "CREATED": (
-            datetime.utcnow().replace(microsecond=0)
-        ).isoformat() + "Z",
+            datetime.now(timezone.utc).replace(microsecond=0)
+        ).isoformat().replace("+00:00", "Z"),
     })
 
 
