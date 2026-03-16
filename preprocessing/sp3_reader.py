@@ -255,7 +255,7 @@ def read_sp3_records(source):
         yield from _read_sp3_records(source)
     except (ValueError, TypeError):
         raise SP3Error(
-            "line %d: Failed to parse the SP3 record!" % source.line
+            "line {source.line}: Failed to parse the SP3 record!"
         ) from None
 
 
@@ -267,7 +267,7 @@ def read_sp3_header(source):
         return _read_sp3_header(source)
     except (ValueError, TypeError):
         raise SP3Error(
-            "line %d: Failed to parse the SP3 header!" % source.line
+            f"line {source.line}: Failed to parse the SP3 header!"
         ) from None
 
 

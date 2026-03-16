@@ -28,7 +28,7 @@
 
 import sys
 import ctypes
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from os import remove, rename
 from os.path import basename, exists, splitext
 from numpy import unique, concatenate, datetime64, asarray
@@ -173,7 +173,7 @@ class CommandError(Exception):
 
 def usage(exename, file=sys.stderr):
     """ Print usage. """
-    print("USAGE: %s <input> [<output>]" % basename(exename), file=file)
+    print(f"USAGE: {basename(exename)} <input> [<output>]", file=file)
     print("\n".join([
         "DESCRIPTION:",
         "  Convert observatory data from TXT to CDF file format.",
@@ -187,7 +187,7 @@ def parse_inputs(argv):
         input_ = argv[1]
         output = argv[2]
     except IndexError:
-        raise CommandError("Not enough input arguments!")
+        raise CommandError("Not enough input arguments!") from None
     return input_, output or get_output_filename(input_)
 
 
@@ -257,7 +257,7 @@ def write_aux_obs_cdf(filename, data, filename_input):
         'INDEX_RANGES': list(ranges.values()),
         'CREATOR': CDF_CREATOR,
         'CREATED': (
-            datetime.utcnow().replace(microsecond=0)
+            datetime.now(timezone.utc).replace(microsecond=0)
         ).isoformat() + 'Z',
     })
 
@@ -322,7 +322,7 @@ def read_aux_obs_txt(filename):
                 data[field].append(value)
         return {field: asarray(values) for field, values in data.items()}
 
-    with open(filename) as file_in:
+    with open(filename, encoding="UTF-8") as file_in:
         return _records_to_arrays(_parse_file(file_in))
 
 
@@ -355,7 +355,7 @@ def cdf_open(filename, mode="r"):
             pycdf.lib.set_backward(False) # produce CDF version 3
             cdf = pycdf.CDF(filename, "")
     else:
-        raise ValueError("Invalid mode value %r!" % mode)
+        raise ValueError(f"Invalid mode value {mode!r}!")
     return cdf
 
 

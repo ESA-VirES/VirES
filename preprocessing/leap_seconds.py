@@ -33,7 +33,7 @@ from pathlib import Path
 from urllib.request import urlopen
 from shutil import copyfileobj
 from hashlib import sha1
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from bisect import bisect_right
 
 EPOCH_1900 = datetime(1900, 1, 1)
@@ -71,11 +71,9 @@ def load_leap_seconds(local_path=LOCAL_PATH, source_url=SOURCE_URL):
                 LOGGER.debug("Removing %s ...", tmp_path)
                 remove(tmp_path)
             raise
-        else:
-            LOGGER.debug("Moving %s -> %s ... ", tmp_path, path)
-            rename(tmp_path, path)
-            return leap_seconds
 
+        LOGGER.debug("Moving %s -> %s ... ", tmp_path, path)
+        rename(tmp_path, path)
         return leap_seconds
 
     leap_seconds = None
@@ -105,10 +103,10 @@ def load_leap_seconds(local_path=LOCAL_PATH, source_url=SOURCE_URL):
 class LeapSeconds():
     """ Leap-seconds table class. """
 
-    def __init__(self, source, **extra_attrs):
+    def __init__(self, source, source_url=None):
         """ Load leap seconds from a file-like object. """
 
-        self.__dict__.update(extra_attrs)
+        self.source_url = source_url
 
         records, info = parse_leap_seconds_table(source)
 
@@ -130,7 +128,7 @@ class LeapSeconds():
     @property
     def is_expired(self):
         return (
-            self.expires and datetime.utcnow().isoformat("T") > self.expires
+            self.expires and datetime.now(timezone.utc).isoformat("T") > self.expires
         )
 
 
@@ -139,6 +137,7 @@ def parse_leap_seconds_table(source):
     hash_ = sha1()
     records = []
     info = {}
+    line_no = 0
 
     try:
         for line_no, tag, record in _read_records(source):
@@ -163,7 +162,7 @@ def parse_leap_seconds_table(source):
                 )
     except (ValueError, TypeError):
         raise ParsingError(
-            "line %d: Failed to parse the leap-second table!" % line_no
+            f"line {line_no}: Failed to parse the leap-second table!"
         ) from None
 
     sha1_digest = info.get('sha1_digest')

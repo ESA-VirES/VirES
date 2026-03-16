@@ -30,7 +30,7 @@
 
 import sys
 from logging import getLogger
-from datetime import datetime, timedelta
+from datetime import datetime, timezone
 from os import rename, remove
 from os.path import basename, exists
 from common import (
@@ -53,7 +53,7 @@ class ConversionSkipped(Exception):
 
 def usage(exename, file=sys.stderr):
     """ Print usage. """
-    print("USAGE: %s <input> [<output>]" % basename(exename), file=file)
+    print(f"USAGE: {basename(exename)} <input> [<output>]", file=file)
     print("\n".join([
         "DESCRIPTION:",
         "  This script fixes the wrong Nx1 dimension of the U_orbit variable",
@@ -72,7 +72,7 @@ def parse_inputs(argv):
         input_ = argv[1]
         output = argv[2]
     except IndexError:
-        raise CommandError("Not enough input arguments!")
+        raise CommandError("Not enough input arguments!") from None
     return input_, output
 
 
@@ -122,8 +122,8 @@ def _update_creator(cdf):
     cdf.attrs.update({
         "CREATOR": CDF_CREATOR,
         "CREATED": (
-            datetime.utcnow().replace(microsecond=0)
-        ).isoformat() + "Z",
+            datetime.now(timezone.utc).replace(microsecond=0)
+        ).isoformat().replace("+00:00", "Z"),
     })
 
 

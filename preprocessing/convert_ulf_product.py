@@ -400,7 +400,7 @@ class UlfProduct:
                 cdf_dst.attrs[key].append(item)
 
         cdf_dst.attrs.update({
-            "CREATED": f"{datetime.datetime.utcnow():%Y-%m-%dT%H:%M:%S}Z",
+            "CREATED": f"{datetime.datetime.now(datetime.timezone.utc):%Y-%m-%dT%H:%M:%S}Z",
             "CREATOR": cls.CDF_CREATOR,
         })
 

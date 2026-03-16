@@ -30,7 +30,7 @@
 import re
 import sys
 from logging import getLogger
-from datetime import datetime
+from datetime import datetime, timezone
 from os import rename, remove
 from os.path import basename, splitext, exists
 from numpy import asarray, datetime64, timedelta64
@@ -53,10 +53,10 @@ CDF_CREATOR = "EOX:convert_mod-%s [%s-%s, libcdf-%s]" % (
     VERSION, SPACEPY_NAME, SPACEPY_VERSION, LIBCDF_VERSION
 )
 
-COMMON_PARAM = dict(
-    compress=GZIP_COMPRESSION,
-    compress_param=GZIP_COMPRESSION_LEVEL4
-)
+COMMON_PARAM = {
+    "compress": GZIP_COMPRESSION,
+    "compress_param": GZIP_COMPRESSION_LEVEL4,
+}
 
 CDF_VARIABLE_ATTRIBUTES = {
     "Timestamp": {
@@ -93,7 +93,7 @@ RE_TIMESTAMP = re.compile(
 
 def usage(exename, file=sys.stderr):
     """ Print usage. """
-    print("USAGE: %s <input SP3> <output CDF>" % basename(exename), file=file)
+    print(f"USAGE: {basename(exename)} <input SP3> <output CDF>", file=file)
     print("\n".join([
         "DESCRIPTION:",
         "  Convert Swarm MOD orbit products to CDF format.",
@@ -160,7 +160,7 @@ def convert_mod_sp3_product(filename_sp3, filename_cdf):
     selection = (time_utc >= time_start) & (time_utc < time_end)
 
     if not selection.all():
-        LOGGER.warn(
+        LOGGER.warning(
             f"{basename(filename_sp3)}: The content of the product "
             f"({datetime64(time_utc.min(), 's')}/"
             f"{datetime64(time_utc.max(), 's')}) "
@@ -185,8 +185,8 @@ def convert_mod_sp3_product(filename_sp3, filename_cdf):
             "SP3_COMMENTS": header['comments'],
             "CREATOR": CDF_CREATOR,
             "CREATED": (
-                datetime.utcnow().replace(microsecond=0)
-            ).isoformat() + "Z",
+                datetime.now(timezone.utc).replace(microsecond=0)
+            ).isoformat().replace("+00:00", "Z"),
         })
         _save_cdf_variable(cdf, 'Timestamp', CDF_EPOCH, CdfTypeEpoch.encode(time_utc))
         _save_cdf_variable(cdf, 'Latitude', CDF_DOUBLE, position_sph[:, 0])
@@ -225,7 +225,7 @@ def _save_cdf_variable(cdf, variable, cdf_type, data, attrs=None):
 
 def read_sp3_data(filename_sp3):
     times, positions  = [], []
-    with open(filename_sp3) as fin:
+    with open(filename_sp3, encoding="UTF-8") as fin:
         header, records = read_sp3(fin)
         for record in records:
             times.append(record['timestamp'])

@@ -29,7 +29,7 @@
 import re
 import sys
 from logging import getLogger
-from datetime import datetime
+from datetime import datetime, timezone
 from os import rename, remove
 from os.path import basename, exists
 from numpy import asarray, argsort, arange, isnan
@@ -62,10 +62,10 @@ CDF_CREATOR = "EOX:convert_prism_products-%s [%s-%s, libcdf-%s]" % (
 )
 
 # save variables
-COMMON_PARAM = dict(
-    compress=GZIP_COMPRESSION,
-    compress_param=GZIP_COMPRESSION_LEVEL4
-)
+COMMON_PARAM = {
+    "compress": GZIP_COMPRESSION,
+    "compress_param": GZIP_COMPRESSION_LEVEL4,
+}
 
 PQ_NOT_DEFINED = -2 # Position_Quality flag - position not defined
 
@@ -127,7 +127,7 @@ class ConversionSkipped(Exception):
 
 def usage(exename, file=sys.stderr):
     """ Print usage. """
-    print("USAGE: %s <input> [<output>]" % basename(exename), file=file)
+    print(f"USAGE: {basename(exename)} <input> [<output>]", file=file)
     print("\n".join([
         "DESCRIPTION:",
         "  Convert MITx_LP, MITxTEC and PPIxFAC (PRISM project) products to a "
@@ -142,7 +142,7 @@ def parse_inputs(argv):
         input_ = argv[1]
         output = argv[2]
     except IndexError:
-        raise CommandError("Not enough input arguments!")
+        raise CommandError("Not enough input arguments!") from None
     return input_, output
 
 
@@ -391,7 +391,7 @@ def _save_point_type(cdf_dst, col_mapping, point_types, product_type):
 def _get_unpacked_index(cdf_src):
     nrow, ncol = cdf_src.raw_var("Timestamp_ID").shape
     times = cdf_src.raw_var("Timestamp_ID")[...].flatten()
-    quality = cdf_src.raw_var("Position_Quality_ID")[...].flatten()
+    #quality = cdf_src.raw_var("Position_Quality_ID")[...].flatten()
     row_mapping, col_mapping = _get_row_col_mapping(nrow, ncol)
     index = argsort(times)
     # NOTE: the Position_Quality_ID is not reliable to filter out invalid records
@@ -479,8 +479,8 @@ def _update_creator(cdf):
     cdf.attrs.update({
         "CREATOR": CDF_CREATOR,
         "CREATED": (
-            datetime.utcnow().replace(microsecond=0)
-        ).isoformat() + "Z",
+            datetime.now(timezone.utc).replace(microsecond=0)
+        ).isoformat().replace("+00:00", "Z"),
     })
 
 

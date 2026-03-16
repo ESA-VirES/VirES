@@ -33,6 +33,7 @@
 # pylint: disable=broad-exception-caught,bare-except,superfluous-parens
 # pylint: disable=too-many-branches,too-many-statements,too-many-arguments
 # pylint: disable=too-many-locals,too-few-public-methods,too-many-lines
+# pylint: disable=wrong-import-position
 
 import warnings
 
@@ -517,7 +518,7 @@ class DstProduct:
                 ],
                 "LAST_MODIFIED": _format_datetime(metadata["timestamp"]),
                 **cls.CDF_GLOBAL_ATTRIBUTES,
-                "CREATED": Timestamp.format(Timestamp.now()),
+                "CREATED": Timestamp.format(Timestamp.now().replace(microsecond=0)),
                 "CREATOR": cls.CDF_CREATOR,
             })
             _save_cdf_variable(
@@ -1226,7 +1227,7 @@ class Date:
     @staticmethod
     def today():
         """ Get current UTC date. """
-        return datetime.datetime.utcnow().date()
+        return datetime.datetime.now(datetime.timezone.utc).date()
 
     @staticmethod
     def parse(value):

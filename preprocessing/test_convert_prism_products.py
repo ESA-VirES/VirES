@@ -62,7 +62,7 @@ class TestError(Exception):
 
 def usage(exename, file=sys.stderr):
     """ Print usage. """
-    print("USAGE: %s <source-CDF> <converted-CDF>" % basename(exename), file=file)
+    print(f"USAGE: {basename(exename)} <source-CDF> <converted-CDF>", file=file)
     print("\n".join([
         "DESCRIPTION:",
         "  Test a converted MITx_LP, MITxTEC or PPIxFAC product against its "
@@ -76,7 +76,7 @@ def parse_inputs(argv):
         source = argv[1]
         tested = argv[2]
     except IndexError:
-        raise CommandError("Not enough input arguments!")
+        raise CommandError("Not enough input arguments!") from None
     return source, tested
 
 
@@ -357,7 +357,7 @@ def _load_masks(cdf_src, cdf_dst):
         )
     except KeyError as variable:
         LOGGER.error("Missing %s source CDF variable!", variable)
-        raise TestError
+        raise TestError from None
 
     # extract tested data mask
     try:
@@ -365,7 +365,7 @@ def _load_masks(cdf_src, cdf_dst):
         col_index = cdf_dst.raw_var("SourceColIndex_ID")[...]
     except KeyError as variable:
         LOGGER.error("Missing %s tested CDF variable!", variable)
-        raise TestError
+        raise TestError from None
 
     if _check_data_mapping(mask_src, row_index, col_index):
         raise TestError
@@ -502,7 +502,7 @@ def _check_point_type(cdf_dst, col_index, name, point_types):
 def _compare_mapped_variable(name, var_src, var_dst, row_index):
 
     error_count = compare_attributes(
-        var_src.attrs, var_dst.attrs, "%s variable" % name
+        var_src.attrs, var_dst.attrs, f"{name} variable"
     )
 
     if var_src.type() != var_dst.type():
@@ -525,7 +525,7 @@ def _compare_packed_variable(name, var_src, var_dst, mask_src,
                              row_index, col_index):
 
     error_count = compare_attributes(
-        var_src.attrs, var_dst.attrs, "%s variable" % name
+        var_src.attrs, var_dst.attrs, f"{name} variable"
     )
 
     if var_src.type() != var_dst.type():

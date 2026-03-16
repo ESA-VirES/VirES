@@ -83,7 +83,7 @@ def detect_product_type(product_name):
 
 def usage(exename, file=sys.stderr):
     """ Print usage. """
-    print("USAGE: %s <source-CDF> <converted-CDF>" % basename(exename), file=file)
+    print(f"USAGE: {basename(exename)} <source-CDF> <converted-CDF>", file=file)
     print("\n".join([
         "DESCRIPTION:",
         "  Test a converted AEJxLP*_2F product against its source.",
@@ -96,7 +96,7 @@ def parse_inputs(argv):
         source = argv[1]
         tested = argv[2]
     except IndexError:
-        raise CommandError("Not enough input arguments!")
+        raise CommandError("Not enough input arguments!") from None
     return source, tested
 
 
@@ -293,8 +293,8 @@ def _compare_variable_set(cdf_src, cdf_dst, mask_dst, point_types, variables,
         # compare variable values
 
         label = (
-            "%s/%s" % (variable_src, variable_dst) if variable_src else
-            "%s@%s" % (variable_dst, label)
+            f"{variable_src}/{variable_dst}" if variable_src else
+            f"{variable_dst}@{label}"
         )
 
         if variable_src:
