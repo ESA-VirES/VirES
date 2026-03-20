@@ -40,8 +40,8 @@ LOGGER = getLogger(__name__)
 
 
 PRODUCT_TYPES = {
-    "AEJxPBL_2F": re.compile("^SW_OPER_AEJ[ABC]PBL_2F_"),
-    "AEJxPBS_2F": re.compile("^SW_OPER_AEJ[ABC]PBS_2F_"),
+    "AEJxPBL_2F": re.compile("^SW_(OPER|FAST)_AEJ[ABC]PBL_2F_"),
+    "AEJxPBS_2F": re.compile("^SW_(OPER|FAST)_AEJ[ABC]PBS_2F_"),
 }
 
 # point types - bit flags

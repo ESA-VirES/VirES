@@ -44,13 +44,13 @@ PQ_NOT_DEFINED = -2 # Position_Quality flag - position not defined
 
 PRODUCT_TYPES = {
     "MITx_LP_2F": (
-        re.compile("^MIT[ABC]_LP_2F"), re.compile("^SW_OPER_MIT[ABC]_LP_2F_"),
+        re.compile("^MIT[ABC]_LP_2F"), re.compile("^SW_(OPER|FAST)_MIT[ABC]_LP_2F_"),
     ),
     "MITxTEC_2F": (
-        re.compile("^MIT[ABC]TEC_2F"), re.compile("^SW_OPER_MIT[ABC]TEC_2F_"),
+        re.compile("^MIT[ABC]TEC_2F"), re.compile("^SW_(OPER|FAST)_MIT[ABC]TEC_2F_"),
     ),
     "PPIxFAC_2F": (
-        re.compile("^PPI[ABC]FAC_2F"), re.compile("^SW_OPER_PPI[ABC]FAC_2F_"),
+        re.compile("^PPI[ABC]FAC_2F"), re.compile("^SW_(OPER|FAST)_PPI[ABC]FAC_2F_"),
     ),
 }
 TEST_FUNCTION = {}
