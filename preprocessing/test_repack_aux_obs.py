@@ -69,6 +69,7 @@ def main(filename_source, filename_tested):
         LOGGER.error("%s has issues!", filename_tested)
     else:
         LOGGER.info("%s is correct.", filename_tested)
+    return result
 
 
 def test_converted_aux_obs(filename_source, filename_tested):

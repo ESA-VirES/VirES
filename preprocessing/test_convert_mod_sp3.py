@@ -86,6 +86,7 @@ def main(filename_source, filename_tested):
         LOGGER.error("%s failed the test!", filename_tested)
     else:
         LOGGER.info("%s is correct.", filename_tested)
+    return result
 
 
 def test_converted_mod_sp3_product(filename_sp3, filename_cdf):
