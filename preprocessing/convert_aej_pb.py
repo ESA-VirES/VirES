@@ -46,7 +46,7 @@ from common import (
 
 LOGGER = getLogger(__name__)
 
-VERSION = "1.1.0"
+VERSION = "1.2.0"
 RE_AEJ_PBL_2F = re.compile("^SW_(OPER|FAST)_AEJ[ABC]PBL_2F_")
 RE_AEJ_PBS_2F = re.compile("^SW_(OPER|FAST)_AEJ[ABC]PBS_2F_")
 
@@ -314,6 +314,9 @@ def _convert_cdf_aej_pbs_b(cdf_dst, cdf_src):
     # sort data by time
     idx = argsort(time)
 
+    mask = ~isnan(time[idx])
+    idx = idx[mask]
+
     # save variables
     cdf_dst.new("Timestamp_B", time[idx], CDF_EPOCH, **COMMON_PARAM)
     cdf_dst.new("Latitude_B", lat[idx], CDF_DOUBLE, **COMMON_PARAM)
@@ -357,13 +360,16 @@ def _convert_cdf_aej_pb_common(cdf_dst, cdf_src, j_variable):
     row_mapping = concatenate([arange(cdf_src['Flags'].shape[0])] * 6)
 
     # filter out invalid locations
-    #idx = logical_not(logical_or(isnan(lat), isnan(lon))).nonzero()[0]
     idx = arange(time.size)
+
+    mask = ~isnan(time[idx])
+    idx = idx[mask]
 
     # sort index by time
     idx = idx[argsort(time[idx])]
 
     idx = _reorder_peaks_and_boundaries(idx, time, point_type, lat_qd)
+
 
     _tag_segment_end(idx, point_type)
 
