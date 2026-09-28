@@ -97,7 +97,7 @@ RUN mkdir -p "$BUILD_DIR"
 
 # Get libCDF and QDipole sources
 RUN sh -c 'cd "$BUILD_DIR" \
-  && TAG=3.16.0 \
+  && TAG=cdf-3.9.2.b \
   && curl -sSL "https://github.com/ESA-VirES/MagneticModel/archive/refs/tags/$TAG.tar.gz" | tar xvz \
   && mv -v MagneticModel-$TAG MagneticModel'
 
@@ -120,9 +120,8 @@ RUN pip3 install $PIP_OPTIONS SpacePy
 
 # EOxServer dependencies
 RUN pip3 install $PIP_OPTIONS "GDAL==$(gdal-config --version)"
-#RUN pip3 install $PIP_OPTIONS 'django-model-utils<5.0.0'
 RUN pip3 install $PIP_OPTIONS django-model-utils
-RUN pip3 install $PIP_OPTIONS 'django-prometheus<2.5.0' # no stable release >= 2.5.0
+RUN pip3 install $PIP_OPTIONS django-prometheus
 RUN pip3 install $PIP_OPTIONS zipstream
 RUN pip3 install $PIP_OPTIONS lxml
 RUN pip3 install $PIP_OPTIONS pycql
@@ -132,8 +131,8 @@ RUN pip3 install $PIP_OPTIONS python-swiftclient
 # RUN pip3 install $PIP_OPTIONS jsonfield # used only in one old migration
 
 # AMPS model
-#RUN pip3 install $PIP_OPTIONS 'pyamps==1.7'
-RUN pip3 install $PIP_OPTIONS 'git+https://github.com/pacesm/pyAMPS.git@mlt_utils_igrf14_fix#pyamps'
+RUN pip3 install $PIP_OPTIONS 'pyamps==1.8'
+#RUN pip3 install $PIP_OPTIONS 'git+https://github.com/pacesm/pyAMPS.git@mlt_utils_igrf14_fix#pyamps'
 
 # -----------------------------------------------------------------------------
 
