@@ -33,7 +33,7 @@ RUN mkdir -p "$STATIC_DIR"
 
 # extra pip pacakges
 RUN pip3 install $PIP_OPTIONS django-oauth-toolkit
-RUN pip3 install $PIP_OPTIONS altcha
+RUN pip3 install $PIP_OPTIONS "altcha>=2.0.0"
 RUN pip3 cache purge && rm -fR "/root/.cache"
 
 # FIXME: find a better way to strip the cached compiled Python code
