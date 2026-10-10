@@ -21,6 +21,8 @@ COPY templates "$CONFIGURATION_TEMPLATES_DIR"
 # create the VirES user and group
 RUN groupadd -r "$VIRES_GROUP"
 RUN useradd -r -M -g "$VIRES_GROUP" -d "$VIRES_HOME" -s /sbin/nologin -c "VirES system user" "$VIRES_USER"
+RUN mkdir -p "$VIRES_UPLOAD_CUSTOM_DATA_DIR" \
+  && chown "$VIRES_USER:$VIRES_GROUP" "$VIRES_UPLOAD_CUSTOM_DATA_DIR"
 
 COPY entrypoint.sh /usr/local/bin/
 ENTRYPOINT ["entrypoint.sh"]
